@@ -1,0 +1,76 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap");
+@import "tailwindcss";
+
+:root {
+  color: #334155;
+  background-color: #ffffff;
+  font-family:
+    "Manrope", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #ffffff;
+  color: #334155;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.page-shell {
+  @apply min-h-screen bg-transparent text-slate-800;
+}
+
+.container-shell {
+  @apply mx-auto w-full max-w-7xl px-6 lg:px-8;
+}
+
+.section-kicker {
+  @apply text-[10px] font-semibold uppercase tracking-[0.34em] text-[#4d9af6];
+}
+
+.section-title {
+  @apply text-3xl font-semibold tracking-tight text-slate-800 md:text-5xl;
+}
+
+.section-copy {
+  @apply max-w-2xl text-base leading-7 text-slate-500 md:text-lg;
+}
+
+.card-panel {
+  @apply rounded-none border-0 bg-transparent shadow-none;
+}
+
+.nav-link {
+  @apply text-[13px] font-medium tracking-[-0.01em] text-slate-600 transition hover:text-slate-900;
+}
+
+.nav-link-active {
+  @apply text-slate-900;
+}
+
+.footer-link {
+  @apply text-sm text-slate-500 transition hover:text-slate-900;
+}
