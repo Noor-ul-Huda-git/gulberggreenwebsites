@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{# Log out — pinned to top header row (same band as navbar), inset from edge so it does not cover breadcrumbs or the user icon. #}
+{% block extrajs %}
+{{ block.super }}
+{% if not is_popup %}
+<div
+  id="gulberg-admin-logout-bar"
+  class="position-fixed d-flex align-items-center"
+  role="navigation"
+  aria-label="{% trans 'Account' %}"
+>
+  <form method="post" action="{% url 'admin:logout' %}" class="m-0">
+    {% csrf_token %}
+    <button
+      type="submit"
+      class="btn btn-success btn-sm fw-semibold px-3 py-1 shadow-sm"
+    >
+      {% trans "Log out" %}
+    </button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

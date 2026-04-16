@@ -1,4 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Petit+Formal+Script&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -39,6 +41,13 @@ textarea {
   min-height: 100vh;
 }
 
+/** Welcome splash — decorative script (banner only) */
+.petit-formal-script-regular {
+  font-family: "Petit Formal Script", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
 .page-shell {
   @apply min-h-screen bg-transparent text-slate-800;
 }
@@ -68,9 +77,35 @@ textarea {
 }
 
 .nav-link-active {
-  @apply text-slate-900;
+  @apply font-medium text-[#1a3553] underline decoration-[#31C950] decoration-2 underline-offset-[6px];
 }
 
 .footer-link {
   @apply text-sm text-slate-500 transition hover:text-slate-900;
+}
+
+/* Home — lake feature Ken Burns (honors prefers-reduced-motion via class toggle in React) */
+@keyframes lake-ken-burns {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.09);
+  }
+}
+
+.lake-ken-burns-active {
+  animation: lake-ken-burns 26s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lake-ken-burns-active {
+    animation: none;
+  }
+}
+
+/* Home — logo strips: animated via JS in LogoMarquee.jsx for smooth hover direction */
+.logo-marquee-track {
+  display: flex;
+  width: max-content;
 }

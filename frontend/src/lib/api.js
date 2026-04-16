@@ -17,3 +17,44 @@ export async function fetchProperties(params = {}) {
 
   return response.json()
 }
+
+export async function fetchProperty(slug) {
+  const response = await fetch(`${API_BASE_URL}/properties/${encodeURIComponent(slug)}/`)
+
+  if (response.status === 404) {
+    return null
+  }
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch property')
+  }
+
+  return response.json()
+}
+
+/** @returns {Promise<Array>} */
+export async function fetchNewsPosts() {
+  const response = await fetch(`${API_BASE_URL}/news/`)
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch news')
+  }
+
+  const data = await response.json()
+  return Array.isArray(data) ? data : data.results ?? []
+}
+
+/** @returns {Promise<object | null>} */
+export async function fetchNewsPost(slug) {
+  const response = await fetch(`${API_BASE_URL}/news/${encodeURIComponent(slug)}/`)
+
+  if (response.status === 404) {
+    return null
+  }
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch article')
+  }
+
+  return response.json()
+}

@@ -1,0 +1,47 @@
+/* Gulberg Admin — floating Log out: same vertical band as .app-header, not over page content */
+#gulberg-admin-logout-bar {
+  z-index: 1060;
+  top: 0;
+  height: 57px;
+  inset-inline-end: 4.5rem;
+  padding: 0 0.25rem;
+  pointer-events: none;
+}
+
+#gulberg-admin-logout-bar form {
+  pointer-events: auto;
+}
+
+@media (max-width: 767.98px) {
+  #gulberg-admin-logout-bar {
+    inset-inline-end: 3.25rem;
+  }
+}
+
+/* Gulberg Admin — keep user menu / logout discoverable (navbar search + links can crowd the bar) */
+.main-header.navbar .navbar-nav.ms-auto {
+  flex-shrink: 0;
+}
+
+.main-header.navbar form.d-flex.ms-2 {
+  flex: 0 1 auto;
+  max-width: min(260px, 34vw);
+}
+
+.main-header.navbar form.d-flex.ms-2 .form-control {
+  min-width: 0;
+}
+
+.main-header.navbar .navbar-nav.ms-auto .nav-link {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.main-header.navbar .navbar-nav.ms-auto .nav-link:hover,
+.main-header.navbar .navbar-nav.ms-auto .nav-link:focus-visible {
+  color: #fff !important;
+}
+
+/* User account dropdown trigger (far fa-user) */
+.main-header.navbar .navbar-nav.ms-auto .nav-link.btn {
+  opacity: 1;
+}

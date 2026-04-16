@@ -1,54 +1,74 @@
-import { mapHighlights } from '../data/siteContent.js'
+import PageHero from '../components/layout/PageHero.jsx'
+
+function MapPinIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 22s7-4.35 7-11a7 7 0 10-14 0c0 6.65 7 11 7 11z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="11" r="2.5" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
 
 function GulbergMap() {
   return (
-    <div className="container-shell py-20 lg:py-24">
-      <div className="mb-14 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="space-y-4">
-          <p className="section-kicker">Gulberg Map</p>
-          <h1 className="section-title max-w-4xl">
-            A cleaner map experience can guide visitors through blocks, landmarks, and access points.
+    <div className="bg-white font-[Poppins,Manrope,system-ui,sans-serif] text-slate-800">
+      <PageHero overlay="dark">
+        <div className="container-shell flex min-h-[min(42vh,440px)] flex-col items-center justify-center px-4 pb-12 pt-28 text-center md:min-h-[min(46vh,500px)] md:pb-16 md:pt-32">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.38em] text-[#31C950] [text-shadow:0_2px_12px_rgba(0,0,0,0.65)] md:text-xs">
+            Location &amp; master plan
+          </p>
+          <h1 className="mt-4 max-w-3xl font-[Poppins,Manrope,system-ui,sans-serif] text-3xl font-bold leading-[1.12] tracking-[-0.03em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.55)] md:text-4xl lg:text-[2.5rem]">
+            Gulberg Map
           </h1>
-          <p className="section-copy">
-            For this first release, the page establishes the visual framework for a richer map
-            presentation with highlighted sectors, major routes, and location storytelling.
+          <p className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-white/88 [text-shadow:0_1px_12px_rgba(0,0,0,0.55)] md:text-base">
+            Explore blocks, main arteries, and landmarks across the estate — interactive map coming soon.
           </p>
         </div>
+      </PageHero>
 
-        <div className="card-panel flex min-h-72 items-end rounded-[2.25rem] bg-gradient-to-br from-emerald-900 via-slate-800 to-slate-950 p-8 text-white">
-          <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-amber-300">Access + orientation</p>
-            <p className="mt-4 max-w-md text-3xl font-semibold tracking-tight">
-              A future interactive map can live here while keeping the page elegant and easy to scan.
+      <div className="border-b border-slate-100 bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_55%)]">
+        <div className="container-shell px-4 py-12 sm:px-6 md:py-16 lg:py-20">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-[15px] leading-relaxed text-slate-600 md:text-[16px] md:leading-[1.75]">
+              Use the map below to orient yourself within Gulberg Greens Islamabad. The live embed will be added here in a
+              future update.
             </p>
           </div>
-        </div>
-      </div>
 
-      <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="card-panel p-8">
-          <p className="section-kicker">Key highlights</p>
-          <div className="mt-6 space-y-4">
-            {mapHighlights.map((item) => (
+          <div className="relative mx-auto mt-10 max-w-6xl md:mt-14">
+            <div
+              className="pointer-events-none absolute -inset-px rounded-[1.25rem] bg-[linear-gradient(135deg,rgba(49,201,80,0.15),transparent_45%,rgba(26,53,83,0.06))] opacity-90 md:rounded-3xl"
+              aria-hidden
+            />
+            <div
+              className="relative flex min-h-[min(58vh,640px)] w-full flex-col items-center justify-center overflow-hidden rounded-[1.25rem] border border-slate-200/90 bg-gradient-to-br from-slate-200 via-slate-100 to-slate-200/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_24px_60px_-28px_rgba(15,23,42,0.2)] md:min-h-[min(62vh,720px)] md:rounded-3xl"
+              role="region"
+              aria-label="Map placeholder"
+            >
               <div
-                key={item}
-                className="rounded-2xl border border-stone-200 bg-stone-50 px-5 py-4 text-sm text-slate-700"
-              >
-                {item}
+                className="pointer-events-none absolute inset-0 opacity-[0.35]"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2394a3b8' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                }}
+                aria-hidden
+              />
+              <div className="relative z-10 flex flex-col items-center px-6 text-center">
+                <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-300/80 bg-white/80 text-[#1a3553] shadow-[0_8px_30px_-12px_rgba(15,23,42,0.25)] md:h-[4.5rem] md:w-[4.5rem]">
+                  <MapPinIcon className="h-8 w-8 md:h-9 md:w-9" />
+                </span>
+                <h2 className="mt-8 font-[Poppins,Manrope,system-ui,sans-serif] text-2xl font-semibold tracking-[-0.03em] text-[#1a3553] md:text-3xl">
+                  Map
+                </h2>
+                <p className="mt-3 max-w-md text-[14px] leading-relaxed text-slate-600 md:text-[15px]">
+                  Reserved for your interactive map or embedded view. Replace this block when ready.
+                </p>
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="card-panel p-4">
-          <div className="flex min-h-[28rem] items-center justify-center rounded-[1.75rem] border border-dashed border-slate-300 bg-[linear-gradient(135deg,#f2efe4,#ffffff)] p-8 text-center">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">
-                Map placeholder
-              </p>
-              <p className="mt-4 max-w-lg text-2xl font-semibold tracking-tight text-slate-950">
-                This area is ready for an image, custom SVG map, or embedded location view in the next step.
-              </p>
             </div>
           </div>
         </div>

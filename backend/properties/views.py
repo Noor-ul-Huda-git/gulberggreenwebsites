@@ -1,9 +1,11 @@
-from django.db.models import Q
+from decimal import Decimal, InvalidOperation
+
+from django.db.models import Prefetch, Q
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Property
+from .models import Property, PropertyImage
 from .serializers import PropertySerializer
 
 
@@ -12,31 +14,49 @@ class HealthCheckAPIView(APIView):
         return Response({'status': 'ok', 'service': 'gulberg-greens-api'})
 
 
+def _decimal_param(raw):
+    if raw is None or raw == '':
+        return None
+    try:
+        return Decimal(str(raw))
+    except (InvalidOperation, ValueError, TypeError):
+        return None
+
+
 class PropertyListAPIView(generics.ListAPIView):
     serializer_class = PropertySerializer
 
     def get_queryset(self):
-        queryset = Property.objects.filter(is_published=True)
+        queryset = (
+            Property.objects.filter(is_published=True)
+            .prefetch_related(
+                Prefetch('images', queryset=PropertyImage.objects.order_by('sort_order', 'id')),
+            )
+            .order_by('-is_featured', '-created_at')
+        )
+
         search = self.request.query_params.get('search')
-        property_type = self.request.query_params.get('property_type')
-        category = self.request.query_params.get('category')
+        listing_type = self.request.query_params.get('listing_type')
         block = self.request.query_params.get('block')
         featured = self.request.query_params.get('featured')
+        min_price = _decimal_param(self.request.query_params.get('min_price'))
+        max_price = _decimal_param(self.request.query_params.get('max_price'))
+        min_marlas = _decimal_param(self.request.query_params.get('min_marlas'))
+        max_marlas = _decimal_param(self.request.query_params.get('max_marlas'))
+        bedrooms = self.request.query_params.get('bedrooms')
+        baths = self.request.query_params.get('baths')
 
         if search:
             queryset = queryset.filter(
                 Q(title__icontains=search)
                 | Q(location__icontains=search)
                 | Q(block__icontains=search)
-                | Q(size__icontains=search)
                 | Q(short_description__icontains=search)
+                | Q(description__icontains=search)
             )
 
-        if property_type:
-            queryset = queryset.filter(property_type=property_type)
-
-        if category:
-            queryset = queryset.filter(category=category)
+        if listing_type:
+            queryset = queryset.filter(listing_type=listing_type)
 
         if block:
             queryset = queryset.filter(block__iexact=block)
@@ -44,4 +64,41 @@ class PropertyListAPIView(generics.ListAPIView):
         if featured == 'true':
             queryset = queryset.filter(is_featured=True)
 
+        if min_price is not None:
+            queryset = queryset.filter(price__gte=min_price)
+
+        if max_price is not None:
+            queryset = queryset.filter(price__lte=max_price)
+
+        if min_marlas is not None:
+            queryset = queryset.filter(area_marlas__gte=min_marlas)
+
+        if max_marlas is not None:
+            queryset = queryset.filter(area_marlas__lte=max_marlas)
+
+        if bedrooms not in (None, ''):
+            try:
+                queryset = queryset.filter(bedrooms=int(bedrooms))
+            except (TypeError, ValueError):
+                pass
+
+        if baths not in (None, ''):
+            try:
+                queryset = queryset.filter(baths=int(baths))
+            except (TypeError, ValueError):
+                pass
+
         return queryset
+
+
+class PropertyDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = PropertySerializer
+    lookup_field = 'slug'
+
+    def get_queryset(self):
+        return (
+            Property.objects.filter(is_published=True)
+            .prefetch_related(
+                Prefetch('images', queryset=PropertyImage.objects.order_by('sort_order', 'id')),
+            )
+        )

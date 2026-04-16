@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -9,20 +11,18 @@ class PropertyApiTests(APITestCase):
     def setUp(self):
         self.published_property = Property.objects.create(
             title='Executive Block Plot',
-            property_type=Property.PropertyType.PLOT,
-            category=Property.Category.SALE,
+            listing_type=Property.ListingType.RESIDENTIAL_PLOTS,
             block='A Executive',
-            size='10 Marla',
+            area_marlas=Decimal('10.00'),
             location='Islamabad Expressway',
             short_description='Corner plot near the main boulevard.',
             is_published=True,
         )
         Property.objects.create(
             title='Hidden Listing',
-            property_type=Property.PropertyType.HOUSE,
-            category=Property.Category.SALE,
+            listing_type=Property.ListingType.HOUSES_SALE,
             block='B',
-            size='1 Kanal',
+            area_marlas=Decimal('20.00'),
             is_published=False,
         )
 
