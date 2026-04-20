@@ -1,8 +1,16 @@
-/** Base API URL, normalized (no trailing slash). */
+/**
+ * Base API URL, normalized (no trailing slash).
+ * Relative values like `/api` (from VITE_API_BASE_URL) must be resolved with `window.location.origin`
+ * so `new URL(...)` works in the browser; a path-only string is not a valid single-arg URL.
+ */
 function getApiBase() {
   const fromEnv = import.meta.env.VITE_API_BASE_URL
   if (fromEnv) {
-    return String(fromEnv).replace(/\/+$/, '')
+    let raw = String(fromEnv).trim().replace(/\/+$/, '')
+    if (typeof window !== 'undefined' && raw.startsWith('/')) {
+      raw = `${window.location.origin}${raw}`
+    }
+    return raw
   }
   if (typeof window !== 'undefined') {
     const { hostname } = window.location
