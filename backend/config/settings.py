@@ -6,8 +6,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'change-me-in-production')
+# Hardening: set DJANGO_SECRET_KEY in the environment; use DJANGO_DEBUG=False in production
+# once static/media are served by nginx (see deployment notes).
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.getenv(
+        'DJANGO_ALLOWED_HOSTS',
+        '127.0.0.1,localhost,gulberggreens.com.pk,www.gulberggreens.com.pk',
+    ).split(',')
+    if h.strip()
+]
+
+# nginx terminates TLS and forwards scheme; required for correct URLs and admin behind HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.getenv(
+        'DJANGO_CSRF_TRUSTED_ORIGINS',
+        'http://localhost:5173,http://127.0.0.1:5173,http://127.0.0.1:8000,'
+        'http://gulberggreens.com.pk,http://www.gulberggreens.com.pk,'
+        'https://gulberggreens.com.pk,https://www.gulberggreens.com.pk',
+    ).split(',')
+    if o.strip()
+]
 
 
 # Application definition
@@ -110,10 +133,16 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-CORS_ALLOWED_ORIGINS = os.getenv(
-    'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173',
-).split(',')
+CORS_ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        'http://localhost:5173,http://127.0.0.1:5173,'
+        'http://gulberggreens.com.pk,http://www.gulberggreens.com.pk,'
+        'https://gulberggreens.com.pk,https://www.gulberggreens.com.pk',
+    ).split(',')
+    if o.strip()
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',

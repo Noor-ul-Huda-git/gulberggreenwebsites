@@ -1,7 +1,16 @@
 /** Base API URL, normalized (no trailing slash). */
 function getApiBase() {
-  const raw = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'
-  return String(raw).replace(/\/+$/, '')
+  const fromEnv = import.meta.env.VITE_API_BASE_URL
+  if (fromEnv) {
+    return String(fromEnv).replace(/\/+$/, '')
+  }
+  if (typeof window !== 'undefined') {
+    const { hostname } = window.location
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `${window.location.origin}/api`.replace(/\/+$/, '')
+    }
+  }
+  return 'http://127.0.0.1:8000/api'
 }
 
 export async function fetchProperties(params = {}) {

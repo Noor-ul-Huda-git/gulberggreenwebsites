@@ -63,8 +63,8 @@ const spotlightRows = [
   },
 ]
 
-const REGISTRATION_LOGOS_BASE =
-  'https://gulberggreens.com.pk/wp-content/uploads/2025/12'
+/** Same-origin static files in `frontend/public/registration-logos/` (do not hotlink old /wp-content/ URLs). */
+const REGISTRATION_LOGOS_BASE = '/registration-logos'
 
 /** Order matches original site carousel (8 slides) */
 const registrationLogos = [
