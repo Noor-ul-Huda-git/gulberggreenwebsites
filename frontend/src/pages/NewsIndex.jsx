@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import PageHero from '../components/layout/PageHero.jsx'
 import { fetchNewsPosts } from '../lib/api.js'
 
@@ -16,28 +16,62 @@ function formatNewsDate(iso) {
 }
 
 function NewsIndex() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const page = useMemo(() => {
+    const raw = searchParams.get('page')
+    const n = Number.parseInt(raw || '1', 10)
+    return Number.isFinite(n) && n >= 1 ? n : 1
+  }, [searchParams])
+
   const [posts, setPosts] = useState([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const goToPage = (nextPage) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (nextPage <= 1) next.delete('page')
+        else next.set('page', String(nextPage))
+        return next
+      },
+      { replace: true },
+    )
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   useEffect(() => {
-    let cancelled = false
+    const ac = new AbortController()
     setLoading(true)
     setError(null)
-    fetchNewsPosts()
+    fetchNewsPosts({ page }, { signal: ac.signal })
       .then((data) => {
-        if (!cancelled) setPosts(data)
+        if (data.invalidPage) {
+          setSearchParams(
+            (prev) => {
+              const next = new URLSearchParams(prev)
+              next.delete('page')
+              return next
+            },
+            { replace: true },
+          )
+          return
+        }
+        setPosts(data.results)
+        setTotalCount(data.count)
+        setTotalPages(data.totalPages)
       })
-      .catch(() => {
-        if (!cancelled) setError('Unable to load articles. Please try again shortly.')
+      .catch((err) => {
+        if (err?.name === 'AbortError') return
+        setError('Unable to load articles. Please try again shortly.')
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
+        if (!ac.signal.aborted) setLoading(false)
       })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+    return () => ac.abort()
+  }, [page, setSearchParams])
 
   return (
     <div className="bg-white font-[Poppins,Manrope,system-ui,sans-serif]">
@@ -60,7 +94,9 @@ function NewsIndex() {
         <div className="container-shell flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">All updates</p>
           <p className="text-[13px] text-slate-500">
-            {loading ? 'Loading…' : `${posts.length} ${posts.length === 1 ? 'article' : 'articles'}`}
+            {loading
+              ? 'Loading…'
+              : `${totalCount} ${totalCount === 1 ? 'article' : 'articles'}${totalPages > 1 ? ` · page ${page} of ${totalPages}` : ''}`}
           </p>
         </div>
       </div>
@@ -103,52 +139,82 @@ function NewsIndex() {
           ) : null}
 
           {!loading && !error && posts.length > 0 ? (
-            <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-12">
-              {posts.map((post) => (
-                <article
-                  key={post.slug}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-slate-100/90 bg-white shadow-[0_12px_40px_-24px_rgba(15,23,42,0.12)] ring-1 ring-slate-900/[0.03] transition hover:-translate-y-1 hover:shadow-[0_20px_50px_-24px_rgba(15,23,42,0.18)]"
-                >
-                  {post.primary_image ? (
-                    <Link
-                      to={`/news/${post.slug}`}
-                      className="relative block aspect-[16/10] overflow-hidden bg-slate-100"
-                      tabIndex={-1}
-                      aria-hidden
-                    >
-                      <img
-                        src={post.primary_image}
-                        alt=""
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                        loading="lazy"
-                      />
-                    </Link>
-                  ) : (
-                    <div className="aspect-[16/10] bg-gradient-to-br from-slate-100 to-slate-50" aria-hidden />
-                  )}
-                  <div className="flex flex-1 flex-col p-6 md:p-7">
-                    <h2 className="font-[Poppins,Manrope,system-ui,sans-serif] text-lg font-semibold leading-snug tracking-[-0.02em] text-[#1a2332] md:text-xl">
-                      <Link to={`/news/${post.slug}`} className="transition hover:text-[#31C950]">
-                        {post.title}
+            <>
+              <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-12">
+                {posts.map((post) => (
+                  <article
+                    key={post.slug}
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-slate-100/90 bg-white shadow-[0_12px_40px_-24px_rgba(15,23,42,0.12)] ring-1 ring-slate-900/[0.03] transition hover:-translate-y-1 hover:shadow-[0_20px_50px_-24px_rgba(15,23,42,0.18)]"
+                  >
+                    {post.primary_image ? (
+                      <Link
+                        to={`/news/${post.slug}`}
+                        className="relative block aspect-[16/10] overflow-hidden bg-slate-100"
+                        tabIndex={-1}
+                        aria-hidden
+                      >
+                        <img
+                          src={post.primary_image}
+                          alt=""
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                          loading="lazy"
+                        />
                       </Link>
-                    </h2>
-                    <p className="mt-4 flex-1 text-[15px] leading-relaxed text-slate-600">{post.excerpt}</p>
-                    <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
-                      {formatNewsDate(post.published_at).toUpperCase()}
-                    </p>
-                    <Link
-                      to={`/news/${post.slug}`}
-                      className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[#31C950] transition hover:gap-2"
-                    >
-                      Read more
-                      <span aria-hidden className="text-lg leading-none">
-                        »
-                      </span>
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
+                    ) : (
+                      <div className="aspect-[16/10] bg-gradient-to-br from-slate-100 to-slate-50" aria-hidden />
+                    )}
+                    <div className="flex flex-1 flex-col p-6 md:p-7">
+                      <h2 className="font-[Poppins,Manrope,system-ui,sans-serif] text-lg font-semibold leading-snug tracking-[-0.02em] text-[#1a2332] md:text-xl">
+                        <Link to={`/news/${post.slug}`} className="transition hover:text-[#31C950]">
+                          {post.title}
+                        </Link>
+                      </h2>
+                      <p className="mt-4 flex-1 text-[15px] leading-relaxed text-slate-600">{post.excerpt}</p>
+                      <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
+                        {formatNewsDate(post.published_at).toUpperCase()}
+                      </p>
+                      <Link
+                        to={`/news/${post.slug}`}
+                        className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[#31C950] transition hover:gap-2"
+                      >
+                        Read more
+                        <span aria-hidden className="text-lg leading-none">
+                          »
+                        </span>
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              {totalPages > 1 ? (
+                <nav
+                  className="mt-14 flex flex-col items-center justify-center gap-4 border-t border-slate-100 pt-10 sm:flex-row sm:gap-6"
+                  aria-label="News pagination"
+                >
+                  <button
+                    type="button"
+                    onClick={() => goToPage(page - 1)}
+                    disabled={page <= 1}
+                    className="inline-flex min-h-[44px] min-w-[7rem] items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:border-[#31C950]/40 hover:text-[#31C950] disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    Previous
+                  </button>
+                  <p className="text-[13px] tabular-nums text-slate-500">
+                    Page <span className="font-semibold text-slate-800">{page}</span> of{' '}
+                    <span className="font-semibold text-slate-800">{totalPages}</span>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => goToPage(page + 1)}
+                    disabled={page >= totalPages}
+                    className="inline-flex min-h-[44px] min-w-[7rem] items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:border-[#31C950]/40 hover:text-[#31C950] disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+                </nav>
+              ) : null}
+            </>
           ) : null}
         </div>
       </div>

@@ -2,22 +2,88 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion as Motion } from 'framer-motion'
 import PageHero from '../components/layout/PageHero.jsx'
+import { IconBath, IconBed, IconPhone, IconRuler } from '../components/properties/PropertyIcons.jsx'
 import { LISTING_TYPE_OPTIONS } from '../data/propertyListingTypes.js'
+import { contactInfo } from '../data/siteContent.js'
 import { fetchProperties } from '../lib/api.js'
 
-function formatPkr(value) {
+function formatCompactPkr(value) {
   if (value == null || value === '') return 'Price on request'
   const n = Number(value)
   if (Number.isNaN(n)) return String(value)
-  try {
-    return new Intl.NumberFormat('en-PK', {
-      style: 'currency',
-      currency: 'PKR',
-      maximumFractionDigits: 0,
-    }).format(n)
-  } catch {
-    return `PKR ${n.toLocaleString('en-PK')}`
+
+  const abs = Math.abs(n)
+  const units = [
+    { value: 10000000, label: 'Crore' },
+    { value: 100000, label: 'Lac' },
+    { value: 1000, label: 'Thousand' },
+  ]
+
+  for (const unit of units) {
+    if (abs >= unit.value) {
+      const compact = (n / unit.value).toFixed(1).replace(/\.0$/, '')
+      return `PKR ${compact} ${unit.label}`
+    }
   }
+
+  return `PKR ${n.toLocaleString('en-PK')}`
+}
+
+function getPlainDescription(property) {
+  const source = property.short_description || property.description || ''
+  return source.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function getSizeMeta(property) {
+  const meta = []
+
+  if (property.area_marlas != null && property.area_marlas !== '') {
+    meta.push({
+      key: 'area',
+      icon: IconRuler,
+      label: `${property.area_marlas} Marla${Number(property.area_marlas) === 1 ? '' : 's'}`,
+    })
+  }
+
+  if (property.bedrooms != null && property.bedrooms !== '') {
+    meta.push({
+      key: 'bedrooms',
+      icon: IconBed,
+      label: `${property.bedrooms} Bed`,
+    })
+  }
+
+  if (property.baths != null && property.baths !== '') {
+    meta.push({
+      key: 'baths',
+      icon: IconBath,
+      label: `${property.baths} Bath`,
+    })
+  }
+
+  return meta
+}
+
+function whatsappHref(title) {
+  const phone = contactInfo.phone.replace(/\D/g, '')
+  const text = encodeURIComponent(`Assalam o Alaikum, I am interested in: ${title}`)
+  return `https://wa.me/${phone}?text=${text}`
+}
+
+function IconListView({ className = '' }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden>
+      <path d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconGridView({ className = '' }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden>
+      <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
 }
 
 function cardImageUrl(p) {
@@ -63,6 +129,7 @@ function Properties() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(null)
+  const [viewMode, setViewMode] = useState('list')
 
   useEffect(() => {
     const t = window.setTimeout(() => setSearch(searchInput), 380)
@@ -294,6 +361,37 @@ function Properties() {
 
       <div className="border-b border-slate-100 bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_55%)]">
         <div className="container-shell py-14 md:py-16 lg:py-20">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <p className="text-sm text-slate-600">
+              {loading ? 'Loading listings…' : `${items.length} listing${items.length === 1 ? '' : 's'} found`}
+            </p>
+
+            <div className="inline-flex items-center border border-slate-200 bg-white">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                aria-pressed={viewMode === 'list'}
+                className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium transition ${
+                  viewMode === 'list' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <IconListView className="h-4 w-4" />
+                List
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                aria-pressed={viewMode === 'grid'}
+                className={`inline-flex items-center gap-2 border-l border-slate-200 px-3 py-2 text-sm font-medium transition ${
+                  viewMode === 'grid' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <IconGridView className="h-4 w-4" />
+                Grid
+              </button>
+            </div>
+          </div>
+
           {error ? (
             <Motion.p
               initial={{ opacity: 0 }}
@@ -345,91 +443,191 @@ function Properties() {
 
           {items.length ? (
             <Motion.div
-              key={filterKey}
+              key={`${filterKey}-${viewMode}`}
               variants={listParent}
               initial="hidden"
               animate="show"
-              className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10"
+              className={viewMode === 'list' ? 'space-y-5' : 'grid gap-5 sm:grid-cols-2 xl:grid-cols-3'}
             >
               {items.map((p) => {
                 const img = cardImageUrl(p)
+                const sizeMeta = getSizeMeta(p)
+                const description = getPlainDescription(p)
+                const propertyHref = `/properties/${p.slug}`
+                const telHref = `tel:${contactInfo.phone.replace(/[^\d+]/g, '')}`
+
                 return (
                   <Motion.article
                     key={`${p.id}-${p.slug}`}
                     variants={listItem}
-                    whileHover={{ y: -6, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
-                    className="group relative flex flex-col overflow-hidden rounded-[1.35rem] border border-slate-100/90 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.07)] transition-shadow duration-300 hover:shadow-[0_28px_70px_rgba(49,201,80,0.12)]"
+                    whileHover={{ y: -4, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
+                    className={`group relative overflow-hidden border border-slate-200 bg-white transition-shadow duration-300 hover:shadow-[0_16px_34px_rgba(15,23,42,0.08)] ${
+                      viewMode === 'list' ? 'rounded-md shadow-sm' : 'rounded-sm shadow-sm'
+                    }`}
                   >
-                    <Link to={`/properties/${p.slug}`} className="relative block overflow-hidden">
-                      <div className="relative aspect-[16/10] bg-slate-100">
-                        {img ? (
-                          <Motion.img
-                            src={img}
-                            alt=""
-                            className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 via-white to-slate-50 text-[12px] font-medium text-slate-400">
-                            Image coming soon
+                    {viewMode === 'list' ? (
+                      <div className="grid gap-0 md:grid-cols-[minmax(280px,380px)_1fr]">
+                        <Link to={propertyHref} className="relative block overflow-hidden bg-slate-100">
+                          <div className="relative aspect-[16/11] h-full min-h-[250px] md:min-h-full">
+                            {img ? (
+                              <Motion.img
+                                src={img}
+                                alt=""
+                                className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 via-white to-slate-50 text-[12px] font-medium text-slate-400">
+                                Image coming soon
+                              </div>
+                            )}
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-black/5 to-transparent opacity-80" />
+                            <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+                              {p.is_featured ? (
+                                <span className="bg-[#ef4444] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
+                                  Super Hot
+                                </span>
+                              ) : null}
+                            </div>
                           </div>
-                        )}
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-80 transition duration-500 group-hover:opacity-95" />
-                        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-                          {p.is_featured ? (
-                            <span className="rounded-full bg-[#31C950] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white shadow-lg">
-                              Featured
-                            </span>
-                          ) : null}
-                          <span className="rounded-full bg-white/92 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-800 shadow">
-                            {p.listing_type_display || p.listing_type}
-                          </span>
-                        </div>
-                        <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-                          <p className="text-lg font-semibold tracking-tight text-white drop-shadow">
-                            {formatPkr(p.price)}
-                          </p>
-                          {p.area_marlas != null ? (
-                            <span className="rounded-full bg-black/45 px-3 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
-                              {p.area_marlas} marla
-                              {Number(p.area_marlas) === 1 ? '' : 's'}
-                            </span>
-                          ) : null}
-                        </div>
-                      </div>
-                    </Link>
-                    <div className="flex flex-1 flex-col p-6">
-                      <div className="flex flex-wrap gap-2 text-[12px] text-slate-500">
-                        {p.block ? (
-                          <span className="rounded-full bg-slate-50 px-2.5 py-1 font-medium text-slate-700">
-                            Block {p.block}
-                          </span>
-                        ) : null}
-                        {p.bedrooms != null ? (
-                          <span className="rounded-full bg-slate-50 px-2.5 py-1">{p.bedrooms} beds</span>
-                        ) : null}
-                        {p.baths != null ? (
-                          <span className="rounded-full bg-slate-50 px-2.5 py-1">{p.baths} baths</span>
-                        ) : null}
-                      </div>
-                      <h2 className="mt-4 text-lg font-semibold leading-snug tracking-tight text-slate-900 transition group-hover:text-[#1a3553]">
-                        <Link to={`/properties/${p.slug}`}>{p.title}</Link>
-                      </h2>
-                      {p.short_description ? (
-                        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">{p.short_description}</p>
-                      ) : null}
-                      <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 pt-5">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                          Ref · {p.slug}
-                        </p>
-                        <Link
-                          to={`/properties/${p.slug}`}
-                          className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#31C950] transition hover:gap-2"
-                        >
-                          View details
-                          <span aria-hidden>→</span>
                         </Link>
+
+                        <div className="flex min-w-0 flex-1 flex-col p-5 md:p-6">
+                          <h2 className="text-[1.38rem] font-semibold leading-snug tracking-tight text-slate-900 transition group-hover:text-[#1a3553]">
+                            <Link to={propertyHref} className="line-clamp-2">
+                              {p.title}
+                            </Link>
+                          </h2>
+
+                          <p className="mt-2 text-[1.55rem] font-semibold leading-none tracking-tight text-[#1a3553]">
+                            {formatCompactPkr(p.price)}
+                          </p>
+
+                          {p.block ? (
+                            <p className="mt-2 text-[15px] text-slate-700">
+                              Block {p.block}
+                            </p>
+                          ) : null}
+
+                          {sizeMeta.length ? (
+                            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] font-medium text-slate-700">
+                              {sizeMeta.map((item) => {
+                                const Icon = item.icon
+                                return (
+                                  <span key={item.key} className="inline-flex items-center gap-1.5">
+                                    <Icon className="text-slate-700" size="h-4 w-4" />
+                                    {item.label}
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          ) : null}
+
+                          {description ? (
+                            <div className="mt-4">
+                              <p className="line-clamp-2 text-sm leading-relaxed text-slate-600 md:line-clamp-3">{description}</p>
+                              <Link to={propertyHref} className="mt-1 inline-flex text-sm font-semibold text-[#31C950] transition hover:text-[#28b048]">
+                                See more
+                              </Link>
+                            </div>
+                          ) : null}
+
+                          <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
+                            <a
+                              href={whatsappHref(p.title)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center justify-center border border-[#31C950]/35 px-4 py-2 text-[13px] font-semibold text-[#31C950] transition hover:bg-[#31C950]/8"
+                            >
+                              WhatsApp
+                            </a>
+                            <a
+                              href={telHref}
+                              className="inline-flex items-center justify-center gap-2 bg-[#31C950] px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[#28b048]"
+                            >
+                              <IconPhone size="h-4 w-4" />
+                              Call
+                            </a>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex h-full flex-col">
+                        <Link to={propertyHref} className="relative block overflow-hidden bg-slate-100">
+                          <div className="relative aspect-[16/11]">
+                            {img ? (
+                              <Motion.img
+                                src={img}
+                                alt=""
+                                className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 via-white to-slate-50 text-[12px] font-medium text-slate-400">
+                                Image coming soon
+                              </div>
+                            )}
+                            <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+                              {p.is_featured ? (
+                                <span className="bg-[#ef4444] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
+                                  Super Hot
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </Link>
+
+                        <div className="flex flex-1 flex-col p-4">
+                          <p className="text-[11px] text-slate-400">
+                            {p.block ? `Block ${p.block}` : p.listing_type_display || 'Property'}
+                          </p>
+
+                          <p className="mt-2 text-[1.1rem] font-semibold leading-none text-[#1a3553]">
+                            {formatCompactPkr(p.price)}
+                          </p>
+
+                          <h2 className="mt-2 text-[1.05rem] font-semibold leading-snug text-slate-900">
+                            <Link to={propertyHref} className="line-clamp-2">
+                              {p.title}
+                            </Link>
+                          </h2>
+
+                          {sizeMeta.length ? (
+                            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[12px] font-medium text-slate-700">
+                              {sizeMeta.map((item) => {
+                                const Icon = item.icon
+                                return (
+                                  <span key={item.key} className="inline-flex items-center gap-1">
+                                    <Icon className="text-slate-700" size="h-4 w-4" />
+                                    {item.label}
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          ) : null}
+
+                          {description ? (
+                            <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-slate-600">{description}</p>
+                          ) : null}
+
+                          <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
+                            <a
+                              href={whatsappHref(p.title)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex min-h-9 items-center justify-center border border-[#31C950]/35 px-3 text-[12px] font-semibold text-[#31C950] transition hover:bg-[#31C950]/8"
+                            >
+                              WhatsApp
+                            </a>
+                            <a
+                              href={telHref}
+                              className="inline-flex min-h-9 items-center justify-center gap-1.5 bg-[#31C950] px-3 text-[12px] font-semibold text-white transition hover:bg-[#28b048]"
+                            >
+                              <IconPhone size="h-4 w-4" />
+                              Call
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </Motion.article>
                 )
               })}

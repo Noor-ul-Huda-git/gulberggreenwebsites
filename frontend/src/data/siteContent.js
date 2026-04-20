@@ -126,3 +126,48 @@ export const contactCards = [
     description: 'Meet the sales & marketing team during business hours.',
   },
 ]
+
+/**
+ * Homepage “social wall” — replace `href` (and optional `embedSrc`) with your real post/video URLs.
+ * When `embedSrc` is set, an iframe is shown; otherwise the card links to `href`.
+ */
+export const homeSocialShowcase = {
+  heading: 'Connect with us',
+  subheading: 'Official channels, fresh posts, and Google reviews — tap through to follow or watch.',
+  googleReviewsUrl:
+    'https://www.google.com/maps/place/Gulberg+Greens+Islamabad+Pakistan/@33.6087587,73.1460381,14z/data=!3m1!4b1!4m6!3m5!1s0x38dfec0851d92db3:0x66f28b1327836ee2!8m2!3d33.6114747!4d73.1733127!16s%2Fg%2F1ptwj1h48?hl=en',
+  items: [
+    {
+      id: 'social-fb',
+      platform: 'facebook',
+      title: 'Facebook',
+      subtitle: 'Latest videos and community updates.',
+      href: 'https://www.facebook.com/',
+      embedSrc: '',
+    },
+    {
+      id: 'social-ig',
+      platform: 'instagram',
+      title: 'Instagram',
+      subtitle: 'Photos, reels, and project highlights.',
+      href: 'https://www.instagram.com/',
+      embedSrc: '',
+    },
+    {
+      id: 'social-tt',
+      platform: 'tiktok',
+      title: 'TikTok',
+      subtitle: 'Short tours and on-site clips.',
+      href: 'https://www.tiktok.com/',
+      embedSrc: '',
+    },
+    {
+      id: 'social-google',
+      platform: 'google',
+      title: 'Google reviews',
+      subtitle: 'See what clients say about Gulberg Greens.',
+      href: '',
+      embedSrc: '',
+    },
+  ],
+}

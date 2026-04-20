@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import LogoMarquee from '../components/home/LogoMarquee.jsx'
+import { fetchProperties } from '../lib/api.js'
+import { homeSocialShowcase, mapDirectionsUrl, mapEmbedUrl } from '../data/siteContent.js'
 import heroBg from '../assets/bg.png'
 // import lakeBg from '../assets/lake.jpg'
 import lakeBg from '../assets/lake2.png'
@@ -98,6 +100,35 @@ const topBrandsLogos = [
 
 /** px — must match `gap` on the amenities carousel track (used for slide math + layout). */
 const AMENITY_CAROUSEL_GAP_PX = 32
+
+function formatCompactPkr(value) {
+  if (value == null || value === '') return 'Price on request'
+  const n = Number(value)
+  if (Number.isNaN(n)) return String(value)
+  const abs = Math.abs(n)
+  const units = [
+    { value: 10000000, label: 'Crore' },
+    { value: 100000, label: 'Lac' },
+    { value: 1000, label: 'Thousand' },
+  ]
+  for (const unit of units) {
+    if (abs >= unit.value) {
+      const compact = (n / unit.value).toFixed(1).replace(/\.0$/, '')
+      return `PKR ${compact} ${unit.label}`
+    }
+  }
+  return `PKR ${n.toLocaleString('en-PK')}`
+}
+
+function parsePropertyListResponse(data) {
+  return Array.isArray(data) ? data : data.results ?? []
+}
+
+function homeFeaturedImageUrl(p) {
+  if (p.featured_image_url) return p.featured_image_url
+  if (Array.isArray(p.images) && p.images.length > 0 && p.images[0].url) return p.images[0].url
+  return null
+}
 
 /** Distinct but on-brand surfaces so cards read as separate tiles, not one slab. */
 const AMENITY_CARD_ACCENTS = {
@@ -347,32 +378,77 @@ function CarouselChevron({ direction, className }) {
   )
 }
 
+function SocialPlatformGlyph({ platform, className = 'h-6 w-6' }) {
+  const c = `${className} shrink-0`
+  switch (platform) {
+    case 'facebook':
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-1.5c-.75 0-1 .5-1 1.25V12h2.75l-.45 3H14v7.95c5.05-.5 9-4.76 9-9.95z" />
+        </svg>
+      )
+    case 'instagram':
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M7.8 2h8.4A5.8 5.8 0 0122 7.8v8.4a5.8 5.8 0 01-5.8 5.8H7.8A5.8 5.8 0 012 16.2V7.8A5.8 5.8 0 017.8 2zm-.2 2A3.8 3.8 0 004 7.8v8.4A3.8 3.8 0 007.6 20h8.8a3.8 3.8 0 003.6-3.8V7.8A3.8 3.8 0 0016.4 4H7.6zm8.25 1.75a.9.9 0 110 1.8.9.9 0 010-1.8zM12 7a5 5 0 110 10 5 5 0 010-10zm0 2a3 3 0 100 6 3 3 0 000-6z" />
+        </svg>
+      )
+    case 'tiktok':
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64v-3.5a6.33 6.33 0 00-1.88.33 6.34 6.34 0 00-4.4 6.04 6.34 6.34 0 106.34-6.34c-.04 0-.09 0-.13.01V8.42a8.92 8.92 0 004.77 1.39v-3.12z" />
+        </svg>
+      )
+    case 'google':
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
+
 function Home() {
   const amenityCarouselRef = useRef(null)
-  const lakeRef = useRef(null)
-  const guidanceRef = useRef(null)
-  const spotlightRowRefs = useRef([])
 
   const [amenitySlide, setAmenitySlide] = useState(0)
   const [amenityItemsVisible, setAmenityItemsVisible] = useState(4)
   const [amenityTx, setAmenityTx] = useState(0)
   const [amenityCardWidth, setAmenityCardWidth] = useState(0)
-  const [lakeVisible, setLakeVisible] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  )
-  const [guidanceVisible, setGuidanceVisible] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  )
-  const [spotlightRowsVisible, setSpotlightRowsVisible] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      ? [true, true, true]
-      : [false, false, false],
-  )
+  const [homeFeaturedListings, setHomeFeaturedListings] = useState([])
 
   const amenityMaxSlide = Math.max(0, categoryCards.length - amenityItemsVisible)
 
   const prefersReducedMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetchProperties({ page: '1' })
+        if (cancelled) return
+        let list = parsePropertyListResponse(res)
+        list = [...list].sort((a, b) => {
+          if (Boolean(b.is_featured) !== Boolean(a.is_featured)) return Number(b.is_featured) - Number(a.is_featured)
+          const tb = new Date(b.created_at || 0).getTime()
+          const ta = new Date(a.created_at || 0).getTime()
+          return tb - ta
+        })
+        setHomeFeaturedListings(list.slice(0, 5))
+      } catch {
+        if (!cancelled) setHomeFeaturedListings([])
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     const mq = () => {
@@ -407,66 +483,6 @@ function Home() {
     ro.observe(vp)
     return () => ro.disconnect()
   }, [amenityItemsVisible, amenitySlide])
-
-  useEffect(() => {
-    if (prefersReducedMotion) return undefined
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue
-          if (entry.target === lakeRef.current) setLakeVisible(true)
-          if (entry.target === guidanceRef.current) setGuidanceVisible(true)
-        }
-      },
-      { threshold: 0.14, rootMargin: '0px 0px -6% 0px' },
-    )
-
-    const lakeNode = lakeRef.current
-    const guideNode = guidanceRef.current
-    if (lakeNode) observer.observe(lakeNode)
-    if (guideNode) observer.observe(guideNode)
-
-    return () => {
-      if (lakeNode) observer.unobserve(lakeNode)
-      if (guideNode) observer.unobserve(guideNode)
-      observer.disconnect()
-    }
-  }, [prefersReducedMotion])
-
-  useEffect(() => {
-    if (prefersReducedMotion) return undefined
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue
-          const idx = spotlightRowRefs.current.indexOf(entry.target)
-          if (idx === -1) continue
-          setSpotlightRowsVisible((prev) => {
-            if (prev[idx]) return prev
-            const next = [...prev]
-            next[idx] = true
-            return next
-          })
-        }
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -7% 0px' },
-    )
-
-    const rowNodes = spotlightRowRefs.current.filter(Boolean)
-
-    rowNodes.forEach((node) => {
-      observer.observe(node)
-    })
-
-    return () => {
-      rowNodes.forEach((node) => {
-        observer.unobserve(node)
-      })
-      observer.disconnect()
-    }
-  }, [prefersReducedMotion])
 
   return (
     <div className="bg-white font-[Poppins,Manrope,system-ui,sans-serif]">
@@ -630,7 +646,6 @@ function Home() {
               >
                 {categoryCards.map((card) => {
                   const palette = AMENITY_CARD_ACCENTS[card.accent]
-                  const faceClasses = `flex h-full flex-col rounded-2xl p-6 ${palette.surface} [backface-visibility:hidden] [-webkit-backface-visibility:hidden]`
                   const cardBody = (
                     <>
                       <div
@@ -655,32 +670,11 @@ function Home() {
                           amenityCardWidth > 0 ? `${amenityCardWidth}px` : undefined,
                       }}
                     >
-                      {prefersReducedMotion ? (
-                        <div
-                          className={`h-full rounded-2xl p-6 transition hover:-translate-y-0.5 ${palette.surface}`}
-                        >
-                          {cardBody}
-                        </div>
-                      ) : (
-                        <div
-                          tabIndex={0}
-                          role="group"
-                          aria-label={card.title}
-                          className="group relative min-h-[288px] w-full cursor-default rounded-2xl outline-none [perspective:1200px] focus-visible:ring-2 focus-visible:ring-[#31C950]/70 focus-visible:ring-offset-2"
-                        >
-                          <div
-                            className="relative min-h-[288px] w-full origin-center transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] group-focus-within:[transform:rotateY(180deg)]"
-                          >
-                            <div className={`absolute inset-0 ${faceClasses}`}>{cardBody}</div>
-                            <div
-                              className={`absolute inset-0 ${faceClasses} [transform:rotateY(180deg)]`}
-                              aria-hidden
-                            >
-                              {cardBody}
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      <div
+                        className={`min-h-[288px] rounded-2xl p-6 ${palette.surface}`}
+                      >
+                        {cardBody}
+                      </div>
                     </article>
                   )
                 })}
@@ -706,28 +700,13 @@ function Home() {
 
 
       <section
-        ref={guidanceRef}
         className="relative overflow-hidden border-t border-slate-100/80 bg-white pb-12 pt-9 md:pb-14 md:pt-10"
         aria-labelledby="guidance-heading"
       >
-        <div
-          className="pointer-events-none absolute -left-40 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-[#31C950]/[0.06] blur-3xl motion-reduce:opacity-0"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute -right-32 top-0 h-64 w-64 rounded-full bg-sky-400/10 blur-3xl motion-reduce:opacity-0"
-          aria-hidden
-        />
+        <div className="pointer-events-none absolute -left-40 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-[#31C950]/[0.06] blur-3xl" aria-hidden />
+        <div className="pointer-events-none absolute -right-32 top-0 h-64 w-64 rounded-full bg-sky-400/10 blur-3xl" aria-hidden />
         <div className="container-shell relative">
-          <div
-            className={`mx-auto max-w-2xl text-center motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-              guidanceVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-            } transition-[opacity,transform] duration-[850ms] motion-reduce:transition-none`}
-            style={{
-              transitionDelay: guidanceVisible && !prefersReducedMotion ? '80ms' : '0ms',
-              transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-            }}
-          >
+          <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-600/90 md:text-[13px]">
               Clarity &amp; confidence
             </p>
@@ -745,9 +724,70 @@ function Home() {
           </div>
         </div>
       </section>
+
+      {homeFeaturedListings.length > 0 ? (
+        <section className="border-t border-slate-100 bg-[#fafbfc] py-10 md:py-14" aria-labelledby="home-listings-heading">
+          <div className="container-shell">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 id="home-listings-heading" className="text-xl font-bold tracking-[-0.02em] text-[#1a2332] md:text-2xl">
+                  Latest listings
+                </h2>
+                <p className="mt-2 max-w-xl text-sm text-slate-600 md:text-[15px]">
+                  Fresh properties from our catalogue — open any card for full details, photos, and contact options.
+                </p>
+              </div>
+              <Link
+                to="/properties"
+                className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#31C950] transition hover:text-[#28b048]"
+              >
+                View all properties
+                <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Link>
+            </div>
+
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
+              {homeFeaturedListings.map((p) => {
+                const img = homeFeaturedImageUrl(p)
+                return (
+                  <Link
+                    key={p.id}
+                    to={`/properties/${p.slug}`}
+                    className="group flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-black/[0.03] transition hover:border-[#31C950]/35 hover:shadow-md"
+                  >
+                    <div className="relative aspect-[4/3] bg-slate-100">
+                      {img ? (
+                        <img src={img} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-xs text-slate-400">No photo</div>
+                      )}
+                      {p.is_featured ? (
+                        <span className="absolute left-2 top-2 rounded bg-[#ef4444] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                          Featured
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-1 flex-col p-3 sm:p-4">
+                      <p className="text-[13px] font-semibold tabular-nums text-[#1a3553]">{formatCompactPkr(p.price)}</p>
+                      <p className="mt-1 line-clamp-2 text-[12px] leading-snug text-slate-700 sm:text-[13px]">{p.title}</p>
+                      {p.location ? (
+                        <p className="mt-2 line-clamp-1 text-[11px] text-slate-500">{p.location}</p>
+                      ) : null}
+                      <span className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#31C950] group-hover:underline">
+                        View listing
+                      </span>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
       
       <section
-        ref={lakeRef}
         className="relative isolate min-h-[min(88vh,920px)] overflow-hidden"
         aria-labelledby="lake-heading"
       >
@@ -755,9 +795,7 @@ function Home() {
           <img
             src={lakeBg}
             alt=""
-            className={`h-full w-full object-cover object-center will-change-transform ${
-              lakeVisible && !prefersReducedMotion ? 'lake-ken-burns-active' : ''
-            }`}
+            className="h-full w-full object-cover object-center"
           />
           <div
             className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-slate-900/55 to-emerald-950/40"
@@ -775,70 +813,27 @@ function Home() {
 
         <div className="container-shell relative flex min-h-[min(88vh,920px)] flex-col justify-center py-20 md:py-28">
           <div className="max-w-3xl">
-            <div
-              className={`inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 backdrop-blur-md motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-                lakeVisible ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
-              } motion-reduce:transition-none`}
-              style={{
-                transitionDelay: lakeVisible && !prefersReducedMotion ? '0ms' : '0ms',
-                transitionProperty: 'opacity, transform',
-                transitionDuration: '800ms',
-                transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-              }}
-            >
+            <div className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90 backdrop-blur-md">
               Signature waterfront
             </div>
             <h2
               id="lake-heading"
-              className={`mt-6 text-3xl font-bold leading-[1.12] tracking-[-0.03em] text-white drop-shadow-[0_4px_32px_rgba(0,0,0,0.35)] md:text-5xl md:leading-[1.08] lg:text-[3.15rem] motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-                lakeVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-              } motion-reduce:transition-none`}
-              style={{
-                transitionDelay: lakeVisible && !prefersReducedMotion ? '90ms' : '0ms',
-                transitionProperty: 'opacity, transform',
-                transitionDuration: '900ms',
-                transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-              }}
+              className="mt-6 text-3xl font-bold leading-[1.12] tracking-[-0.03em] text-white drop-shadow-[0_4px_32px_rgba(0,0,0,0.35)] md:text-5xl md:leading-[1.08] lg:text-[3.15rem]"
             >
               Pakistan&rsquo;s Largest Man-Made Lake
             </h2>
-            <p
-              className={`mt-6 max-w-2xl text-base leading-[1.75] text-white/88 md:text-lg motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-                lakeVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-              } motion-reduce:transition-none`}
-              style={{
-                transitionDelay: lakeVisible && !prefersReducedMotion ? '200ms' : '0ms',
-                transitionProperty: 'opacity, transform',
-                transitionDuration: '900ms',
-                transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-              }}
-            >
+            <p className="mt-6 max-w-2xl text-base leading-[1.75] text-white/88 md:text-lg">
               At the center of Gulberg Islamabad sits its signature man-made lake, spread across 1,500 kanals.
               This waterfront combines scenic views with a modern lifestyle—leisure areas, wellness spaces, and
               peaceful lake-facing residences for a calm, refined living experience.
             </p>
-            <div
-              className={`mt-10 motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-                lakeVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-              } motion-reduce:transition-none`}
-              style={{
-                transitionDelay: lakeVisible && !prefersReducedMotion ? '320ms' : '0ms',
-                transitionProperty: 'opacity, transform',
-                transitionDuration: '900ms',
-                transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-              }}
-            >
+            <div className="mt-10">
               <Link
                 to="/properties"
-                className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-full border-2 border-white/95 bg-white/[0.07] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_8px_32px_-8px_rgba(0,0,0,0.35)] backdrop-blur-md transition-[transform,box-shadow,background-color,border-color,color] duration-300 ease-out hover:-translate-y-1 hover:border-[#31C950] hover:bg-[#31C950] hover:text-white hover:shadow-[0_20px_50px_-12px_rgba(49,201,80,0.55)] motion-reduce:hover:translate-y-0"
+                className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-full border-2 border-white/95 bg-white/[0.07] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_8px_32px_-8px_rgba(0,0,0,0.35)] backdrop-blur-md transition-[box-shadow,background-color,border-color,color] duration-200 hover:border-[#31C950] hover:bg-[#31C950] hover:text-white hover:shadow-[0_20px_50px_-12px_rgba(49,201,80,0.55)]"
               >
                 <span className="relative z-10">Get Started</span>
-                <svg
-                  className="relative z-10 h-4 w-4 transition-transform duration-300 ease-out group-hover/btn:translate-x-1.5"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  aria-hidden
-                >
+                <svg className="relative z-10 h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden>
                   <path
                     d="M3 8h10M9 4l4 4-4 4"
                     stroke="currentColor"
@@ -880,17 +875,10 @@ function Home() {
           </div>
 
           <div className="flex flex-col gap-10 md:gap-14 lg:gap-16">
-            {spotlightRows.map((row, index) => (
+            {spotlightRows.map((row) => (
               <article
                 key={row.id}
-                ref={(el) => {
-                  spotlightRowRefs.current[index] = el
-                }}
-                className={`group/card relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-12px_rgba(15,23,42,0.08)] ring-1 ring-black/[0.03] transition-[opacity,transform,box-shadow,border-color] duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 md:rounded-3xl ${
-                  spotlightRowsVisible[index]
-                    ? 'translate-y-0 opacity-100'
-                    : 'translate-y-14 opacity-0'
-                } hover:border-[#31C950]/30 hover:shadow-[0_32px_64px_-28px_rgba(15,23,42,0.14)] motion-reduce:transition-none`}
+                className="group/card relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-12px_rgba(15,23,42,0.08)] ring-1 ring-black/[0.03] transition-[box-shadow,border-color] duration-200 md:rounded-3xl hover:border-[#31C950]/30 hover:shadow-[0_32px_64px_-28px_rgba(15,23,42,0.14)]"
               >
                 <div className="grid gap-0 md:grid-cols-2 md:items-stretch">
                   <div
@@ -938,12 +926,10 @@ function Home() {
                     }`}
                   >
                     <div
-                      className="absolute inset-0 z-[1] bg-gradient-to-br from-slate-900/10 via-transparent to-emerald-900/15 opacity-60 transition-opacity duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:opacity-40 motion-reduce:transition-none"
+                      className="absolute inset-0 z-[1] bg-gradient-to-br from-slate-900/10 via-transparent to-emerald-900/15 opacity-60"
                       aria-hidden
                     />
-                    <div
-                      className="absolute inset-0 origin-center transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none [transform:translate3d(0,0,0)] group-hover/card:scale-[1.045] motion-reduce:group-hover/card:scale-100"
-                    >
+                    <div className="absolute inset-0 origin-center">
                       <img
                         src={row.image}
                         alt={row.imageAlt}
@@ -993,6 +979,110 @@ function Home() {
         </div>
 
         <LogoMarquee logos={topBrandsLogos} />
+      </section>
+
+      <section
+        className="border-t border-slate-100 bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_100%)] py-12 md:py-16"
+        aria-labelledby="social-showcase-heading"
+      >
+        <div className="container-shell">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 id="social-showcase-heading" className="text-xl font-bold tracking-[-0.02em] text-[#1a3553] md:text-2xl">
+              {homeSocialShowcase.heading}
+            </h2>
+            <p className="mt-3 text-sm text-slate-600 md:text-[15px]">{homeSocialShowcase.subheading}</p>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {homeSocialShowcase.items.map((item) => {
+              const externalHref =
+                item.platform === 'google' ? homeSocialShowcase.googleReviewsUrl : item.href
+              const hasEmbed = Boolean(item.embedSrc && item.embedSrc.trim())
+
+              return (
+                <div
+                  key={item.id}
+                  className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-black/[0.03]"
+                >
+                  {hasEmbed ? (
+                    <div className="aspect-video w-full bg-slate-900">
+                      <iframe
+                        src={item.embedSrc}
+                        title={item.title}
+                        className="h-full w-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <a
+                      href={externalHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex aspect-video flex-col items-center justify-center gap-3 bg-gradient-to-br from-slate-50 to-slate-100/80 px-4 text-center transition hover:from-[#31C950]/10 hover:to-sky-50"
+                    >
+                      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#1a3553] shadow-md ring-1 ring-slate-200/80">
+                        <SocialPlatformGlyph platform={item.platform} className="h-7 w-7" />
+                      </span>
+                      <span className="text-sm font-semibold text-[#1a3553]">{item.title}</span>
+                      <span className="text-xs text-slate-600">{item.subtitle}</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#31C950]">
+                        Open →
+                      </span>
+                    </a>
+                  )}
+
+                  {hasEmbed ? (
+                    <a
+                      href={externalHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="border-t border-slate-100 px-4 py-3 text-center text-[12px] font-semibold text-[#31C950] hover:bg-slate-50"
+                    >
+                      View on {item.title}
+                    </a>
+                  ) : null}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-200 bg-white py-12 md:py-16" aria-labelledby="home-location-heading">
+        <div className="container-shell">
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
+            <div>
+              <h2 id="home-location-heading" className="text-xl font-bold tracking-[-0.02em] text-[#1a3553] md:text-2xl">
+                Gulberg Greens — location
+              </h2>
+              <p className="mt-4 text-[15px] leading-relaxed text-slate-600">
+                Visit the project on the map, get directions, and explore the surrounding access to Islamabad Expressway
+                and key city routes.
+              </p>
+              <a
+                href={mapDirectionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center gap-2 rounded-lg border border-[#31C950]/40 bg-[#31C950]/10 px-5 py-2.5 text-sm font-semibold text-[#1a3553] transition hover:bg-[#31C950]/20"
+              >
+                Open in Google Maps
+                <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </a>
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-lg ring-1 ring-black/[0.04]">
+              <iframe
+                title="Gulberg Greens Islamabad on Google Maps"
+                src={mapEmbedUrl}
+                className="aspect-[4/3] min-h-[260px] w-full border-0 md:min-h-[320px]"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </div>
+        </div>
       </section>
 
     </div>

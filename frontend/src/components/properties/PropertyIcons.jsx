@@ -70,13 +70,29 @@ export function IconChevronRight({ className, size = 'h-6 w-6' }) {
   )
 }
 
-export function IconPhone({ className, size = 'h-[18px] w-[18px]' }) {
+export function IconPhone({ className, size = 'h-[18px] w-[18px]', strokeWidth = 1.5 }) {
   return (
-    <svg className={svgIconClass(className, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+    <svg className={svgIconClass(className, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} aria-hidden>
       <path
         d="M15.5 14.2l2.85 2.85a1.2 1.2 0 010 1.7l-1.5 1.5a12 12 0 01-12.8-12.8l1.52-1.5a1.2 1.2 0 011.68 0l2.9 2.85a1.2 1.2 0 010 1.7l-2.02 2.02a8 8 0 003.57 3.58l2.02-2.02a1.2 1.2 0 011.7 0z"
         strokeLinejoin="round"
       />
+    </svg>
+  )
+}
+
+/** Outline chat bubble — floating WhatsApp FAB; matches thin editorial icon set. */
+export function IconWhatsApp({ className, size = 'h-[18px] w-[18px]' }) {
+  return (
+    <svg className={svgIconClass(className, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+      <path
+        d="M20.5 12a8.5 8.5 0 01-8.5 8.5c-1.55 0-3-.4-4.25-1.1L3.5 21l1.65-3.85A8.45 8.45 0 013.5 12 8.5 8.5 0 0112 3.5a8.5 8.5 0 018.5 8.5z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="8.5" cy="12" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="15.5" cy="12" r="0.9" fill="currentColor" stroke="none" />
     </svg>
   )
 }

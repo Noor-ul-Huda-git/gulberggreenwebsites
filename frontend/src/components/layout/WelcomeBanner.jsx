@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import { shouldShowWelcomeBannerOnMount } from './welcomeBannerSession.js'
 
 const MotionBanner = motion.div
 
@@ -9,14 +10,15 @@ const VISIBLE_MS = 1000
 const EXIT_DURATION = 0.65
 
 function WelcomeBanner() {
-  const [show, setShow] = useState(true)
+  const [show, setShow] = useState(shouldShowWelcomeBannerOnMount)
   const reduceMotion = useReducedMotion()
 
   useEffect(() => {
+    if (!show) return undefined
     const delay = reduceMotion ? Math.min(VISIBLE_MS, 700) : VISIBLE_MS
     const id = window.setTimeout(() => setShow(false), delay)
     return () => window.clearTimeout(id)
-  }, [reduceMotion])
+  }, [reduceMotion, show])
 
   useEffect(() => {
     if (!show) return undefined
@@ -28,7 +30,6 @@ function WelcomeBanner() {
   }, [show])
 
   const ease = [0.25, 0.1, 0.25, 1]
-  // No enter animation: cover the viewport on first paint so route content loads behind this layer
   const initial = reduceMotion ? { opacity: 1 } : { y: 0, opacity: 1 }
 
   const animate = reduceMotion ? { opacity: 1 } : { y: 0, opacity: 1 }

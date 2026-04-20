@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import Property, PropertyImage
+from .models import Agent, Property, PropertyImage
+
+
+@admin.register(Agent)
+class AgentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'phone', 'updated_at')
+    search_fields = ('name', 'phone')
+    ordering = ('name',)
 
 
 class PropertyImageInline(admin.TabularInline):
@@ -17,6 +24,7 @@ class PropertyAdmin(admin.ModelAdmin):
         'block',
         'area_marlas',
         'price',
+        'primary_agent',
         'bedrooms',
         'baths',
         'is_featured',
@@ -28,11 +36,13 @@ class PropertyAdmin(admin.ModelAdmin):
     list_editable = ('is_featured', 'is_published')
     prepopulated_fields = {'slug': ('title',)}
     ordering = ('-is_featured', '-updated_at')
+    autocomplete_fields = ('primary_agent', 'secondary_agent')
     inlines = (PropertyImageInline,)
     fieldsets = (
-        (None, {'fields': ('title', 'slug', 'listing_type', 'is_featured', 'is_published')}),
+        (None, {'fields': ('title', 'slug', 'listing_type', 'purpose', 'is_featured', 'is_published')}),
         ('Location & size', {'fields': ('block', 'area_marlas', 'location')}),
         ('Pricing', {'fields': ('price',)}),
+        ('Agents', {'fields': ('primary_agent', 'secondary_agent'), 'description': 'Pick saved agents, or use the + beside the field to add a new agent in a popup.'}),
         ('Details', {'fields': ('bedrooms', 'baths', 'short_description', 'description')}),
         ('Cover image', {'fields': ('featured_image',)}),
     )

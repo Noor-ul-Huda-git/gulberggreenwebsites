@@ -3,6 +3,23 @@ from django.db import models
 from django.utils.text import slugify
 
 
+class Agent(models.Model):
+    """Listing contact shown on property pages; reuse across many properties."""
+
+    name = models.CharField(max_length=120)
+    phone = models.CharField(max_length=32, unique=True, help_text='e.g. +92 300 1234567')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Agent'
+        verbose_name_plural = 'Agents'
+
+    def __str__(self):
+        return f'{self.name} ({self.phone})'
+
+
 class Property(models.Model):
     class ListingType(models.TextChoices):
         RESIDENTIAL_PLOTS = 'residential_plots', 'Residential Plots'
@@ -19,6 +36,7 @@ class Property(models.Model):
         choices=ListingType.choices,
         default=ListingType.RESIDENTIAL_PLOTS,
     )
+    purpose = models.CharField(max_length=80, blank=True)
     block = models.CharField(max_length=100, blank=True)
     area_marlas = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     price = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
@@ -27,6 +45,22 @@ class Property(models.Model):
     description = RichTextField(
         blank=True,
         help_text='Full listing copy: use the toolbar for bold, headings, lists, and links. HTML is shown on the property page.',
+    )
+    primary_agent = models.ForeignKey(
+        Agent,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='properties_primary',
+        verbose_name='Primary agent',
+    )
+    secondary_agent = models.ForeignKey(
+        Agent,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='properties_secondary',
+        verbose_name='Secondary agent',
     )
     bedrooms = models.PositiveSmallIntegerField(null=True, blank=True)
     baths = models.PositiveSmallIntegerField(null=True, blank=True)

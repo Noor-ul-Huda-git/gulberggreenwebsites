@@ -29,6 +29,7 @@ class PropertyListAPIView(generics.ListAPIView):
     def get_queryset(self):
         queryset = (
             Property.objects.filter(is_published=True)
+            .select_related('primary_agent', 'secondary_agent')
             .prefetch_related(
                 Prefetch('images', queryset=PropertyImage.objects.order_by('sort_order', 'id')),
             )
@@ -45,6 +46,8 @@ class PropertyListAPIView(generics.ListAPIView):
         max_marlas = _decimal_param(self.request.query_params.get('max_marlas'))
         bedrooms = self.request.query_params.get('bedrooms')
         baths = self.request.query_params.get('baths')
+        agent_phone = self.request.query_params.get('agent_phone')
+        agent_mobile = self.request.query_params.get('agent_mobile')
 
         if search:
             queryset = queryset.filter(
@@ -88,6 +91,12 @@ class PropertyListAPIView(generics.ListAPIView):
             except (TypeError, ValueError):
                 pass
 
+        if agent_phone not in (None, ''):
+            queryset = queryset.filter(primary_agent__phone__iexact=str(agent_phone).strip())
+
+        if agent_mobile not in (None, ''):
+            queryset = queryset.filter(secondary_agent__phone__iexact=str(agent_mobile).strip())
+
         return queryset
 
 
@@ -98,6 +107,7 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
     def get_queryset(self):
         return (
             Property.objects.filter(is_published=True)
+            .select_related('primary_agent', 'secondary_agent')
             .prefetch_related(
                 Prefetch('images', queryset=PropertyImage.objects.order_by('sort_order', 'id')),
             )
