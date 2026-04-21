@@ -127,6 +127,10 @@ export const contactCards = [
   },
 ]
 
+/** FTN Marketing — Google Maps place (reviews open from listing). Tracking params omitted. */
+const homeGoogleReviewsUrl =
+  'https://www.google.com/maps/place/FTN+MARKETING/@33.5995865,73.1544113,17z/data=!4m8!3m7!1s0x38dfedbdbb64b061:0xef1c2cc0c3c0dc08!8m2!3d33.5995865!4d73.1544113!9m1!1b1!16s%2Fg%2F11s2m1rb93'
+
 /**
  * Homepage “social wall” — replace `href` (and optional `embedSrc`) with your real post/video URLs.
  * When `embedSrc` is set, an iframe is shown; otherwise the card links to `href`.
@@ -134,15 +138,14 @@ export const contactCards = [
 export const homeSocialShowcase = {
   heading: 'Connect with us',
   subheading: 'Official channels, fresh posts, and Google reviews — tap through to follow or watch.',
-  googleReviewsUrl:
-    'https://www.google.com/maps/place/Gulberg+Greens+Islamabad+Pakistan/@33.6087587,73.1460381,14z/data=!3m1!4b1!4m6!3m5!1s0x38dfec0851d92db3:0x66f28b1327836ee2!8m2!3d33.6114747!4d73.1733127!16s%2Fg%2F1ptwj1h48?hl=en',
+  googleReviewsUrl: homeGoogleReviewsUrl,
   items: [
     {
       id: 'social-fb',
       platform: 'facebook',
       title: 'Facebook',
       subtitle: 'Latest videos and community updates.',
-      href: 'https://www.facebook.com/',
+      href: 'https://www.facebook.com/findthenest/',
       embedSrc: '',
     },
     {
@@ -150,7 +153,7 @@ export const homeSocialShowcase = {
       platform: 'instagram',
       title: 'Instagram',
       subtitle: 'Photos, reels, and project highlights.',
-      href: 'https://www.instagram.com/',
+      href: 'https://www.instagram.com/findthenest/',
       embedSrc: '',
     },
     {
@@ -158,7 +161,7 @@ export const homeSocialShowcase = {
       platform: 'tiktok',
       title: 'TikTok',
       subtitle: 'Short tours and on-site clips.',
-      href: 'https://www.tiktok.com/',
+      href: 'https://www.tiktok.com/@findthenest',
       embedSrc: '',
     },
     {
@@ -166,7 +169,7 @@ export const homeSocialShowcase = {
       platform: 'google',
       title: 'Google reviews',
       subtitle: 'See what clients say about Gulberg Greens.',
-      href: '',
+      href: homeGoogleReviewsUrl,
       embedSrc: '',
     },
   ],
