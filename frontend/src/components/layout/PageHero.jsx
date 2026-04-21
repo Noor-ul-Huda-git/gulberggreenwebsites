@@ -1,4 +1,4 @@
-import heroBg from '../../assets/nbgn.jpg'
+import heroBg from '../../assets/nbg.jpg'
 
 /**
  * @param {'light' | 'dark'} overlay — `light` matches home hero; `dark` adds a legible scrim for white hero text + light nav.
