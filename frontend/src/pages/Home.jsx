@@ -26,6 +26,14 @@ import brandBurgerLab from '../assets/Brands/images (1).png'
 import brandNayatel from '../assets/Brands/NAYATEL-logo-vector.png'
 import brandTransworld from '../assets/Brands/Transworld-home-logo.png'
 import brandPtcl from '../assets/Brands/pakistan-ptcl-telecommunication-broadband-telephone-ptcl-logo.jpg'
+import regAuthCopyUntitled1 from '../assets/Authorities/Copy-of-Untitled-1-150x150-1.webp'
+import regAuth5 from '../assets/Authorities/5-150x150-1.webp'
+import regAuth3 from '../assets/Authorities/3-150x150-1.webp'
+import regAuth2 from '../assets/Authorities/2-150x150-1.webp'
+import regAuth4 from '../assets/Authorities/4-150x150-1.webp'
+import regAuth1 from '../assets/Authorities/1-150x150-1.webp'
+import regAuthCopyUntitled3 from '../assets/Authorities/Copy-of-Untitled-3-150x150-1.webp'
+import regAuthCopyUntitled2 from '../assets/Authorities/Copy-of-Untitled-2-150x150-1.webp'
 
 const spotlightRows = [
   {
@@ -63,19 +71,16 @@ const spotlightRows = [
   },
 ]
 
-/** Same-origin static files in `frontend/public/registration-logos/` (do not hotlink old /wp-content/ URLs). */
-const REGISTRATION_LOGOS_BASE = '/registration-logos'
-
-/** Order matches original site carousel (8 slides) */
+/** Order matches original site carousel (8 slides); assets in `frontend/src/assets/Authorities/`. */
 const registrationLogos = [
-  { src: `${REGISTRATION_LOGOS_BASE}/Copy-of-Untitled-1-150x150-1.webp`, alt: 'Authority registration' },
-  { src: `${REGISTRATION_LOGOS_BASE}/5-150x150-1.webp`, alt: 'Authority registration' },
-  { src: `${REGISTRATION_LOGOS_BASE}/3-150x150-1.webp`, alt: 'Authority registration' },
-  { src: `${REGISTRATION_LOGOS_BASE}/2-150x150-1.webp`, alt: 'CDA Islamabad' },
-  { src: `${REGISTRATION_LOGOS_BASE}/4-150x150-1.webp`, alt: 'Authority registration' },
-  { src: `${REGISTRATION_LOGOS_BASE}/1-150x150-1.webp`, alt: 'Authority registration' },
-  { src: `${REGISTRATION_LOGOS_BASE}/Copy-of-Untitled-3-150x150-1.webp`, alt: 'Authority registration' },
-  { src: `${REGISTRATION_LOGOS_BASE}/Copy-of-Untitled-2-150x150-1.webp`, alt: 'Authority registration' },
+  { src: regAuthCopyUntitled1, alt: 'Authority registration' },
+  { src: regAuth5, alt: 'Authority registration' },
+  { src: regAuth3, alt: 'Authority registration' },
+  { src: regAuth2, alt: 'CDA Islamabad' },
+  { src: regAuth4, alt: 'Authority registration' },
+  { src: regAuth1, alt: 'Authority registration' },
+  { src: regAuthCopyUntitled3, alt: 'Authority registration' },
+  { src: regAuthCopyUntitled2, alt: 'Authority registration' },
 ]
 
 const topBrandsLogos = [
