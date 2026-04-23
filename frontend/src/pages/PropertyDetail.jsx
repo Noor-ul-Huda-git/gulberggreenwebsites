@@ -12,6 +12,7 @@ import {
   IconPhone,
   IconPin,
   IconRuler,
+  IconWhatsAppBrand,
 } from '../components/properties/PropertyIcons.jsx'
 import { contactInfo } from '../data/siteContent.js'
 import { fetchProperties, fetchProperty } from '../lib/api.js'
@@ -815,21 +816,24 @@ function PropertyDetail() {
                     {formatPkr(property.price)}
                   </p>
 
-                  <div className="mt-4 flex min-w-0 flex-col gap-2 sm:flex-row">
+                  <div className="mt-4 flex min-w-0 flex-col gap-2.5 sm:flex-row sm:gap-3">
                     <a
                       href={whatsappHref(property.title, primaryContactPhone)}
                       target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex min-h-[48px] min-w-0 flex-1 items-center justify-center gap-2 rounded-md border border-[#31C950]/30 bg-white px-4 py-3 text-[14px] font-semibold text-[#31C950] transition hover:bg-[#31C950]/8"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-[48px] min-w-0 flex-1 items-center justify-center gap-2 rounded-lg border border-[#128C7E] bg-[#25D366] px-4 py-3 text-[14px] font-semibold !text-white shadow-sm transition duration-200 hover:-translate-y-px hover:border-[#0f7a6e] hover:bg-[#20BD5A] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] active:scale-[0.98]"
+                      aria-label={`WhatsApp about ${property.title}`}
                     >
+                      <IconWhatsAppBrand className="text-white" size="h-5 w-5" />
                       WhatsApp
                     </a>
                     <button
                       type="button"
                       onClick={() => setShowCallModal(true)}
-                      className="inline-flex min-h-[48px] min-w-0 flex-1 items-center justify-center gap-2 rounded-md bg-[#31C950] px-4 py-3 text-[14px] font-semibold text-white transition hover:bg-[#28b048]"
+                      className="inline-flex min-h-[48px] min-w-0 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200/95 bg-white px-4 py-3 text-[14px] font-semibold !text-slate-800 shadow-sm transition duration-200 hover:-translate-y-px hover:border-[#31C950]/45 hover:bg-[#ecfdf5]/95 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a3553] active:scale-[0.98]"
+                      aria-label="View phone numbers to call"
                     >
-                      <IconPhone />
+                      <IconPhone className="text-[#31C950]" size="h-5 w-5" strokeWidth={1.75} />
                       Call
                     </button>
                   </div>
