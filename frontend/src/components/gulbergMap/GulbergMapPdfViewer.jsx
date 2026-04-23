@@ -40,7 +40,7 @@ function GulbergMapPdfViewer() {
   const onDocumentLoadError = useCallback((err) => {
     const detail = err?.message || err?.toString?.() || 'Unknown error'
     setLoadError(
-      `Could not load the master plan (${detail}). Run Django on port 8000 with the file at backend/static/maps/gulberg-greens.pdf, or set VITE_GULBERG_MAP_PDF_URL.`,
+      `Could not load the master plan (${detail}). Add the file at frontend/public/maps/gulberg-greens.pdf (URL /maps/gulberg-greens.pdf) or set VITE_GULBERG_MAP_PDF_URL.`,
     )
   }, [])
 
@@ -144,8 +144,8 @@ function GulbergMapPdfViewer() {
           <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 px-6 py-16 text-center">
             <p className="max-w-md text-sm font-medium text-rose-700">{loadError}</p>
             <p className="max-w-md text-[13px] text-slate-600">
-              Expected URL: <code className="rounded bg-slate-200 px-1 py-0.5 text-[12px]">/static/maps/gulberg-greens.pdf</code> from Django (and{' '}
-              <code className="rounded bg-slate-200 px-1 py-0.5 text-[12px]">npm run dev</code> proxy), or set{' '}
+              Expected file: <code className="rounded bg-slate-200 px-1 py-0.5 text-[12px]">public/maps/gulberg-greens.pdf</code> →{' '}
+              <code className="rounded bg-slate-200 px-1 py-0.5 text-[12px]">/maps/gulberg-greens.pdf</code>, or set{' '}
               <code className="rounded bg-slate-200 px-1 py-0.5 text-[12px]">VITE_GULBERG_MAP_PDF_URL</code>.
             </p>
           </div>
@@ -153,6 +153,12 @@ function GulbergMapPdfViewer() {
           <div className="flex min-w-0 flex-col items-center gap-6 px-3 py-6 sm:px-6 sm:py-8">
             <Document
               file={pdfUrl}
+              options={{
+                // Prefer HTTP range/streaming when the server sends Accept-Ranges (nginx static does).
+                disableRange: false,
+                disableStream: false,
+                rangeChunkSize: 65536,
+              }}
               onLoadSuccess={onDocumentLoadSuccess}
               onLoadError={onDocumentLoadError}
               onLoadProgress={onLoadProgress}
