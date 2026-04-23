@@ -46,6 +46,8 @@ class PropertySerializer(serializers.ModelSerializer):
             'listing_type_display',
             'purpose',
             'block',
+            'plot_number',
+            'category',
             'area_marlas',
             'price',
             'location',

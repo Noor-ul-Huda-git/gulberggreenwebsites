@@ -973,11 +973,11 @@ function Home() {
                 href={whatsAppContactHref()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-full border-2 border-white/95 bg-white/[0.07] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_8px_32px_-8px_rgba(0,0,0,0.35)] backdrop-blur-md transition-[box-shadow,background-color,border-color,color] duration-200 hover:border-[#31C950] hover:bg-[#31C950] hover:text-white hover:shadow-[0_20px_50px_-12px_rgba(49,201,80,0.55)]"
+                className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-full border-2 border-white/95 bg-white/[0.07] px-8 py-3.5 text-sm font-semibold !text-white visited:!text-white shadow-[0_8px_32px_-8px_rgba(0,0,0,0.35)] backdrop-blur-md transition-[box-shadow,background-color,border-color,color] duration-200 hover:border-[#31C950] hover:bg-[#31C950] hover:!text-white hover:shadow-[0_20px_50px_-12px_rgba(49,201,80,0.55)]"
                 aria-label="Chat on WhatsApp about Gulberg Greens"
               >
-                <IconWhatsAppBrand className="relative z-10 shrink-0 text-current" size="h-5 w-5" />
-                <span className="relative z-10">WhatsApp</span>
+                <IconWhatsAppBrand className="relative z-10 shrink-0 text-white" size="h-5 w-5" />
+                <span className="relative z-10 text-white">WhatsApp</span>
               </a>
             </div>
           </div>

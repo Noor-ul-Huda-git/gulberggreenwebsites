@@ -32,7 +32,7 @@ class PropertyAdmin(admin.ModelAdmin):
         'updated_at',
     )
     list_filter = ('listing_type', 'block', 'is_featured', 'is_published')
-    search_fields = ('title', 'slug', 'location', 'block', 'short_description')
+    search_fields = ('title', 'slug', 'location', 'block', 'plot_number', 'category', 'short_description')
     list_editable = ('is_featured', 'is_published')
     prepopulated_fields = {'slug': ('title',)}
     ordering = ('-is_featured', '-updated_at')
@@ -40,7 +40,7 @@ class PropertyAdmin(admin.ModelAdmin):
     inlines = (PropertyImageInline,)
     fieldsets = (
         (None, {'fields': ('title', 'slug', 'listing_type', 'purpose', 'is_featured', 'is_published')}),
-        ('Location & size', {'fields': ('block', 'area_marlas', 'location')}),
+        ('Location & size', {'fields': ('block', 'plot_number', 'category', 'area_marlas', 'location')}),
         ('Pricing', {'fields': ('price',)}),
         ('Agents', {'fields': ('primary_agent', 'secondary_agent'), 'description': 'Pick saved agents, or use the + beside the field to add a new agent in a popup.'}),
         ('Details', {'fields': ('bedrooms', 'baths', 'short_description', 'description')}),

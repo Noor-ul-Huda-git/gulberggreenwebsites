@@ -147,6 +147,8 @@ class Command(BaseCommand):
                 listing_type=lt,
                 purpose=random.choice(['Sale', 'Rent', '']),
                 block=block,
+                plot_number=str(n + 1),
+                category='Developed plot' if 'plot' in lt else '',
                 area_marlas=marlas,
                 price=price,
                 location=f'Block {block}, Gulberg Greens, Islamabad',

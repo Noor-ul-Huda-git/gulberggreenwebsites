@@ -69,6 +69,23 @@ function formatRelativeTime(value) {
   return `${weeks} week${weeks === 1 ? '' : 's'} ago`
 }
 
+/**
+ * Details grid — prefer `block`; if empty, use the first segment of `location`
+ * (e.g. "Block A, Gulberg Greens, Islamabad").
+ */
+function formatBlockLabel(block, location) {
+  if (block != null && String(block).trim() !== '') {
+    const t = String(block).trim()
+    if (/^block\s/i.test(t)) return t
+    return `Block ${t}`
+  }
+  if (location != null && String(location).trim() !== '') {
+    const first = String(location).split(',')[0].trim()
+    return first || '-'
+  }
+  return '-'
+}
+
 function galleryUrls(p) {
   const urls = []
   if (p.featured_image_url) urls.push(p.featured_image_url)
@@ -550,16 +567,26 @@ function PropertyDetail() {
   const propertyFacts = [
     { key: 'type', label: 'Type', value: property.listing_type_display || property.listing_type || '-' },
     { key: 'purpose', label: 'Purpose', value: property.purpose || '-' },
-    { key: 'price', label: 'Price', value: property.price != null && property.price !== '' ? formatPkr(property.price) : '-' },
-    { key: 'beds', label: 'Bedroom(s)', value: property.bedrooms != null ? `${property.bedrooms}` : '-' },
-    { key: 'baths', label: 'Bath(s)', value: property.baths != null ? `${property.baths}` : '-' },
-    { key: 'added', label: 'Added', value: formatRelativeTime(property.created_at) },
     {
-      key: 'area',
-      label: 'Area',
+      key: 'plot_no',
+      label: 'Plot No',
+      value: property.plot_number != null && String(property.plot_number).trim() !== '' ? String(property.plot_number).trim() : '-',
+    },
+    { key: 'block', label: 'Block', value: formatBlockLabel(property.block, property.location) },
+    {
+      key: 'size',
+      label: 'Size',
       value: property.area_marlas != null ? `${property.area_marlas} Marla${Number(property.area_marlas) === 1 ? '' : 's'}` : '-',
     },
-    { key: 'location', label: 'Location', value: property.location || addressLine || '-' },
+    {
+      key: 'category',
+      label: 'Category',
+      value: property.category != null && String(property.category).trim() !== '' ? String(property.category).trim() : '-',
+    },
+    { key: 'beds', label: 'Bed Room', value: property.bedrooms != null ? `${property.bedrooms}` : '-' },
+    { key: 'baths', label: 'Bath Room', value: property.baths != null ? `${property.baths}` : '-' },
+    { key: 'price', label: 'Price', value: property.price != null && property.price !== '' ? formatPkr(property.price) : '-' },
+    { key: 'added', label: 'Added', value: formatRelativeTime(property.created_at) },
   ]
   const detailTabs = [
     { id: 'overview', label: 'Details' },

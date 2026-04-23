@@ -38,6 +38,16 @@ class Property(models.Model):
     )
     purpose = models.CharField(max_length=80, blank=True)
     block = models.CharField(max_length=100, blank=True)
+    plot_number = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text='Plot number for the details grid (e.g. 123).',
+    )
+    category = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text='Listing category label (e.g. Developed plot, Corner).',
+    )
     area_marlas = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     price = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
     location = models.CharField(max_length=255, blank=True)
