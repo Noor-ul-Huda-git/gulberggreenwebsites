@@ -40,7 +40,7 @@ function GulbergMapPdfViewer() {
   const onDocumentLoadError = useCallback((err) => {
     const detail = err?.message || err?.toString?.() || 'Unknown error'
     setLoadError(
-      `Could not load the master plan (${detail}). Add the file at frontend/public/maps/gulberg-greens.pdf (URL /maps/gulberg-greens.pdf) or set VITE_GULBERG_MAP_PDF_URL.`,
+      `Could not load the master plan (${detail}). Add the file at frontend/public/maps/gulberg-greens-new.pdf (URL /maps/gulberg-greens-new.pdf) or set VITE_GULBERG_MAP_PDF_URL.`,
     )
   }, [])
 
@@ -144,8 +144,8 @@ function GulbergMapPdfViewer() {
           <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 px-6 py-16 text-center">
             <p className="max-w-md text-sm font-medium text-rose-700">{loadError}</p>
             <p className="max-w-md text-[13px] text-slate-600">
-              Expected file: <code className="rounded bg-slate-200 px-1 py-0.5 text-[12px]">public/maps/gulberg-greens.pdf</code> →{' '}
-              <code className="rounded bg-slate-200 px-1 py-0.5 text-[12px]">/maps/gulberg-greens.pdf</code>, or set{' '}
+              Expected file: <code className="rounded bg-slate-200 px-1 py-0.5 text-[12px]">public/maps/gulberg-greens-new.pdf</code> →{' '}
+              <code className="rounded bg-slate-200 px-1 py-0.5 text-[12px]">/maps/gulberg-greens-new.pdf</code>, or set{' '}
               <code className="rounded bg-slate-200 px-1 py-0.5 text-[12px]">VITE_GULBERG_MAP_PDF_URL</code>.
             </p>
           </div>

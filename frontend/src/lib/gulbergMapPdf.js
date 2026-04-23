@@ -7,7 +7,7 @@
  *
  * Override: `VITE_GULBERG_MAP_PDF_URL` (e.g. CDN URL or `/static/maps/...` if nginx aliases static).
  */
-export const GULBERG_MAP_PDF_PATH = '/maps/gulberg-greens.pdf'
+export const GULBERG_MAP_PDF_PATH = '/maps/gulberg-greens-new.pdf'
 
 export function getGulbergMapPdfUrl() {
   const fromEnv = import.meta.env.VITE_GULBERG_MAP_PDF_URL
