@@ -1,14 +1,23 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import LogoMarquee from '../components/home/LogoMarquee.jsx'
+import { IconWhatsAppBrand } from '../components/properties/PropertyIcons.jsx'
 import { fetchProperties } from '../lib/api.js'
-import { homeSocialShowcase, mapDirectionsUrl, mapEmbedUrl } from '../data/siteContent.js'
+import {
+  contactInfo,
+  homeFaqItems,
+  homeSocialShowcase,
+  mapDirectionsUrl,
+  mapEmbedUrl,
+} from '../data/siteContent.js'
 import heroBg from '../assets/nbg.jpg'
 // import lakeBg from '../assets/lake.jpg'
 import lakeBg from '../assets/nlake2.jpg'
 import imgGullbergMall from '../assets/ngullbergmall.jpg'
 import imgHouses from '../assets/nhouses.jpg'
 import imgHelipad from '../assets/nhelipad.jpg'
+import imgPrimeDestination from '../assets/primeDest.jpg'
+import imgNbg2 from '../assets/nbg2.jpg'
 import brandAlliedBank from '../assets/Brands/allied-bank-limited-logo.png'
 import brandBankAlfalah from '../assets/Brands/bank-alfalah-logo.png'
 import brandMcb from '../assets/Brands/mcb-logo.png'
@@ -34,6 +43,16 @@ import regAuth4 from '../assets/Authorities/4-150x150-1.webp'
 import regAuth1 from '../assets/Authorities/1-150x150-1.webp'
 import regAuthCopyUntitled3 from '../assets/Authorities/Copy-of-Untitled-3-150x150-1.webp'
 import regAuthCopyUntitled2 from '../assets/Authorities/Copy-of-Untitled-2-150x150-1.webp'
+
+const DEFAULT_WA_MESSAGE =
+  'Assalam o Alaikum, I would like more information about Gulberg Greens Islamabad.'
+
+function whatsAppContactHref(message = DEFAULT_WA_MESSAGE) {
+  let d = String(contactInfo.phone || '').replace(/\D/g, '')
+  if (d.startsWith('0')) d = d.slice(1)
+  if (!d.startsWith('92') && d.length === 10) d = `92${d}`
+  return `https://wa.me/${d}?text=${encodeURIComponent(message)}`
+}
 
 const spotlightRows = [
   {
@@ -68,6 +87,28 @@ const spotlightRows = [
     imageAlt: 'Helicopter on a circular landing pad under a clear sky',
     imageFirst: false,
     cta: { label: 'Project insights', to: '/gulberg-map' },
+  },
+  {
+    id: 'prime-destination',
+    kicker: 'Investment',
+    title: 'Prime Destination for Plots and Investments in Islamabad',
+    body:
+      'This premium housing community is known for its serene environment, modern infrastructure, and excellent connectivity via Islamabad Expressway. It offers strong prospects for long-term investment while providing a balanced lifestyle with residential, commercial, and recreational facilities. Explore detailed information about residential plots and investment opportunities.',
+    image: imgPrimeDestination,
+    imageAlt: 'Gulberg Greens Islamabad — residential development and expressway connectivity',
+    imageFirst: true,
+    cta: { label: 'View properties', to: '/properties' },
+  },
+  {
+    id: 'why-choose-community',
+    kicker: 'Lifestyle',
+    title: 'Why Choose This Community for Living and Investment?',
+    body:
+      'The project offers a thoughtfully planned lifestyle with residential apartments, ready-to-move houses, spacious farmhouses, and commercial opportunities. Educational institutions, healthcare facilities, retail centers, and recreational spaces make it an ideal choice for families and investors seeking long-term value.',
+    image: imgNbg2,
+    imageAlt: 'Gulberg Greens community — modern housing, greenery, and planned amenities',
+    imageFirst: false,
+    cta: { label: 'Contact us', to: '/contact-us' },
   },
 ]
 
@@ -386,10 +427,28 @@ function CarouselChevron({ direction, className }) {
 function SocialPlatformGlyph({ platform, className = 'h-6 w-6' }) {
   const c = `${className} shrink-0`
   switch (platform) {
-    case 'facebook':
+    case 'youtube':
       return (
         <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-          <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-1.5c-.75 0-1 .5-1 1.25V12h2.75l-.45 3H14v7.95c5.05-.5 9-4.76 9-9.95z" />
+          <path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.3 3.5 12 3.5 12 3.5s-7.3 0-9.4.6A3 3 0 00.5 6.2 40 40 0 000 12a40 40 0 00.6 5.8 3 3 0 002.1 2.1c2.1.6 9.4.6 9.4.6s7.3 0 9.4-.6a3 3 0 002.1-2.1 40 40 0 00.6-5.8 40 40 0 00-.6-5.8zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" />
+        </svg>
+      )
+    case 'pinterest':
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M12 0C5.38 0 0 5.06 0 11.38c0 4.68 2.87 8.8 7.15 10.23-.1-.87-.18-2.21.04-3.16.19-.82 1.25-5.24 1.25-5.24s-.32-.64-.32-1.58c0-1.48.86-2.58 1.93-2.58.9 0 1.34.68 1.34 1.5 0 .92-.59 2.3-.9 3.57-.25 1.07.54 1.95 1.58 1.95 1.9 0 3.36-2 3.36-4.89 0-2.56-1.84-4.35-4.47-4.35-3.05 0-4.84 2.3-4.84 4.67 0 .92.35 1.92.79 2.46.09.1.1.19.08.29-.09.37-.29 1.19-.33 1.35-.05.22-.18.27-.41.16-1.53-.71-2.49-2.94-2.49-4.73 0-3.85 2.78-7.4 8.01-7.4 4.22 0 7.5 3 7.5 7.07 0 4.19-2.64 7.56-6.31 7.56-1.23 0-2.39-.64-2.79-1.4l-.76 2.9c-.28 1.07-1.03 2.41-1.53 3.23 1.15.35 2.37.54 3.64.54 6.62 0 12-5.06 12-11.38C24 5.06 18.62 0 12 0z" />
+        </svg>
+      )
+    case 'medium':
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M13.54 12a6.34 6.34 0 01-6.31 6.39A6.34 6.34 0 010 12a6.34 6.34 0 016.39-6.39A6.34 6.34 0 0113.54 12zm7.42 0c0 3.54-1.77 6.39-3.96 6.39S13.04 15.54 13.04 12s1.77-6.39 3.96-6.39S20.96 8.46 20.96 12zM24 12c0 3.31-.53 6-1.19 6s-1.19-2.69-1.19-6 .53-6 1.19-6S24 8.69 24 12z" />
+        </svg>
+      )
+    case 'quora':
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M12.07 21.5c-1.32 0-2.54-.22-3.65-.65l-1.2 2.1c-.28.5-.85.68-1.35.4a1 1 0 01-.4-1.35l1.08-1.9a9.95 9.95 0 01-3.55-7.6c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10zm0-17a7 7 0 100 14 7 7 0 000-14zm.5 10.5h-1v-1.2c0-.55.45-1 1-1h.5a2 2 0 002-2v-.3a2 2 0 00-2-2h-1a2 2 0 00-2 2v.5h-1.5V11a3.5 3.5 0 013.5-3.5h1A3.5 3.5 0 0116 11v.3a3.48 3.48 0 01-2.43 3.32c.27.35.43.78.43 1.25V15z" />
         </svg>
       )
     case 'instagram':
@@ -402,6 +461,24 @@ function SocialPlatformGlyph({ platform, className = 'h-6 w-6' }) {
       return (
         <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
           <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64v-3.5a6.33 6.33 0 00-1.88.33 6.34 6.34 0 00-4.4 6.04 6.34 6.34 0 106.34-6.34c-.04 0-.09 0-.13.01V8.42a8.92 8.92 0 004.77 1.39v-3.12z" />
+        </svg>
+      )
+    case 'bluesky':
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M12 11.088c-1.496-2.395-4.935-6.154-7.882-7.792C2.293 2.378.5 3.457.5 5.304V18.6c0 2.034 2.265 3.131 3.93 2.015 2.73-1.706 6.51-5.452 7.57-6.948.04-.06.12-.06.16 0 1.06 1.496 4.84 5.242 7.57 6.948 1.665 1.116 3.93.019 3.93-2.015V5.304c0-1.847-1.793-2.926-3.618-2.008-2.947 1.638-6.386 5.397-7.882 7.792z" />
+        </svg>
+      )
+    case 'x':
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M18.24 2.25h3.43l-7.5 8.57L23 21.77h-7.06l-5.52-7.22-6.32 7.22H.75l8.02-9.16L1 2.25h7.25l5.02 6.64 5.97-6.64zM17.08 19.8h1.9L6.92 4.1H4.8l12.28 15.7z" />
+        </svg>
+      )
+    case 'dribbble':
+      return (
+        <svg className={c} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M12 23.5C5.65 23.5.5 18.35.5 12S5.65.5 12 .5 23.5 5.65 23.5 12 18.35 23.5 12 23.5zm8.9-10.2c-.35-.12-3.15-1.04-6.35-.48.13.28.26.57.38.85 2.4-.3 5.5.28 5.97.38-.02-.25-.06-.5-.1-.75zm-1.05-2.45c-.08 0-4.55-.92-7.95.26.22.45.44.9.64 1.35 3.05-1.15 7.15-1.05 7.3-1.05.02-.52.02-1.02-.01-1.56zM12 3.5c-1.95 0-3.75.55-5.3 1.5 0 .02 1.95 3.8 5.65 6.35 2.1-2.8 2.95-5.25 3.15-5.95-1-.55-2.1-.9-3.5-.9zm-6.9 2.1c-1.85 2.1-2.95 4.85-2.95 7.9 0 1.05.15 2.05.4 3 0-.05 3.95-1.25 8.05-.35-1.15-3.25-3.35-6.45-5.5-10.55z" />
         </svg>
       )
     case 'google':
@@ -418,9 +495,33 @@ function SocialPlatformGlyph({ platform, className = 'h-6 w-6' }) {
   }
 }
 
+function FaqToggleIcon({ open, className = '' }) {
+  return (
+    <span
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-[#1a3553] transition-[border-color,background-color,color] duration-200 ${
+        open
+          ? 'border-[#31C950]/50 bg-[#31C950]/12 text-[#1a9e38]'
+          : 'border-slate-200/90 bg-slate-50/90'
+      } ${className}`.trim()}
+      aria-hidden
+    >
+      {open ? (
+        <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M2 8h12" strokeLinecap="round" />
+        </svg>
+      ) : (
+        <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M8 2v12M2 8h12" strokeLinecap="round" />
+        </svg>
+      )}
+    </span>
+  )
+}
+
 function Home() {
   const amenityCarouselRef = useRef(null)
 
+  const [faqOpenIndex, setFaqOpenIndex] = useState(null)
   const [amenitySlide, setAmenitySlide] = useState(0)
   const [amenityItemsVisible, setAmenityItemsVisible] = useState(4)
   const [amenityTx, setAmenityTx] = useState(0)
@@ -431,6 +532,15 @@ function Home() {
 
   const prefersReducedMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  const socialShowcaseRowRef = useRef(null)
+
+  const scrollSocialShowcase = (direction) => {
+    const el = socialShowcaseRowRef.current
+    if (!el) return
+    const step = Math.min(el.clientWidth * 0.88, 320)
+    el.scrollBy({ left: direction * step, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -491,13 +601,39 @@ function Home() {
 
   return (
     <div className="bg-white font-[Poppins,Manrope,system-ui,sans-serif]">
-      <section className="relative min-h-[min(92vh,920px)] overflow-hidden">
+      <section className="relative flex min-h-[min(92vh,920px)] flex-col overflow-hidden">
         <img
           src={heroBg}
           alt=""
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/25 via-transparent to-white/35" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/25 via-transparent to-slate-900/40" />
+        <div
+          className="pointer-events-none absolute inset-y-0 left-0 w-[min(100%,42rem)] bg-gradient-to-r from-slate-950/55 via-slate-950/25 to-transparent"
+          aria-hidden
+        />
+
+        <div className="relative z-10 flex flex-1 flex-col justify-center px-4 py-20 sm:px-6 md:py-24">
+          <div className="container-shell w-full text-left">
+            <div className="max-w-3xl">
+              {/* <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#31C950] drop-shadow-[0_1px_12px_rgba(0,0,0,0.55)] md:text-xs">
+                IBECHS · Islamabad
+              </p> */}
+              <h1 className="mt-4 font-[Poppins,Manrope,system-ui,sans-serif] text-[1.85rem] font-bold leading-[1.15] tracking-[-0.035em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45),0_1px_3px_rgba(0,0,0,0.35)] md:mt-5 md:text-[2.35rem] lg:text-[2.85rem]">
+                Gulberg Greens Islamabad
+              </h1>
+              <p className="mt-5 max-w-2xl text-[15px] leading-[1.75] text-white/90 [text-shadow:0_1px_16px_rgba(0,0,0,0.4)] md:mt-6 md:text-[17px] md:leading-[1.8]">
+                Gulberg Greens Islamabad is a premium real estate development by IBECHS, offering residential plots,
+                luxury farmhouses, and commercial investment opportunities in a secure gated community near Islamabad
+                Expressway.
+              </p>
+              <div
+                className="mt-6 h-px w-16 rounded-full bg-gradient-to-r from-[#31C950] to-transparent md:mt-7"
+                aria-hidden
+              />
+            </div>
+          </div>
+        </div>
 
         {/* <div className="container-shell relative flex min-h-[min(92vh,920px)] flex-col justify-end pb-14 pt-28 md:pb-20 md:pt-36">
           <div className="max-w-3xl">
@@ -833,21 +969,16 @@ function Home() {
               peaceful lake-facing residences for a calm, refined living experience.
             </p>
             <div className="mt-10">
-              <Link
-                to="/properties"
+              <a
+                href={whatsAppContactHref()}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-full border-2 border-white/95 bg-white/[0.07] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_8px_32px_-8px_rgba(0,0,0,0.35)] backdrop-blur-md transition-[box-shadow,background-color,border-color,color] duration-200 hover:border-[#31C950] hover:bg-[#31C950] hover:text-white hover:shadow-[0_20px_50px_-12px_rgba(49,201,80,0.55)]"
+                aria-label="Chat on WhatsApp about Gulberg Greens"
               >
-                <span className="relative z-10">Get Started</span>
-                <svg className="relative z-10 h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden>
-                  <path
-                    d="M3 8h10M9 4l4 4-4 4"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
+                <IconWhatsAppBrand className="relative z-10 shrink-0 text-current" size="h-5 w-5" />
+                <span className="relative z-10">WhatsApp</span>
+              </a>
             </div>
           </div>
         </div>
@@ -998,63 +1129,90 @@ function Home() {
             <p className="mt-3 text-sm text-slate-600 md:text-[15px]">{homeSocialShowcase.subheading}</p>
           </div>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {homeSocialShowcase.items.map((item) => {
-              const externalHref =
-                item.platform === 'google' ? homeSocialShowcase.googleReviewsUrl : item.href
-              const hasEmbed = Boolean(item.embedSrc && item.embedSrc.trim())
+          <div className="mt-10 flex items-center gap-3 sm:gap-4 md:gap-5">
+            <button
+              type="button"
+              onClick={() => scrollSocialShowcase(-1)}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-600 shadow-[0_1px_3px_rgba(15,23,42,0.08)] ring-1 ring-slate-900/[0.04] transition hover:border-[#31C950]/80 hover:bg-[#31C950]/10 hover:text-[#31C950]"
+              aria-label="Scroll social links left"
+            >
+              <CarouselChevron direction="left" className="h-5 w-5" />
+            </button>
 
-              return (
-                <div
-                  key={item.id}
-                  className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-black/[0.03]"
-                >
-                  {hasEmbed ? (
-                    <div className="aspect-video w-full bg-slate-900">
-                      <iframe
-                        src={item.embedSrc}
-                        title={item.title}
-                        className="h-full w-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
+            <div
+              ref={socialShowcaseRowRef}
+              className="min-w-0 flex-1 overflow-x-auto overflow-y-hidden scroll-smooth pb-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/90"
+            >
+              <div className="flex w-max gap-4 pr-1">
+                {homeSocialShowcase.items.map((item) => {
+                  const externalHref =
+                    item.platform === 'google' ? homeSocialShowcase.googleReviewsUrl : item.href
+                  const hasEmbed = Boolean(item.embedSrc && item.embedSrc.trim())
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="w-[200px] shrink-0 sm:w-[220px] md:w-[240px]"
+                    >
+                      <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-black/[0.03]">
+                        {hasEmbed ? (
+                          <div className="aspect-video w-full bg-slate-900">
+                            <iframe
+                              src={item.embedSrc}
+                              title={item.title}
+                              className="h-full w-full border-0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
+                        ) : (
+                          <a
+                            href={externalHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex min-h-[200px] flex-col items-center justify-center gap-3 bg-gradient-to-br from-slate-50 to-slate-100/80 px-4 py-6 text-center transition hover:from-[#31C950]/10 hover:to-sky-50"
+                          >
+                            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#1a3553] shadow-md ring-1 ring-slate-200/80">
+                              <SocialPlatformGlyph platform={item.platform} className="h-7 w-7" />
+                            </span>
+                            <span className="text-sm font-semibold text-[#1a3553]">{item.title}</span>
+                            <span className="text-xs leading-snug text-slate-600">{item.subtitle}</span>
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#31C950]">
+                              Open →
+                            </span>
+                          </a>
+                        )}
+
+                        {hasEmbed ? (
+                          <a
+                            href={externalHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="border-t border-slate-100 px-4 py-3 text-center text-[12px] font-semibold text-[#31C950] hover:bg-slate-50"
+                          >
+                            View on {item.title}
+                          </a>
+                        ) : null}
+                      </div>
                     </div>
-                  ) : (
-                    <a
-                      href={externalHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex aspect-video flex-col items-center justify-center gap-3 bg-gradient-to-br from-slate-50 to-slate-100/80 px-4 text-center transition hover:from-[#31C950]/10 hover:to-sky-50"
-                    >
-                      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#1a3553] shadow-md ring-1 ring-slate-200/80">
-                        <SocialPlatformGlyph platform={item.platform} className="h-7 w-7" />
-                      </span>
-                      <span className="text-sm font-semibold text-[#1a3553]">{item.title}</span>
-                      <span className="text-xs text-slate-600">{item.subtitle}</span>
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#31C950]">
-                        Open →
-                      </span>
-                    </a>
-                  )}
+                  )
+                })}
+              </div>
+            </div>
 
-                  {hasEmbed ? (
-                    <a
-                      href={externalHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="border-t border-slate-100 px-4 py-3 text-center text-[12px] font-semibold text-[#31C950] hover:bg-slate-50"
-                    >
-                      View on {item.title}
-                    </a>
-                  ) : null}
-                </div>
-              )
-            })}
+            <button
+              type="button"
+              onClick={() => scrollSocialShowcase(1)}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-600 shadow-[0_1px_3px_rgba(15,23,42,0.08)] ring-1 ring-slate-900/[0.04] transition hover:border-[#31C950]/80 hover:bg-[#31C950]/10 hover:text-[#31C950]"
+              aria-label="Scroll social links right"
+            >
+              <CarouselChevron direction="right" className="h-5 w-5" />
+            </button>
           </div>
         </div>
       </section>
 
-      <section className="border-t border-slate-200 bg-white py-12 md:py-16" aria-labelledby="home-location-heading">
+      {/* <section className="border-t border-slate-200 bg-white py-12 md:py-16" aria-labelledby="home-location-heading">
         <div className="container-shell">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
             <div>
@@ -1086,6 +1244,78 @@ function Home() {
                 referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
+          </div>
+        </div>
+      </section> */}
+
+      <section
+        className="relative border-t border-slate-200 bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_45%,#f8fafc_100%)] py-16 md:py-24"
+        aria-labelledby="home-faq-heading"
+      >
+        <div
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(49,201,80,0.07),transparent_55%)]"
+          aria-hidden
+        />
+        <div className="container-shell relative px-4 sm:px-6">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#31C950] md:text-xs">
+              Support
+            </p>
+            <h2
+              id="home-faq-heading"
+              className="scroll-mt-28 mt-3 font-[Poppins,Manrope,system-ui,sans-serif] text-2xl font-bold tracking-[-0.03em] text-[#1a3553] md:scroll-mt-32 md:text-3xl"
+            >
+              Frequently asked questions
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 md:text-[15px]">
+              Clear answers on transfers, possession, NOC, visiting the site, and working with our sales partners.
+            </p>
+          </div>
+
+          <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-3 md:mt-14 md:grid-cols-2 md:items-start md:gap-4 lg:gap-5">
+            {homeFaqItems.map((item, index) => {
+              const open = faqOpenIndex === index
+              return (
+                <div
+                  key={item.id}
+                  className="min-w-0 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-16px_rgba(15,23,42,0.12)] ring-1 ring-slate-900/[0.03] transition-[box-shadow,border-color] duration-200 hover:border-slate-300/90 hover:shadow-[0_12px_40px_-20px_rgba(15,23,42,0.1)]"
+                >
+                  <h3 className="m-0 text-[0.9375rem] font-semibold leading-snug md:text-base">
+                    <button
+                      type="button"
+                      id={`faq-trigger-${item.id}`}
+                      aria-expanded={open}
+                      aria-controls={`faq-panel-${item.id}`}
+                      onClick={() => setFaqOpenIndex(open ? null : index)}
+                      className="flex w-full items-start gap-4 px-5 py-4 text-left text-[#1a2332] transition-colors hover:text-[#1a3553] md:gap-5 md:px-6 md:py-5"
+                    >
+                      <FaqToggleIcon open={open} className="mt-0.5" />
+                      <span className="min-w-0 flex-1 pt-0.5">{item.question}</span>
+                    </button>
+                  </h3>
+                  <div
+                    id={`faq-panel-${item.id}`}
+                    role="region"
+                    aria-labelledby={`faq-trigger-${item.id}`}
+                    hidden={!open}
+                    className={
+                      open ? 'border-t border-slate-100 bg-slate-50/40 px-5 pb-5 pt-1 md:px-6 md:pb-6' : ''
+                    }
+                  >
+                    <div className="space-y-3 pl-[3.25rem] md:pl-[3.75rem]">
+                      {item.paragraphs.map((para, pIdx) => (
+                        <p
+                          key={pIdx}
+                          className="text-[14px] leading-[1.75] text-slate-600 md:text-[15px] md:leading-[1.8]"
+                        >
+                          {para}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>

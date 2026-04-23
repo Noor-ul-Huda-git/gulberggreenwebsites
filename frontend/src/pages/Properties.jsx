@@ -1,11 +1,53 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion as Motion } from 'framer-motion'
+import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import PageHero from '../components/layout/PageHero.jsx'
-import { IconBath, IconBed, IconPhone, IconRuler } from '../components/properties/PropertyIcons.jsx'
+import { IconBath, IconBed, IconPhone, IconRuler, IconWhatsAppBrand } from '../components/properties/PropertyIcons.jsx'
 import { LISTING_TYPE_OPTIONS } from '../data/propertyListingTypes.js'
 import { contactInfo } from '../data/siteContent.js'
 import { fetchProperties } from '../lib/api.js'
+
+/** Block labels — must match `Property.block` in admin for filters to return rows (`block__iexact`). */
+const PROPERTY_BLOCK_OPTIONS = [
+  'Executive Block (Greens)',
+  'A (Greens)',
+  'B (Greens)',
+  'C (Greens)',
+  'D (Greens)',
+  'E (Greens)',
+  'AA',
+  'A',
+  'A-Executive',
+  'B',
+  'C',
+  'D',
+  'E',
+  'E-Executive',
+  'F',
+  'F-Executive',
+  'G',
+  'H',
+  'I',
+  'J',
+  'K',
+  'L',
+  'M',
+  'N',
+  'O',
+  'P-1',
+  'P-2',
+  'P-3',
+  'P-4',
+  'Q',
+  'R',
+  'S',
+  'T',
+  'V',
+]
+
+const MARLA_FILTER_OPTIONS = [5, 7, 10, 20, 30, 40]
+const ROOM_COUNT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8]
 
 function formatCompactPkr(value) {
   if (value == null || value === '') return 'Price on request'
@@ -69,6 +111,19 @@ function whatsappHref(title) {
   const text = encodeURIComponent(`Assalam o Alaikum, I am interested in: ${title}`)
   return `https://wa.me/${phone}?text=${text}`
 }
+
+/**
+ * Listing CTAs — list + grid.
+ * Global `a { color: inherit }` (index.css) can beat layered utilities; use `!text-*` so label color is reliable.
+ * Call: outline. WhatsApp: brand green (`!text-white` so it wins over global `a { color: inherit }`).
+ */
+const listingCtaBaseClass =
+  'inline-flex min-h-[2.75rem] flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200/95 bg-white px-4 text-sm font-semibold !text-slate-800 shadow-sm transition duration-200 hover:-translate-y-px hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a3553] active:scale-[0.98] sm:min-h-[2.75rem] sm:flex-none sm:px-5'
+
+const listingCtaWhatsAppClass =
+  'inline-flex min-h-[2.75rem] flex-1 items-center justify-center gap-2 rounded-lg border border-[#128C7E] bg-[#25D366] px-4 text-sm font-semibold !text-white shadow-sm transition duration-200 hover:-translate-y-px hover:border-[#0f7a6e] hover:bg-[#20BD5A] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] active:scale-[0.98] sm:min-h-[2.75rem] sm:flex-none sm:px-5'
+
+const listingCtaCallClass = `${listingCtaBaseClass} hover:border-[#31C950]/50 hover:bg-[#ecfdf5]/90`
 
 function IconListView({ className = '' }) {
   return (
@@ -275,12 +330,20 @@ function Properties() {
                 </label>
                 <label className="flex flex-col gap-2 text-left">
                   <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">Block</span>
-                  <input
+                  <select
                     value={block}
                     onChange={(e) => setBlock(e.target.value)}
-                    placeholder="e.g. A, Executive"
-                    className="rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition placeholder:text-white/45 focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
-                  />
+                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
+                  >
+                    <option value="" className="bg-slate-900 text-white">
+                      Any block
+                    </option>
+                    {PROPERTY_BLOCK_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt} className="bg-slate-900 text-white">
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <label className="flex flex-col gap-2 text-left">
                   <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">Min price</span>
@@ -302,44 +365,74 @@ function Properties() {
                     className="rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition placeholder:text-white/45 focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
                   />
                 </label>
-                <label className="flex flex-col gap-2 text-left">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">Area (marlas)</span>
+                <div className="flex flex-col gap-2 text-left">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">Marlas</span>
                   <div className="flex gap-2">
-                    <input
-                      inputMode="decimal"
+                    <select
                       value={minMarlas}
                       onChange={(e) => setMinMarlas(e.target.value)}
-                      placeholder="Min"
-                      className="w-full rounded-xl border border-white/25 bg-black/20 px-3 py-3 text-[14px] text-white outline-none transition placeholder:text-white/45 focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
-                    />
-                    <input
-                      inputMode="decimal"
+                      aria-label="Min marlas"
+                      className="min-w-0 flex-1 appearance-none rounded-xl border border-white/25 bg-black/20 px-3 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
+                    >
+                      <option value="" className="bg-slate-900 text-white">
+                        Min
+                      </option>
+                      {MARLA_FILTER_OPTIONS.map((n) => (
+                        <option key={n} value={String(n)} className="bg-slate-900 text-white">
+                          {n} Marla{n === 1 ? '' : 's'}
+                        </option>
+                      ))}
+                    </select>
+                    <select
                       value={maxMarlas}
                       onChange={(e) => setMaxMarlas(e.target.value)}
-                      placeholder="Max"
-                      className="w-full rounded-xl border border-white/25 bg-black/20 px-3 py-3 text-[14px] text-white outline-none transition placeholder:text-white/45 focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
-                    />
+                      aria-label="Max marlas"
+                      className="min-w-0 flex-1 appearance-none rounded-xl border border-white/25 bg-black/20 px-3 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
+                    >
+                      <option value="" className="bg-slate-900 text-white">
+                        Max
+                      </option>
+                      {MARLA_FILTER_OPTIONS.map((n) => (
+                        <option key={n} value={String(n)} className="bg-slate-900 text-white">
+                          {n} Marla{n === 1 ? '' : 's'}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                </label>
+                </div>
                 <label className="flex flex-col gap-2 text-left">
                   <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">Bedrooms</span>
-                  <input
-                    inputMode="numeric"
+                  <select
                     value={bedrooms}
                     onChange={(e) => setBedrooms(e.target.value)}
-                    placeholder="Exact match"
-                    className="rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition placeholder:text-white/45 focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
-                  />
+                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
+                  >
+                    <option value="" className="bg-slate-900 text-white">
+                      Any
+                    </option>
+                    {ROOM_COUNT_OPTIONS.map((n) => (
+                      <option key={n} value={String(n)} className="bg-slate-900 text-white">
+                        {n}
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <label className="flex flex-col gap-2 text-left">
                   <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">Baths</span>
-                  <input
-                    inputMode="numeric"
+                  <select
                     value={baths}
                     onChange={(e) => setBaths(e.target.value)}
-                    placeholder="Exact match"
-                    className="rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition placeholder:text-white/45 focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
-                  />
+                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
+                  >
+                    <option value="" className="bg-slate-900 text-white">
+                      Any
+                    </option>
+                    {ROOM_COUNT_OPTIONS.map((n) => (
+                      <option key={n} value={String(n)} className="bg-slate-900 text-white">
+                        {n}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               </div>
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/15 pt-5">
@@ -360,35 +453,42 @@ function Properties() {
       </PageHero>
 
       <div className="border-b border-slate-100 bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_55%)]">
-        <div className="container-shell py-14 md:py-16 lg:py-20">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border border-slate-200 bg-white px-4 py-3 shadow-sm">
-            <p className="text-sm text-slate-600">
-              {loading ? 'Loading listings…' : `${items.length} listing${items.length === 1 ? '' : 's'} found`}
-            </p>
+        <div className="container-shell pb-12 pt-5 sm:pt-6 md:pb-16 md:pt-8 lg:pb-20 lg:pt-10">
+          <div className="mb-6 border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <PageBreadcrumbs
+              variant="onLight"
+              className="border-b border-slate-100 pb-3"
+              items={[{ to: '/', label: 'Home' }, { label: 'Properties' }]}
+            />
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-3">
+              <p className="text-sm text-slate-600">
+                {loading ? 'Loading listings…' : `${items.length} listing${items.length === 1 ? '' : 's'} found`}
+              </p>
 
-            <div className="inline-flex items-center border border-slate-200 bg-white">
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                aria-pressed={viewMode === 'list'}
-                className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium transition ${
-                  viewMode === 'list' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <IconListView className="h-4 w-4" />
-                List
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                aria-pressed={viewMode === 'grid'}
-                className={`inline-flex items-center gap-2 border-l border-slate-200 px-3 py-2 text-sm font-medium transition ${
-                  viewMode === 'grid' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <IconGridView className="h-4 w-4" />
-                Grid
-              </button>
+              <div className="inline-flex items-center border border-slate-200 bg-white">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  aria-pressed={viewMode === 'list'}
+                  className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium transition ${
+                    viewMode === 'list' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <IconListView className="h-4 w-4" />
+                  List
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  aria-pressed={viewMode === 'grid'}
+                  className={`inline-flex items-center gap-2 border-l border-slate-200 px-3 py-2 text-sm font-medium transition ${
+                    viewMode === 'grid' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <IconGridView className="h-4 w-4" />
+                  Grid
+                </button>
+              </div>
             </div>
           </div>
 
@@ -531,20 +631,23 @@ function Properties() {
                             </div>
                           ) : null}
 
-                          <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
+                          <div className="mt-5 flex flex-wrap items-stretch gap-3 border-t border-slate-100 pt-4">
                             <a
                               href={whatsappHref(p.title)}
                               target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center justify-center border border-[#31C950]/35 px-4 py-2 text-[13px] font-semibold text-[#31C950] transition hover:bg-[#31C950]/8"
+                              rel="noopener noreferrer"
+                              className={listingCtaWhatsAppClass}
+                              aria-label={`WhatsApp about ${p.title}`}
                             >
+                              <IconWhatsAppBrand className="text-white" size="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                               WhatsApp
                             </a>
                             <a
                               href={telHref}
-                              className="inline-flex items-center justify-center gap-2 bg-[#31C950] px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[#28b048]"
+                              className={listingCtaCallClass}
+                              aria-label={`Call about ${p.title}`}
                             >
-                              <IconPhone size="h-4 w-4" />
+                              <IconPhone className="shrink-0 text-[#31C950]" size="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={2} />
                               Call
                             </a>
                           </div>
@@ -608,20 +711,23 @@ function Properties() {
                             <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-slate-600">{description}</p>
                           ) : null}
 
-                          <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
+                          <div className="mt-auto flex flex-wrap items-stretch gap-3 pt-4">
                             <a
                               href={whatsappHref(p.title)}
                               target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex min-h-9 items-center justify-center border border-[#31C950]/35 px-3 text-[12px] font-semibold text-[#31C950] transition hover:bg-[#31C950]/8"
+                              rel="noopener noreferrer"
+                              className={listingCtaWhatsAppClass}
+                              aria-label={`WhatsApp about ${p.title}`}
                             >
+                              <IconWhatsAppBrand className="text-white" size="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                               WhatsApp
                             </a>
                             <a
                               href={telHref}
-                              className="inline-flex min-h-9 items-center justify-center gap-1.5 bg-[#31C950] px-3 text-[12px] font-semibold text-white transition hover:bg-[#28b048]"
+                              className={listingCtaCallClass}
+                              aria-label={`Call about ${p.title}`}
                             >
-                              <IconPhone size="h-4 w-4" />
+                              <IconPhone className="shrink-0 text-[#31C950]" size="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={2} />
                               Call
                             </a>
                           </div>

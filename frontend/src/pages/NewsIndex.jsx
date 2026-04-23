@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import PageHero from '../components/layout/PageHero.jsx'
 import { fetchNewsPosts } from '../lib/api.js'
 
@@ -91,9 +92,15 @@ function NewsIndex() {
       </PageHero>
 
       <div className="border-b border-slate-100 bg-white">
-        <div className="container-shell flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">All updates</p>
-          <p className="text-[13px] text-slate-500">
+        <div className="container-shell flex flex-col gap-4 py-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0 space-y-2">
+            <PageBreadcrumbs
+              variant="onLight"
+              items={[{ to: '/', label: 'Home' }, { label: 'Updates' }]}
+            />
+            {/* <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">All updates</p> */}
+          </div>
+          <p className="text-[13px] text-slate-500 sm:text-right">
             {loading
               ? 'Loading…'
               : `${totalCount} ${totalCount === 1 ? 'article' : 'articles'}${totalPages > 1 ? ` · page ${page} of ${totalPages}` : ''}`}

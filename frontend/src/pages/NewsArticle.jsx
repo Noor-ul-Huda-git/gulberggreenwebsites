@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import PageHero from '../components/layout/PageHero.jsx'
 import { fetchNewsPost } from '../lib/api.js'
 
@@ -174,7 +175,14 @@ function NewsArticle() {
     return (
       <div className="bg-white font-[Poppins,Manrope,system-ui,sans-serif]">
         <PageHero overlay="dark">
-          <div className="container-shell flex min-h-[min(44vh,420px)] flex-col items-center justify-center px-4 pb-14 pt-28 md:pt-32">
+          <div className="container-shell px-4 pt-28 md:pt-32">
+            <PageBreadcrumbs
+              variant="onDark"
+              className="mb-8 text-left"
+              items={[{ to: '/', label: 'Home' }, { to: '/news', label: 'Updates' }, { label: 'Article' }]}
+            />
+          </div>
+          <div className="container-shell flex min-h-[min(44vh,420px)] flex-col items-center justify-center px-4 pb-14 pt-0 md:pt-0">
             <div className="w-full max-w-3xl animate-pulse space-y-4 text-center">
               <div className="mx-auto h-4 w-32 rounded bg-white/25" />
               <div className="mx-auto h-10 w-full max-w-2xl rounded bg-white/20" />
@@ -200,7 +208,14 @@ function NewsArticle() {
     return (
       <div className="bg-white font-[Poppins,Manrope,system-ui,sans-serif]">
         <PageHero overlay="dark">
-          <div className="container-shell flex min-h-[min(40vh,400px)] flex-col items-center justify-center px-4 pb-14 pt-28 text-center md:pt-32">
+          <div className="container-shell px-4 pt-28 md:pt-32">
+            <PageBreadcrumbs
+              variant="onDark"
+              className="mb-8 text-left"
+              items={[{ to: '/', label: 'Home' }, { to: '/news', label: 'Updates' }, { label: 'Not found' }]}
+            />
+          </div>
+          <div className="container-shell flex min-h-[min(40vh,400px)] flex-col items-center justify-center px-4 pb-14 pt-0 text-center md:pt-0">
             <h1 className="text-2xl font-bold tracking-[-0.02em] text-white [text-shadow:0_2px_20px_rgba(0,0,0,0.5)]">
               Article not found
             </h1>
@@ -220,7 +235,14 @@ function NewsArticle() {
   return (
     <article className="bg-white font-[Poppins,Manrope,system-ui,sans-serif]">
       <PageHero overlay="dark">
-        <div className="container-shell flex min-h-[min(50vh,580px)] flex-col items-center justify-center px-4 pb-20 pt-28 text-center md:min-h-[min(54vh,640px)] md:pb-24 md:pt-36">
+        <div className="container-shell px-4 pt-28 md:pt-36">
+          <PageBreadcrumbs
+            variant="onDark"
+            className="mb-8 text-left"
+            items={[{ to: '/', label: 'Home' }, { to: '/news', label: 'Updates' }, { label: post.title }]}
+          />
+        </div>
+        <div className="container-shell flex min-h-[min(50vh,580px)] flex-col items-center justify-center px-4 pb-20 pt-0 text-center md:min-h-[min(54vh,640px)] md:pb-24">
           <p className="text-[11px] font-semibold uppercase tracking-[0.42em] text-[#31C950] [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]">
             News
           </p>

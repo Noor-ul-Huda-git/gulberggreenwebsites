@@ -5,38 +5,56 @@ import { appRouteObjects } from '../../appRoutes.jsx'
 import FloatingContactActions from './FloatingContactActions.jsx'
 import Footer from './Footer.jsx'
 import Header from './Header.jsx'
-import WelcomeBanner from './WelcomeBanner.jsx'
-import { markClientNavigationToHome } from './welcomeBannerSession.js'
+// import WelcomeBanner from './WelcomeBanner.jsx'
+// import { markClientNavigationToHome } from './welcomeBannerSession.js'
 
 const MotionPage = motion.div
 
-const isHomePath = (p) => p === '/' || p === ''
+// const isHomePath = (p) => p === '/' || p === ''
 
 function SiteLayout() {
   const location = useLocation()
   const [displayLocation, setDisplayLocation] = useState(location)
   const locationRef = useRef(location)
-  /** Must run before WelcomeBanner mounts: effects run too late for its useState initializer. */
-  const prevPathnameRef = useRef(location.pathname)
+  /** WelcomeBanner (disabled): run before banner mounts for session flag. */
+  // const prevPathnameRef = useRef(location.pathname)
   const pathname = location.pathname
-  const prevPathname = prevPathnameRef.current
-  if (!isHomePath(prevPathname) && isHomePath(pathname)) {
-    markClientNavigationToHome()
-  }
-  prevPathnameRef.current = pathname
+  // const prevPathname = prevPathnameRef.current
+  // if (!isHomePath(prevPathname) && isHomePath(pathname)) {
+  //   markClientNavigationToHome()
+  // }
+  // prevPathnameRef.current = pathname
 
   useEffect(() => {
     locationRef.current = location
   }, [location])
 
-  /** SPA navigations keep scroll position by default — reset to top when the path changes (e.g. listing → property detail). */
+  /**
+   * Reset scroll on route change, except when navigating to an in-page hash (e.g. /#home-faq-heading).
+   * Hash targets are scrolled in a follow-up effect so the destination section can mount first.
+   */
   useLayoutEffect(() => {
+    if (location.hash) return
     const html = document.documentElement
     const prevBehavior = html.style.scrollBehavior
     html.style.scrollBehavior = 'auto'
     window.scrollTo(0, 0)
     html.style.scrollBehavior = prevBehavior
-  }, [pathname])
+  }, [pathname, location.hash])
+
+  useEffect(() => {
+    const id = location.hash.replace(/^#/, '')
+    if (!id) return undefined
+    const scrollToTarget = () => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+    const t = window.setTimeout(scrollToTarget, 80)
+    const t2 = window.setTimeout(scrollToTarget, 400)
+    return () => {
+      window.clearTimeout(t)
+      window.clearTimeout(t2)
+    }
+  }, [pathname, location.hash])
 
   /**
    * `displayLocation` lags real `location` during pathname transitions (exit animation).
@@ -53,12 +71,12 @@ function SiteLayout() {
 
   const element = useRoutes(appRouteObjects, displayLocation)
 
-  const isHomePage = pathname === '/' || pathname === ''
   /** Listing-only: dark hero + full bleed. Detail `/properties/:slug` uses padded main + light header. */
   const isPropertiesListing = pathname === '/properties' || pathname === '/properties/'
   const isContactPage = pathname === '/contact-us' || pathname === '/contact-us/'
   const isPropertyRoute = pathname.startsWith('/properties')
-  const showFloatingContact = !isHomePage && !isPropertyRoute && !isContactPage
+  /** Home + inner pages; omitted on `/properties/*` (listing/detail have inline CTAs) and contact page. */
+  const showFloatingContact = !isPropertyRoute && !isContactPage
   /** Header is overlay. Full-bleed heroes (home, news, map) start at the top; others need main offset so content clears the bar. */
   const mainTopPad =
     pathname !== '/' &&
@@ -102,8 +120,8 @@ function SiteLayout() {
       </main>
       <Footer />
       {showFloatingContact ? <FloatingContactActions /> : null}
-      {/** Full-screen welcome splash only on the home route */}
-      {isHomePage ? <WelcomeBanner /> : null}
+      {/** Full-screen welcome splash only on the home route (temporarily disabled) */}
+      {/* {isHomePage ? <WelcomeBanner /> : null} */}
     </div>
   )
 }

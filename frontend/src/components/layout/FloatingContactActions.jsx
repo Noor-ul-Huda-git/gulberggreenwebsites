@@ -1,4 +1,4 @@
-import { IconPhone, IconWhatsApp } from '../properties/PropertyIcons.jsx'
+import { IconPhone, IconWhatsAppBrand } from '../properties/PropertyIcons.jsx'
 import { contactInfo } from '../../data/siteContent.js'
 
 function normalizeWaNumber(phone) {
@@ -16,14 +16,17 @@ const defaultWaText =
  * Fixed Call + WhatsApp — scrolls with viewport (position: fixed).
  * Mobile: stacked on the right, vertically in the thumb-reach band.
  * Desktop: lower-right corner.
- * Light, outlined FAB style (differs from Property Detail sidebar CTAs).
+ * Call: light FAB. WhatsApp: brand green, filled logomark, stronger shadow (readable on any hero).
  */
 function FloatingContactActions() {
   const tel = contactInfo.phone.replace(/\s/g, '')
   const wa = `https://wa.me/${normalizeWaNumber(contactInfo.phone)}?text=${encodeURIComponent(defaultWaText)}`
 
-  const fabBase =
-    'pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border shadow-[0_4px_24px_-6px_rgba(15,23,42,0.12)] backdrop-blur-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97] sm:h-[3.625rem] sm:w-[3.625rem]'
+  const fabCall =
+    'pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#31C950]/35 bg-white shadow-[0_6px_28px_-8px_rgba(15,23,42,0.2)] backdrop-blur-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97] sm:h-[3.625rem] sm:w-[3.625rem]'
+
+  const fabWa =
+    'pointer-events-auto flex h-[3.75rem] w-[3.75rem] items-center justify-center rounded-full border-2 border-[#128C7E]/90 bg-[#25D366] text-white shadow-[0_10px_36px_-6px_rgba(37,211,102,0.65),0_4px_16px_-4px_rgba(15,23,42,0.2)] transition hover:bg-[#20BD5A] hover:shadow-[0_12px_40px_-6px_rgba(37,211,102,0.72)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] active:scale-[0.97] sm:h-16 sm:w-16'
 
   return (
     <div
@@ -33,23 +36,24 @@ function FloatingContactActions() {
     >
       <a
         href={`tel:${tel}`}
-        className={`${fabBase} group border-slate-200 bg-white shadow-[0_4px_20px_-4px_rgba(15,23,42,0.14)] hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-slate-400`}
+        className={`${fabCall} group hover:border-[#31C950]/55 hover:shadow-[0_8px_32px_-8px_rgba(49,201,80,0.25)] focus-visible:outline-[#31C950]/60`}
         aria-label={`Call ${contactInfo.phone}`}
       >
         <IconPhone
-          className="text-[#94a3b8] transition-colors group-hover:text-[#31C950]"
-          size="h-[23px] w-[23px]"
+          className="text-[#31C950] transition-colors group-hover:text-[#28b048]"
+          size="h-[24px] w-[24px]"
           strokeWidth={2}
         />
       </a>
       <a
+      style={{border: '0px'}}
         href={wa}
         target="_blank"
         rel="noopener noreferrer"
-        className={`${fabBase} border-emerald-200/90 bg-emerald-50/95 text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 focus-visible:outline-emerald-400/80`}
+        className={fabWa}
         aria-label="Chat on WhatsApp"
       >
-        <IconWhatsApp className="text-emerald-600/90" size="h-[22px] w-[22px]" />
+        <IconWhatsAppBrand className="text-white" size="h-[30px] w-[30px] sm:h-8 sm:w-8" />
       </a>
     </div>
   )

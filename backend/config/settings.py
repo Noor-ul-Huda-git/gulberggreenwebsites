@@ -154,6 +154,33 @@ REST_FRAMEWORK = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ---------------------------------------------------------------------------
+# Production security — cookies, HTTPS, framing (when DEBUG is off)
+# ---------------------------------------------------------------------------
+if not DEBUG:
+    if SECRET_KEY in ('change-me-in-production', '', 'changeme'):
+        raise ValueError(
+            'DJANGO_DEBUG is false but DJANGO_SECRET_KEY is missing or still the dev default. '
+            'Set a long random secret in the environment before going live.'
+        )
+
+    # Behind nginx/HTTPS — redirect and mark cookies Secure
+    SECURE_SSL_REDIRECT = os.getenv('DJANGO_SECURE_SSL_REDIRECT', 'true').lower() == 'true'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_REFERRER_POLICY = 'same-origin'
+
+    # Enable HSTS only after HTTPS works end-to-end (seconds > 0 turns it on)
+    _hsts = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', '0'))
+    if _hsts > 0:
+        SECURE_HSTS_SECONDS = _hsts
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('DJANGO_HSTS_INCLUDE_SUBDOMAINS', 'true').lower() == 'true'
+        SECURE_HSTS_PRELOAD = os.getenv('DJANGO_SECURE_HSTS_PRELOAD', 'false').lower() == 'true'
+
 # django-jazzmin — admin UI (must stay after INSTALLED_APPS entry for jazzmin)
 JAZZMIN_SETTINGS = {
     'site_title': 'Gulberg Admin',

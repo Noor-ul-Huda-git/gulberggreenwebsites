@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import logoGulbergGreens from '../../assets/logo-gulberg-greens-0.png'
 
 const homeNavItems = [
   { label: 'Home', to: '/', end: true, hasDropdown: true },
   { label: 'Latest updates', to: '/news', end: false, hasDropdown: true },
   { label: 'Gulberg Map', to: '/gulberg-map', end: false, hasDropdown: true },
+  { label: 'FAQ', to: '/#home-faq-heading', end: false, hasDropdown: true },
   { label: 'Contact Us', to: '/contact-us', end: false, hasDropdown: true },
 ]
 
@@ -56,9 +57,22 @@ function CloseIcon() {
 
 function Header() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const path = location.pathname
+  const hash = location.hash
+
+  const handleNavItemClick = (item) => (e) => {
+    if (item.to === '/#home-faq-heading' && (path === '/' || path === '')) {
+      e.preventDefault()
+      navigate('/#home-faq-heading', { replace: true })
+      window.requestAnimationFrame(() => {
+        document.getElementById('home-faq-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+    setMobileOpen(false)
+  }
   /** Dark hero image + scrim — use light nav (same as /news). */
   const isPropertiesListing = path === '/properties' || path === '/properties/'
   const isDarkHeroNav =
@@ -83,9 +97,12 @@ function Header() {
               key={item.label}
               to={item.to}
               end={item.end}
+              onClick={handleNavItemClick(item)}
               className={({ isActive }) => {
+                const faqActive = item.to === '/#home-faq-heading' && path === '/' && hash === '#home-faq-heading'
                 const active =
                   isActive ||
+                  faqActive ||
                   (item.to === '/news' && path.startsWith('/news')) ||
                   (item.to === '/contact-us' && path.startsWith('/contact-us')) ||
                   (item.to === '/gulberg-map' && path.startsWith('/gulberg-map'))
@@ -153,8 +170,10 @@ function Header() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) => {
+                  const faqActive = item.to === '/#home-faq-heading' && path === '/' && hash === '#home-faq-heading'
                   const active =
                     isActive ||
+                    faqActive ||
                     (item.to === '/news' && path.startsWith('/news')) ||
                     (item.to === '/contact-us' && path.startsWith('/contact-us')) ||
                     (item.to === '/gulberg-map' && path.startsWith('/gulberg-map'))
@@ -164,7 +183,7 @@ function Header() {
                       : 'font-medium text-slate-800'
                   }`
                 }}
-                onClick={() => setMobileOpen(false)}
+                onClick={handleNavItemClick(item)}
               >
                 {item.label}
                 {item.hasDropdown ? <ChevronDown className="h-3 w-3 text-[#31C950]" /> : null}

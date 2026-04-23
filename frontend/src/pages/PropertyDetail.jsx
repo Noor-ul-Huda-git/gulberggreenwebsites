@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { AnimatePresence, motion as Motion } from 'framer-motion'
+import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import {
   IconBath,
   IconBed,
@@ -306,6 +307,14 @@ function DetailSkeleton() {
   return (
     <div className="min-h-screen bg-white">
       <div className="h-9" style={{ backgroundColor: BRAND_NAVY }} />
+      <div className="border-b border-slate-100 bg-white">
+        <div className="container-shell max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+          <PageBreadcrumbs
+            variant="onLight"
+            items={[{ to: '/', label: 'Home' }, { to: '/properties', label: 'Properties' }, { label: 'Loading…' }]}
+          />
+        </div>
+      </div>
       <div className="container-shell max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="h-4 w-48 animate-pulse rounded bg-slate-200" />
         <div className="mt-8 aspect-[21/9] max-h-[min(56vh,520px)] animate-pulse rounded-lg bg-slate-200" />
@@ -473,30 +482,48 @@ function PropertyDetail() {
 
   if (error === 'error') {
     return (
-      <div className="min-h-[50vh] bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_100%)] px-4 py-24 text-center">
-        <p className="text-lg font-semibold text-[#1a3553]">Something went wrong</p>
-        <p className="mt-2 text-sm text-slate-600">Please try again shortly.</p>
-        <Link
-          to="/properties"
-          className="mt-8 inline-flex rounded-lg bg-[#31C950] px-6 py-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_8px_24px_-8px_rgba(49,201,80,0.55)] transition hover:bg-[#28b048]"
-        >
-          Back to properties
-        </Link>
+      <div className="min-h-[50vh] bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_100%)] px-4 py-14 sm:px-6 sm:py-20">
+        <div className="container-shell mx-auto max-w-7xl">
+          <PageBreadcrumbs
+            variant="onLight"
+            className="mb-10"
+            items={[{ to: '/', label: 'Home' }, { to: '/properties', label: 'Properties' }, { label: 'Error' }]}
+          />
+          <div className="text-center">
+            <p className="text-lg font-semibold text-[#1a3553]">Something went wrong</p>
+            <p className="mt-2 text-sm text-slate-600">Please try again shortly.</p>
+            <Link
+              to="/properties"
+              className="mt-8 inline-flex rounded-lg bg-[#31C950] px-6 py-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_8px_24px_-8px_rgba(49,201,80,0.55)] transition hover:bg-[#28b048]"
+            >
+              Back to properties
+            </Link>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (error === 'notfound' || !property) {
     return (
-      <div className="min-h-[50vh] bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_100%)] px-4 py-24 text-center">
-        <p className="text-lg font-semibold text-[#1a3553]">Listing not found</p>
-        <p className="mt-2 text-sm text-slate-600">It may have been removed or unpublished.</p>
-        <Link
-          to="/properties"
-          className="mt-8 inline-flex rounded-lg bg-[#31C950] px-6 py-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_8px_24px_-8px_rgba(49,201,80,0.55)] transition hover:bg-[#28b048]"
-        >
-          Back to properties
-        </Link>
+      <div className="min-h-[50vh] bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_100%)] px-4 py-14 sm:px-6 sm:py-20">
+        <div className="container-shell mx-auto max-w-7xl">
+          <PageBreadcrumbs
+            variant="onLight"
+            className="mb-10"
+            items={[{ to: '/', label: 'Home' }, { to: '/properties', label: 'Properties' }, { label: 'Not found' }]}
+          />
+          <div className="text-center">
+            <p className="text-lg font-semibold text-[#1a3553]">Listing not found</p>
+            <p className="mt-2 text-sm text-slate-600">It may have been removed or unpublished.</p>
+            <Link
+              to="/properties"
+              className="mt-8 inline-flex rounded-lg bg-[#31C950] px-6 py-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_8px_24px_-8px_rgba(49,201,80,0.55)] transition hover:bg-[#28b048]"
+            >
+              Back to properties
+            </Link>
+          </div>
+        </div>
       </div>
     )
   }
@@ -626,6 +653,15 @@ function PropertyDetail() {
 
       <div className="border-b border-slate-200/80 bg-white">
         <div className="container-shell max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+          <PageBreadcrumbs
+            variant="onLight"
+            className="mb-3"
+            items={[
+              { to: '/', label: 'Home' },
+              { to: '/properties', label: 'Properties' },
+              { label: property.title },
+            ]}
+          />
           <div className="min-w-0">
             <h1 className="max-w-5xl break-words text-[1.5rem] font-medium leading-[1.2] tracking-[-0.025em] text-slate-800 md:text-[1.75rem] lg:text-[1.875rem]">
               {property.title}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import {
   contactInfo,
   contactPageIntro,
@@ -78,9 +79,14 @@ function ContactUs() {
           aria-hidden
         />
         <div className="container-shell relative px-4 py-14 sm:px-6 md:py-20 lg:py-24">
+          <PageBreadcrumbs
+            variant="onLight"
+            className="mb-10"
+            items={[{ to: '/', label: 'Home' }, { label: 'Contact Us' }]}
+          />
           <div className="grid gap-14 lg:grid-cols-2 lg:items-start lg:gap-16 xl:gap-20">
             <div className="max-w-xl lg:max-w-none">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#31C950]">Contact</p>
+              {/* <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#31C950]">Contact</p> */}
               <h1
                 id="contact-heading"
                 className="mt-4 font-[Poppins,Manrope,system-ui,sans-serif] text-[1.65rem] font-semibold leading-[1.18] tracking-[-0.03em] text-[#1a3553] sm:text-3xl md:text-[2.05rem] lg:text-[2.15rem]"

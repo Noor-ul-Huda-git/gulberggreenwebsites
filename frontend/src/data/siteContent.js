@@ -38,14 +38,17 @@ export const mapDirectionsUrl =
 export const footerAbout =
   'This is the Sales/Marketing digital platform of Gulberg Greens Islamabad, created to provide verified information about residential, commercial, farmhouse, and apartment projects. All listings, updates, and details shared here are officially sourced and maintained by the management team.'
 
-/** Official social profiles — update hrefs when available. */
+/** Official social profiles — footer & shared “Connect” row. */
 export const socialLinks = [
-  { id: 'facebook', label: 'Facebook', href: 'https://www.facebook.com/' },
-  { id: 'twitter', label: 'Twitter', href: 'https://twitter.com/' },
-  { id: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/' },
-  { id: 'instagram', label: 'Instagram', href: 'https://www.instagram.com/' },
-  { id: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/' },
-  { id: 'pinterest', label: 'Pinterest', href: 'https://www.pinterest.com/' },
+  { id: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/@gulberggreens_ibechs' },
+  { id: 'pinterest', label: 'Pinterest', href: 'https://www.pinterest.com/gulberggreensibechs/' },
+  { id: 'medium', label: 'Medium', href: 'https://medium.com/@gulberggreens.com.pk' },
+  { id: 'quora', label: 'Quora', href: 'https://www.quora.com/profile/Gulberg-Greens-Islamabad-4' },
+  { id: 'tiktok', label: 'TikTok', href: 'https://www.tiktok.com/@gulberggreens.ibechs' },
+  { id: 'bluesky', label: 'Bluesky', href: 'https://bsky.app/profile/gulberggreens.bsky.social' },
+  { id: 'x', label: 'X', href: 'https://x.com/gulberg_ibechs' },
+  { id: 'dribbble', label: 'Dribbble', href: 'https://dribbble.com/gulberg-greens' },
+  { id: 'instagram', label: 'Instagram', href: 'https://www.instagram.com/gulberggreens.ibechs/?hl=en' },
 ]
 
 export const heroStats = [
@@ -53,6 +56,91 @@ export const heroStats = [
   { value: '06', label: 'Primary blocks and sectors' },
   { value: '24/7', label: 'Security and managed access' },
   { value: '01', label: 'Unified platform for project discovery' },
+]
+
+/** Homepage FAQ — question + one or more answer paragraphs. */
+export const homeFaqItems = [
+  {
+    id: 'investment-or-living',
+    question: 'Is this project suitable for investment or living?',
+    paragraphs: [
+      'Yes, it is ideal for both investment and residential living due to its prime location, infrastructure, and facilities.',
+    ],
+  },
+  {
+    id: 'transfer-plot-2026',
+    question: 'How to transfer a plot in 2026?',
+    paragraphs: [
+      'Required documents: Allotment Letter, NDC, CNIC, Possession Letter (if issued), Sale Agreement, Paid Slips, Transfer Fee Slip, Taxes.',
+      'Transfer fee: 5 Marla (30k), 10 Marla (48k), 1 Kanal (70k), etc.',
+      'Tax: Filer 3%, Non-filer 6%.',
+    ],
+  },
+  {
+    id: 'reliable-agent',
+    question: 'How to find a reliable real estate agent?',
+    paragraphs: ['FTN Marketing (Find The Nest) is a trusted partner for Gulberg Greens.'],
+  },
+  {
+    id: 'possession-plot-2026',
+    question: 'How to get possession of a plot in 2026?',
+    paragraphs: [
+      'Clear dues, submit allotment letter, CNIC, photos, and possession fee. Once verified, management issues possession letter.',
+      'Possession fee: 5 Marla (18k), 1 Kanal (48k), 10 Kanal (400k), etc.',
+    ],
+  },
+  {
+    id: 'transfer-farmhouse-2026',
+    question: 'How to transfer a farmhouse in 2026?',
+    paragraphs: [
+      'Documents: Allotment Letter, NDC, CNIC, Paid Slips, Possession Letter, Taxes.',
+      'Transfer fee: 4 Kanal (250k), 5 Kanal (300k), 10 Kanal (700k).',
+      'Tax: Filer 3%, Non-filer 6%.',
+    ],
+  },
+  {
+    id: 'transfer-shops-apartments',
+    question: 'How to transfer shops/apartments in 2026?',
+    paragraphs: [
+      'Currently, Gulberg Green administration does not allow transfer of shops, apartments, or offices.',
+    ],
+  },
+  {
+    id: 'ibechs-full-form',
+    question: 'What is the full form of IBECHS?',
+    paragraphs: ['IBECHS stands for Intelligence Bureau Employees Cooperative Housing Scheme.'],
+  },
+  {
+    id: 'noc-status',
+    question: 'What is the NOC status?',
+    paragraphs: [
+      'The project has received the required approvals, including CDA-issued NOC, ensuring legal compliance. Ref# CDA/PLW-HS (127)/2009/257. MOUs with IESCO and SNGPL were also signed.',
+    ],
+  },
+  {
+    id: 'visit-site',
+    question: 'How can I visit the site?',
+    paragraphs: [
+      'The location is easily accessible via Islamabad Expressway and is within a short drive from major areas of the city.',
+    ],
+  },
+  {
+    id: 'developer',
+    question: 'Who is the developer?',
+    paragraphs: ['The project is developed and managed by IBECHS.'],
+  },
+  {
+    id: 'sectors-sizes',
+    question: 'What are the sectors and sizes of Gulberg Green?',
+    paragraphs: [
+      'Gulberg Greens has six blocks: A-Executive, A, B, C, D, E with luxurious farmhouses of 4, 5, and 10 Kanal.',
+    ],
+  },
+  {
+    id: 'buy-installment',
+    question: 'How to buy residential plots, apartments, or shops on installment?',
+    paragraphs: ['Fill out the provided form, and the sales department will contact you.'],
+  },
 ]
 
 export const amenityCards = [
@@ -141,27 +229,35 @@ export const homeSocialShowcase = {
   googleReviewsUrl: homeGoogleReviewsUrl,
   items: [
     {
-      id: 'social-fb',
-      platform: 'facebook',
-      title: 'Facebook',
-      subtitle: 'Latest videos and community updates.',
-      href: 'https://www.facebook.com/findthenest/',
+      id: 'social-youtube',
+      platform: 'youtube',
+      title: 'YouTube',
+      subtitle: 'Project videos, walkthroughs, and updates.',
+      href: 'https://www.youtube.com/@gulberggreens_ibechs',
       embedSrc: '',
     },
     {
-      id: 'social-ig',
-      platform: 'instagram',
-      title: 'Instagram',
-      subtitle: 'Photos, reels, and project highlights.',
-      href: 'https://www.instagram.com/findthenest/',
-      embedSrc: '',
-    },
-    {
-      id: 'social-tt',
+      id: 'social-tiktok',
       platform: 'tiktok',
       title: 'TikTok',
       subtitle: 'Short tours and on-site clips.',
-      href: 'https://www.tiktok.com/@findthenest',
+      href: 'https://www.tiktok.com/@gulberggreens.ibechs',
+      embedSrc: '',
+    },
+    {
+      id: 'social-x',
+      platform: 'x',
+      title: 'X',
+      subtitle: 'News and quick updates.',
+      href: 'https://x.com/gulberg_ibechs',
+      embedSrc: '',
+    },
+    {
+      id: 'social-instagram',
+      platform: 'instagram',
+      title: 'Instagram',
+      subtitle: 'Photos, reels, and project highlights.',
+      href: 'https://www.instagram.com/gulberggreens.ibechs/?hl=en',
       embedSrc: '',
     },
     {
@@ -170,6 +266,46 @@ export const homeSocialShowcase = {
       title: 'Google reviews',
       subtitle: 'See what clients say about Gulberg Greens.',
       href: homeGoogleReviewsUrl,
+      embedSrc: '',
+    },
+    {
+      id: 'social-pinterest',
+      platform: 'pinterest',
+      title: 'Pinterest',
+      subtitle: 'Visual inspiration and community boards.',
+      href: 'https://www.pinterest.com/gulberggreensibechs/',
+      embedSrc: '',
+    },
+    {
+      id: 'social-medium',
+      platform: 'medium',
+      title: 'Medium',
+      subtitle: 'Long-form stories and insights.',
+      href: 'https://medium.com/@gulberggreens.com.pk',
+      embedSrc: '',
+    },
+    {
+      id: 'social-quora',
+      platform: 'quora',
+      title: 'Quora',
+      subtitle: 'Answers and discussions about the project.',
+      href: 'https://www.quora.com/profile/Gulberg-Greens-Islamabad-4',
+      embedSrc: '',
+    },
+    {
+      id: 'social-bluesky',
+      platform: 'bluesky',
+      title: 'Bluesky',
+      subtitle: 'Official posts and announcements.',
+      href: 'https://bsky.app/profile/gulberggreens.bsky.social',
+      embedSrc: '',
+    },
+    {
+      id: 'social-dribbble',
+      platform: 'dribbble',
+      title: 'Dribbble',
+      subtitle: 'Design and creative work.',
+      href: 'https://dribbble.com/gulberg-greens',
       embedSrc: '',
     },
   ],
