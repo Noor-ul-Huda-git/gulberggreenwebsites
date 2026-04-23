@@ -1,17 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import { getGulbergMapPdfUrl } from '../../lib/gulbergMapPdf.js'
 
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
 
 /**
- * Worker MUST match react-pdf’s bundled `pdfjs-dist` API version. A separate top-level `pdfjs-dist`
- * dependency caused Vite to bundle worker 5.6.x while the API stayed 5.4.x → runtime error.
- * @see https://github.com/wojtekmaj/react-pdf/blob/main/packages/react-pdf/README.md#configure-pdfjs-worker
+ * Same-origin worker via Vite (`?url`). CDN workers (unpkg) are often blocked by CSP and get torn
+ * down on re-render / Strict Mode → "Worker was terminated" and streaming aborts.
  */
-const PDFJS_DIST_VERSION = '5.4.296'
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${PDFJS_DIST_VERSION}/build/pdf.worker.min.mjs`
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
+
+/** Stable reference — inline `options={{…}}` triggers react-pdf reload warnings every render. */
+const pdfDocumentOptions = Object.freeze({
+  disableRange: false,
+  disableStream: false,
+  rangeChunkSize: 65536,
+})
 
 const SCALE_MIN = 0.35
 const SCALE_MAX = 3.5
@@ -22,7 +28,7 @@ function clampScale(n) {
 }
 
 function GulbergMapPdfViewer() {
-  const pdfUrl = getGulbergMapPdfUrl()
+  const pdfUrl = useMemo(() => getGulbergMapPdfUrl(), [])
   const [numPages, setNumPages] = useState(null)
   const [scale, setScale] = useState(1)
   const [loadError, setLoadError] = useState(null)
@@ -153,12 +159,7 @@ function GulbergMapPdfViewer() {
           <div className="flex min-w-0 flex-col items-center gap-6 px-3 py-6 sm:px-6 sm:py-8">
             <Document
               file={pdfUrl}
-              options={{
-                // Prefer HTTP range/streaming when the server sends Accept-Ranges (nginx static does).
-                disableRange: false,
-                disableStream: false,
-                rangeChunkSize: 65536,
-              }}
+              options={pdfDocumentOptions}
               onLoadSuccess={onDocumentLoadSuccess}
               onLoadError={onDocumentLoadError}
               onLoadProgress={onLoadProgress}
