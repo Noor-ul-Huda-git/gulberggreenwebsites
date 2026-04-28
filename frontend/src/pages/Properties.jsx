@@ -514,17 +514,17 @@ function Properties() {
                 ...(blockSeo ? [{ label: blockSeo.breadcrumb }] : []),
               ]}
             />
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-3">
+            <div className="flex flex-col gap-3 pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
               <p className="text-sm text-slate-600">
                 {loading ? 'Loading listings…' : `${items.length} listing${items.length === 1 ? '' : 's'} found`}
               </p>
 
-              <div className="inline-flex items-center border border-slate-200 bg-white">
+              <div className="inline-flex w-full items-center border border-slate-200 bg-white sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
                   aria-pressed={viewMode === 'list'}
-                  className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium transition ${
+                  className={`inline-flex flex-1 items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition sm:flex-none ${
                     viewMode === 'list' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -535,7 +535,7 @@ function Properties() {
                   type="button"
                   onClick={() => setViewMode('grid')}
                   aria-pressed={viewMode === 'grid'}
-                  className={`inline-flex items-center gap-2 border-l border-slate-200 px-3 py-2 text-sm font-medium transition ${
+                  className={`inline-flex flex-1 items-center justify-center gap-2 border-l border-slate-200 px-3 py-2 text-sm font-medium transition sm:flex-none ${
                     viewMode === 'grid' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -616,13 +616,13 @@ function Properties() {
                     variants={listItem}
                     whileHover={{ y: -4, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
                     className={`group relative overflow-hidden border border-slate-200 bg-white transition-shadow duration-300 hover:shadow-[0_16px_34px_rgba(15,23,42,0.08)] ${
-                      viewMode === 'list' ? 'rounded-md shadow-sm' : 'rounded-sm shadow-sm'
+                      viewMode === 'list' ? 'rounded-xl shadow-sm' : 'rounded-lg shadow-sm'
                     }`}
                   >
                     {viewMode === 'list' ? (
                       <div className="grid gap-0 md:grid-cols-[minmax(280px,380px)_1fr]">
                         <Link to={propertyHref} className="relative block overflow-hidden bg-slate-100">
-                          <div className="relative aspect-[16/11] h-full min-h-[250px] md:min-h-full">
+                          <div className="relative aspect-[16/11] h-full min-h-[190px] md:min-h-full">
                             {img ? (
                               <Motion.img
                                 src={img}
@@ -645,25 +645,25 @@ function Properties() {
                           </div>
                         </Link>
 
-                        <div className="flex min-w-0 flex-1 flex-col p-5 md:p-6">
-                          <h2 className="text-[1.38rem] font-semibold leading-snug tracking-tight text-slate-900 transition group-hover:text-[#1a3553]">
+                        <div className="flex min-w-0 flex-1 flex-col p-4 md:p-6">
+                          <h2 className="text-[1.1rem] font-semibold leading-snug tracking-tight text-slate-900 transition group-hover:text-[#1a3553] md:text-[1.38rem]">
                             <Link to={propertyHref} className="line-clamp-2">
                               {p.title}
                             </Link>
                           </h2>
 
-                          <p className="mt-2 text-[1.55rem] font-semibold leading-none tracking-tight text-[#1a3553]">
+                          <p className="mt-2 text-[1.35rem] font-semibold leading-none tracking-tight text-[#1a3553] md:text-[1.55rem]">
                             {formatCompactPkr(p.price)}
                           </p>
 
                           {p.block ? (
-                            <p className="mt-2 text-[15px] text-slate-700">
+                            <p className="mt-1.5 text-[14px] text-slate-700 md:mt-2 md:text-[15px]">
                               Block {p.block}
                             </p>
                           ) : null}
 
                           {sizeMeta.length ? (
-                            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] font-medium text-slate-700">
+                            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] font-medium text-slate-700 md:mt-3 md:gap-x-4 md:gap-y-2 md:text-[13px]">
                               {sizeMeta.map((item) => {
                                 const Icon = item.icon
                                 return (
@@ -677,15 +677,18 @@ function Properties() {
                           ) : null}
 
                           {description ? (
-                            <div className="mt-4">
-                              <p className="line-clamp-2 text-sm leading-relaxed text-slate-600 md:line-clamp-3">{description}</p>
-                              <Link to={propertyHref} className="mt-1 inline-flex text-sm font-semibold text-[#31C950] transition hover:text-[#28b048]">
+                            <div className="mt-3 md:mt-4">
+                              <p className="line-clamp-2 text-[14px] leading-relaxed text-slate-600 md:line-clamp-3 md:text-sm">{description}</p>
+                              <Link
+                                to={propertyHref}
+                                className="mt-1 hidden text-sm font-semibold text-[#31C950] transition hover:text-[#28b048] md:inline-flex"
+                              >
                                 See more
                               </Link>
                             </div>
                           ) : null}
 
-                          <div className="mt-5 flex flex-wrap items-stretch gap-3 border-t border-slate-100 pt-4">
+                          <div className="mt-4 grid grid-cols-2 items-stretch gap-2 border-t border-slate-100 pt-3 md:mt-5 md:gap-3 md:pt-4">
                             <a
                               href={whatsappHref(p.title)}
                               target="_blank"
