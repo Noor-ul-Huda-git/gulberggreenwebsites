@@ -73,7 +73,7 @@ function SiteLayout() {
 
   /** Listing-only: dark hero + full bleed. Detail `/properties/:slug` uses padded main + light header. */
   const isPropertiesListing = pathname === '/properties' || pathname === '/properties/'
-  const isContactPage = pathname === '/contact-us' || pathname === '/contact-us/'
+  const isContactPage = pathname === '/contact' || pathname === '/contact/' || pathname === '/contact-us' || pathname === '/contact-us/'
   const isPropertyRoute = pathname.startsWith('/properties')
   /** Home + inner pages; omitted on `/properties/*` (listing/detail have inline CTAs) and contact page. */
   const showFloatingContact = !isPropertyRoute && !isContactPage
@@ -81,6 +81,7 @@ function SiteLayout() {
   const mainTopPad =
     pathname !== '/' &&
     !pathname.startsWith('/news') &&
+    !pathname.startsWith('/latest-updates') &&
     !pathname.startsWith('/gulberg-map') &&
     !isPropertiesListing
       ? 'pt-[5.75rem] md:pt-24'

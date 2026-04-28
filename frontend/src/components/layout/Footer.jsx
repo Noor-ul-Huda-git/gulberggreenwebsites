@@ -129,11 +129,13 @@ function Footer() {
   /** News, contact, map & properties pages carry their own layout — hide the large map block; keep contact columns + bottom bar. */
   const showLocationMap =
     !location.pathname.startsWith('/news') &&
+    !location.pathname.startsWith('/latest-updates') &&
+    !location.pathname.startsWith('/contact') &&
     !location.pathname.startsWith('/contact-us') &&
     !location.pathname.startsWith('/gulberg-map') &&
     !location.pathname.startsWith('/properties')
   /** Contact page already has full contact content — hide the duplicate about + get-in-touch block. */
-  const showAboutContactBlock = !location.pathname.startsWith('/contact-us')
+  const showAboutContactBlock = !location.pathname.startsWith('/contact') && !location.pathname.startsWith('/contact-us')
 
   return (
     <footer className="border-t border-slate-200/80">
@@ -315,7 +317,7 @@ function Footer() {
               Properties
             </Link>
             <Link
-              to="/news"
+              to="/latest-updates"
               className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
             >
               News
@@ -327,7 +329,7 @@ function Footer() {
               Gulberg Map
             </Link>
             <Link
-              to="/contact-us"
+              to="/contact"
               className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
             >
               Contact Us

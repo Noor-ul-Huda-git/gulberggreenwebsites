@@ -1,53 +1,45 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { motion as Motion } from 'framer-motion'
 import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import PageHero from '../components/layout/PageHero.jsx'
 import { IconBath, IconBed, IconPhone, IconRuler, IconWhatsAppBrand } from '../components/properties/PropertyIcons.jsx'
-import { LISTING_TYPE_OPTIONS } from '../data/propertyListingTypes.js'
+import {
+  LISTING_TYPE_OPTIONS,
+  PROPERTY_BLOCK_OPTIONS,
+  PROPERTY_CATEGORY_SEO,
+  propertyBlockFromSlug,
+  propertyBlockSeo,
+  propertyDetailPath,
+} from '../data/propertyListingTypes.js'
 import { contactInfo } from '../data/siteContent.js'
+import { STATIC_PAGE_SEO } from '../data/staticPageSeo.js'
 import { fetchProperties } from '../lib/api.js'
-
-/** Block labels — must match `Property.block` in admin for filters to return rows (`block__iexact`). */
-const PROPERTY_BLOCK_OPTIONS = [
-  'Executive Block (Greens)',
-  'A (Greens)',
-  'B (Greens)',
-  'C (Greens)',
-  'D (Greens)',
-  'E (Greens)',
-  'AA',
-  'A',
-  'A-Executive',
-  'B',
-  'C',
-  'D',
-  'E',
-  'E-Executive',
-  'F',
-  'F-Executive',
-  'G',
-  'H',
-  'I',
-  'J',
-  'K',
-  'L',
-  'M',
-  'N',
-  'O',
-  'P-1',
-  'P-2',
-  'P-3',
-  'P-4',
-  'Q',
-  'R',
-  'S',
-  'T',
-  'V',
-]
 
 const MARLA_FILTER_OPTIONS = [5, 7, 10, 20, 30, 40]
 const ROOM_COUNT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8]
+
+function upsertMeta(name, content) {
+  let tag = document.head.querySelector(`meta[name="${name}"]`)
+  if (!tag) {
+    tag = document.createElement('meta')
+    tag.setAttribute('name', name)
+    document.head.appendChild(tag)
+  }
+  tag.setAttribute('content', content)
+  return tag
+}
+
+function upsertCanonical(href) {
+  let tag = document.head.querySelector('link[rel="canonical"]')
+  if (!tag) {
+    tag = document.createElement('link')
+    tag.setAttribute('rel', 'canonical')
+    document.head.appendChild(tag)
+  }
+  tag.setAttribute('href', href)
+  return tag
+}
 
 function formatCompactPkr(value) {
   if (value == null || value === '') return 'Price on request'
@@ -76,6 +68,13 @@ function getPlainDescription(property) {
   return source.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
+function formatArea(property) {
+  if (property.area_marlas == null || property.area_marlas === '') return ''
+  const unit = property.area_unit_display || 'Marla'
+  const plural = Number(property.area_marlas) === 1 || unit.endsWith('s') ? '' : 's'
+  return `${property.area_marlas} ${unit}${plural}`
+}
+
 function getSizeMeta(property) {
   const meta = []
 
@@ -83,7 +82,7 @@ function getSizeMeta(property) {
     meta.push({
       key: 'area',
       icon: IconRuler,
-      label: `${property.area_marlas} Marla${Number(property.area_marlas) === 1 ? '' : 's'}`,
+      label: formatArea(property),
     })
   }
 
@@ -167,6 +166,23 @@ const listItem = {
 }
 
 function Properties() {
+  const location = useLocation()
+  const pathParts = useMemo(() => {
+    const normalized = location.pathname.replace(/\/+$/, '')
+    const prefix = '/properties/'
+    return normalized.startsWith(prefix) ? normalized.slice(prefix.length).split('/').filter(Boolean) : []
+  }, [location.pathname])
+  const categorySlug = pathParts[0] || ''
+  const blockSlug = pathParts[1] || ''
+  const forcedBlock = useMemo(() => propertyBlockFromSlug(blockSlug), [blockSlug])
+  const categorySeo = PROPERTY_CATEGORY_SEO[categorySlug] || null
+  const blockSeo = useMemo(
+    () => (forcedBlock ? propertyBlockSeo(categorySlug, forcedBlock) : null),
+    [categorySlug, forcedBlock],
+  )
+  const pageSeo = blockSeo || categorySeo || STATIC_PAGE_SEO.properties
+  const forcedListingType = categorySeo?.listingType || ''
+
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [listingType, setListingType] = useState('')
@@ -187,15 +203,47 @@ function Properties() {
   const [viewMode, setViewMode] = useState('list')
 
   useEffect(() => {
+    const previousTitle = document.title
+    const previousDescription = document.head.querySelector('meta[name="description"]')?.getAttribute('content') || ''
+    const previousCanonical = document.head.querySelector('link[rel="canonical"]')?.getAttribute('href') || ''
+    const previousRobots = document.head.querySelector('meta[name="robots"]')?.getAttribute('content') || ''
+
+    document.title = pageSeo.metaTitle
+    upsertMeta('description', pageSeo.metaDescription)
+    upsertMeta('robots', location.search ? 'noindex, follow' : 'index, follow')
+    upsertCanonical(pageSeo.canonical)
+
+    return () => {
+      document.title = previousTitle
+      if (previousDescription) upsertMeta('description', previousDescription)
+      if (previousCanonical) upsertCanonical(previousCanonical)
+      if (previousRobots) upsertMeta('robots', previousRobots)
+    }
+  }, [location.search, pageSeo])
+
+  useEffect(() => {
+    if (forcedListingType) {
+      setListingType(forcedListingType)
+    }
+  }, [forcedListingType])
+
+  useEffect(() => {
+    setBlock(forcedBlock)
+  }, [forcedBlock])
+
+  useEffect(() => {
     const t = window.setTimeout(() => setSearch(searchInput), 380)
     return () => window.clearTimeout(t)
   }, [searchInput])
 
+  const effectiveListingType = forcedListingType || listingType
+  const effectiveBlock = forcedBlock || block
+
   const filterParams = useMemo(
     () => ({
       search: search || undefined,
-      listing_type: listingType || undefined,
-      block: block.trim() || undefined,
+      listing_type: effectiveListingType || undefined,
+      block: effectiveBlock.trim() || undefined,
       min_price: minPrice || undefined,
       max_price: maxPrice || undefined,
       min_marlas: minMarlas || undefined,
@@ -203,7 +251,7 @@ function Properties() {
       bedrooms: bedrooms || undefined,
       baths: baths || undefined,
     }),
-    [search, listingType, block, minPrice, maxPrice, minMarlas, maxMarlas, bedrooms, baths],
+    [search, effectiveListingType, effectiveBlock, minPrice, maxPrice, minMarlas, maxMarlas, bedrooms, baths],
   )
 
   const filterKey = useMemo(() => JSON.stringify(filterParams), [filterParams])
@@ -260,8 +308,8 @@ function Properties() {
   const resetFilters = () => {
     setSearchInput('')
     setSearch('')
-    setListingType('')
-    setBlock('')
+    setListingType(forcedListingType)
+    setBlock(forcedBlock)
     setMinPrice('')
     setMaxPrice('')
     setMinMarlas('')
@@ -286,11 +334,10 @@ function Properties() {
               Curated inventory
             </p>
             <h1 className="mt-4 font-[Poppins,Manrope,system-ui,sans-serif] text-3xl font-bold leading-[1.1] tracking-[-0.03em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.55)] md:text-4xl lg:text-[2.6rem]">
-              Discover properties across Gulberg Greens
+              {pageSeo.h1}
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-white/88 [text-shadow:0_1px_12px_rgba(0,0,0,0.55)] md:text-base">
-              Search residential and commercial listings, filter by price and size, and explore rich galleries for every
-              property published by our team.
+              {pageSeo.metaDescription}
             </p>
           </Motion.div>
 
@@ -317,9 +364,10 @@ function Properties() {
                     Listing type
                   </span>
                   <select
-                    value={listingType}
+                    value={effectiveListingType}
                     onChange={(e) => setListingType(e.target.value)}
-                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
+                    disabled={Boolean(forcedListingType)}
+                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)] disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {LISTING_TYPE_OPTIONS.map((opt) => (
                       <option key={opt.label} value={opt.value} className="bg-slate-900 text-white">
@@ -331,9 +379,10 @@ function Properties() {
                 <label className="flex flex-col gap-2 text-left">
                   <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">Block</span>
                   <select
-                    value={block}
+                    value={effectiveBlock}
                     onChange={(e) => setBlock(e.target.value)}
-                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
+                    disabled={Boolean(forcedBlock)}
+                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)] disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     <option value="" className="bg-slate-900 text-white">
                       Any block
@@ -458,7 +507,12 @@ function Properties() {
             <PageBreadcrumbs
               variant="onLight"
               className="border-b border-slate-100 pb-3"
-              items={[{ to: '/', label: 'Home' }, { label: 'Properties' }]}
+              items={[
+                { to: '/', label: 'Home' },
+                categorySeo ? { to: '/properties', label: 'Properties' } : { label: 'Properties' },
+                ...(categorySeo ? [{ to: blockSeo ? `/properties/${categorySlug}` : undefined, label: categorySeo.breadcrumb }] : []),
+                ...(blockSeo ? [{ label: blockSeo.breadcrumb }] : []),
+              ]}
             />
             <div className="flex flex-wrap items-center justify-between gap-4 pt-3">
               <p className="text-sm text-slate-600">
@@ -553,7 +607,7 @@ function Properties() {
                 const img = cardImageUrl(p)
                 const sizeMeta = getSizeMeta(p)
                 const description = getPlainDescription(p)
-                const propertyHref = `/properties/${p.slug}`
+                const propertyHref = propertyDetailPath(p)
                 const telHref = `tel:${contactInfo.phone.replace(/[^\d+]/g, '')}`
 
                 return (

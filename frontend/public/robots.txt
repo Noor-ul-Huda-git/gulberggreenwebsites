@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /properties/*?sort=
+Disallow: /properties/*?page=
+Disallow: /properties/*?filter=
+
+Sitemap: https://gulberggreens.com.pk/sitemap.xml

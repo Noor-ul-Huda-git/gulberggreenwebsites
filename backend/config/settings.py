@@ -25,7 +25,10 @@ CSRF_TRUSTED_ORIGINS = [
     o.strip()
     for o in os.getenv(
         'DJANGO_CSRF_TRUSTED_ORIGINS',
-        'http://localhost:5173,http://127.0.0.1:5173,http://127.0.0.1:8000,'
+        'http://localhost:5173,http://127.0.0.1:5173,'
+        'http://localhost:5174,http://127.0.0.1:5174,'
+        'http://localhost:5175,http://127.0.0.1:5175,'
+        'http://127.0.0.1:8000,'
         'http://gulberggreens.com.pk,http://www.gulberggreens.com.pk,'
         'https://gulberggreens.com.pk,https://www.gulberggreens.com.pk',
     ).split(',')
@@ -138,6 +141,8 @@ CORS_ALLOWED_ORIGINS = [
     for o in os.getenv(
         'CORS_ALLOWED_ORIGINS',
         'http://localhost:5173,http://127.0.0.1:5173,'
+        'http://localhost:5174,http://127.0.0.1:5174,'
+        'http://localhost:5175,http://127.0.0.1:5175,'
         'http://gulberggreens.com.pk,http://www.gulberggreens.com.pk,'
         'https://gulberggreens.com.pk,https://www.gulberggreens.com.pk',
     ).split(',')

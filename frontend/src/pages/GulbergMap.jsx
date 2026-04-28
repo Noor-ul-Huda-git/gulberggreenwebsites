@@ -1,10 +1,15 @@
 import { lazy, Suspense } from 'react'
 import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import PageHero from '../components/layout/PageHero.jsx'
+import { STATIC_PAGE_SEO } from '../data/staticPageSeo.js'
+import { usePageSeo } from '../lib/usePageSeo.js'
 
 const GulbergMapPdfViewer = lazy(() => import('../components/gulbergMap/GulbergMapPdfViewer.jsx'))
 
 function GulbergMap() {
+  const seo = STATIC_PAGE_SEO.gulbergMap
+  usePageSeo(seo)
+
   return (
     <div className="bg-white font-[Poppins,Manrope,system-ui,sans-serif] text-slate-800">
       <PageHero overlay="dark">
@@ -13,10 +18,10 @@ function GulbergMap() {
             Location &amp; master plan
           </p>
           <h1 className="mt-4 max-w-3xl font-[Poppins,Manrope,system-ui,sans-serif] text-3xl font-bold leading-[1.12] tracking-[-0.03em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.55)] md:text-4xl lg:text-[2.5rem]">
-            Gulberg Map
+            {seo.h1}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-white/88 [text-shadow:0_1px_12px_rgba(0,0,0,0.55)] md:text-base">
-            Explore the official master plan below — pan and zoom to study blocks, roads, and precincts in full detail.
+            {seo.metaDescription}
           </p>
         </div>
       </PageHero>

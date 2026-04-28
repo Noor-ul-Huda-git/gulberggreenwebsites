@@ -4,10 +4,10 @@ import logoGulbergGreens from '../../assets/logo-gulberg-greens-0.png'
 
 const homeNavItems = [
   { label: 'Home', to: '/', end: true, hasDropdown: true },
-  { label: 'Latest updates', to: '/news', end: false, hasDropdown: true },
+  { label: 'Latest updates', to: '/latest-updates', end: false, hasDropdown: true },
   { label: 'Gulberg Map', to: '/gulberg-map', end: false, hasDropdown: true },
   { label: 'FAQ', to: '/#home-faq-heading', end: false, hasDropdown: true },
-  { label: 'Contact Us', to: '/contact-us', end: false, hasDropdown: true },
+  { label: 'Contact Us', to: '/contact', end: false, hasDropdown: true },
 ]
 
 function ChevronDown({ className }) {
@@ -73,10 +73,10 @@ function Header() {
     }
     setMobileOpen(false)
   }
-  /** Dark hero image + scrim — use light nav (same as /news). */
+  /** Dark hero image + scrim — use light nav (same as updates). */
   const isPropertiesListing = path === '/properties' || path === '/properties/'
   const isDarkHeroNav =
-    path.startsWith('/news') || path.startsWith('/gulberg-map') || isPropertiesListing
+    path.startsWith('/news') || path.startsWith('/latest-updates') || path.startsWith('/gulberg-map') || isPropertiesListing
 
   return (
     <header className="absolute inset-x-0 top-0 z-50 bg-transparent">
@@ -103,8 +103,8 @@ function Header() {
                 const active =
                   isActive ||
                   faqActive ||
-                  (item.to === '/news' && path.startsWith('/news')) ||
-                  (item.to === '/contact-us' && path.startsWith('/contact-us')) ||
+                  (item.to === '/latest-updates' && (path.startsWith('/latest-updates') || path.startsWith('/news'))) ||
+                  (item.to === '/contact' && (path.startsWith('/contact') || path.startsWith('/contact-us'))) ||
                   (item.to === '/gulberg-map' && path.startsWith('/gulberg-map'))
                 const navBase =
                   'inline-flex origin-center items-center rounded-md px-1.5 py-1 font-[Poppins,Manrope,system-ui,sans-serif] text-[15px] leading-none tracking-[0.02em] transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform hover:scale-[1.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
@@ -174,8 +174,8 @@ function Header() {
                   const active =
                     isActive ||
                     faqActive ||
-                    (item.to === '/news' && path.startsWith('/news')) ||
-                    (item.to === '/contact-us' && path.startsWith('/contact-us')) ||
+                    (item.to === '/latest-updates' && (path.startsWith('/latest-updates') || path.startsWith('/news'))) ||
+                    (item.to === '/contact' && (path.startsWith('/contact') || path.startsWith('/contact-us'))) ||
                     (item.to === '/gulberg-map' && path.startsWith('/gulberg-map'))
                   return `flex items-center justify-between border-b border-slate-100 py-2.5 font-[Poppins,Manrope,system-ui,sans-serif] text-[16px] tracking-[0.02em] transition-colors ${
                     active

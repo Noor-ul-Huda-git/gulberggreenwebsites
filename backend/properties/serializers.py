@@ -28,6 +28,10 @@ class PropertyImageSerializer(serializers.ModelSerializer):
 class PropertySerializer(serializers.ModelSerializer):
     featured_image_url = serializers.SerializerMethodField()
     listing_type_display = serializers.CharField(source='get_listing_type_display', read_only=True)
+    area_unit_display = serializers.CharField(source='get_area_unit_display', read_only=True)
+    category_slug = serializers.CharField(read_only=True)
+    block_slug = serializers.CharField(read_only=True)
+    canonical_url = serializers.CharField(read_only=True)
     images = PropertyImageSerializer(many=True, read_only=True)
     primary_agent = AgentBriefSerializer(read_only=True)
     secondary_agent = AgentBriefSerializer(read_only=True)
@@ -44,15 +48,23 @@ class PropertySerializer(serializers.ModelSerializer):
             'slug',
             'listing_type',
             'listing_type_display',
+            'category_slug',
             'purpose',
             'block',
+            'block_slug',
             'plot_number',
             'category',
             'area_marlas',
+            'area_unit',
+            'area_unit_display',
             'price',
             'location',
             'short_description',
             'description',
+            'meta_title',
+            'meta_description',
+            'seo_h1',
+            'canonical_url',
             'primary_agent',
             'secondary_agent',
             'agent_name',

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
+import { STATIC_PAGE_SEO } from '../data/staticPageSeo.js'
 import {
   contactInfo,
   contactPageIntro,
   mapDirectionsUrl,
   mapEmbedUrl,
 } from '../data/siteContent.js'
+import { usePageSeo } from '../lib/usePageSeo.js'
 
 const serviceOptions = [
   { value: '', label: 'Select a service' },
@@ -47,6 +49,9 @@ function IconClock({ className }) {
 }
 
 function ContactUs() {
+  const seo = STATIC_PAGE_SEO.contact
+  usePageSeo(seo)
+
   const [status, setStatus] = useState(null)
   const [form, setForm] = useState({
     name: '',
@@ -91,7 +96,7 @@ function ContactUs() {
                 id="contact-heading"
                 className="mt-4 font-[Poppins,Manrope,system-ui,sans-serif] text-[1.65rem] font-semibold leading-[1.18] tracking-[-0.03em] text-[#1a3553] sm:text-3xl md:text-[2.05rem] lg:text-[2.15rem]"
               >
-                Contact Us — Book a Visit or Request Property Details
+                {seo.h1}
               </h1>
               <p className="mt-6 text-[15px] leading-[1.75] text-slate-600 md:text-[17px] md:leading-[1.78]">
                 {contactPageIntro}

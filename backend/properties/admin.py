@@ -23,6 +23,7 @@ class PropertyAdmin(admin.ModelAdmin):
         'listing_type',
         'block',
         'area_marlas',
+        'area_unit',
         'price',
         'primary_agent',
         'bedrooms',
@@ -32,7 +33,7 @@ class PropertyAdmin(admin.ModelAdmin):
         'updated_at',
     )
     list_filter = ('listing_type', 'block', 'is_featured', 'is_published')
-    search_fields = ('title', 'slug', 'location', 'block', 'plot_number', 'category', 'short_description')
+    search_fields = ('title', 'slug', 'location', 'block', 'plot_number', 'category', 'short_description', 'meta_title', 'seo_h1')
     list_editable = ('is_featured', 'is_published')
     prepopulated_fields = {'slug': ('title',)}
     ordering = ('-is_featured', '-updated_at')
@@ -40,12 +41,16 @@ class PropertyAdmin(admin.ModelAdmin):
     inlines = (PropertyImageInline,)
     fieldsets = (
         (None, {'fields': ('title', 'slug', 'listing_type', 'purpose', 'is_featured', 'is_published')}),
-        ('Location & size', {'fields': ('block', 'plot_number', 'category', 'area_marlas', 'location')}),
+        ('Location & size', {'fields': ('block', 'plot_number', 'category', ('area_marlas', 'area_unit'), 'location')}),
         ('Pricing', {'fields': ('price',)}),
         ('Agents', {'fields': ('primary_agent', 'secondary_agent'), 'description': 'Pick saved agents, or use the + beside the field to add a new agent in a popup.'}),
         ('Details', {'fields': ('bedrooms', 'baths', 'short_description', 'description')}),
+        ('SEO', {'fields': ('meta_title', 'meta_description', 'seo_h1'), 'description': 'Leave these blank to auto-generate SEO copy from listing details.'}),
         ('Cover image', {'fields': ('featured_image',)}),
     )
+
+    class Media:
+        js = ('admin/js/property_price_preview.js',)
 
 
 @admin.register(PropertyImage)

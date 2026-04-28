@@ -179,7 +179,7 @@ function NewsArticle() {
             <PageBreadcrumbs
               variant="onDark"
               className="mb-8 text-left"
-              items={[{ to: '/', label: 'Home' }, { to: '/news', label: 'Updates' }, { label: 'Article' }]}
+              items={[{ to: '/', label: 'Home' }, { to: '/latest-updates', label: 'Updates' }, { label: 'Article' }]}
             />
           </div>
           <div className="container-shell flex min-h-[min(44vh,420px)] flex-col items-center justify-center px-4 pb-14 pt-0 md:pt-0">
@@ -212,7 +212,7 @@ function NewsArticle() {
             <PageBreadcrumbs
               variant="onDark"
               className="mb-8 text-left"
-              items={[{ to: '/', label: 'Home' }, { to: '/news', label: 'Updates' }, { label: 'Not found' }]}
+              items={[{ to: '/', label: 'Home' }, { to: '/latest-updates', label: 'Updates' }, { label: 'Not found' }]}
             />
           </div>
           <div className="container-shell flex min-h-[min(40vh,400px)] flex-col items-center justify-center px-4 pb-14 pt-0 text-center md:pt-0">
@@ -221,7 +221,7 @@ function NewsArticle() {
             </h1>
             <p className="mt-3 max-w-md text-white/85">This update may have been removed or the link is incorrect.</p>
             <Link
-              to="/news"
+              to="/latest-updates"
               className="mt-8 inline-flex font-semibold text-[#31C950] [text-shadow:0_1px_8px_rgba(0,0,0,0.6)] hover:underline"
             >
               ← Back to news
@@ -239,7 +239,7 @@ function NewsArticle() {
           <PageBreadcrumbs
             variant="onDark"
             className="mb-8 text-left"
-            items={[{ to: '/', label: 'Home' }, { to: '/news', label: 'Updates' }, { label: post.title }]}
+            items={[{ to: '/', label: 'Home' }, { to: '/latest-updates', label: 'Updates' }, { label: post.title }]}
           />
         </div>
         <div className="container-shell flex min-h-[min(50vh,580px)] flex-col items-center justify-center px-4 pb-20 pt-0 text-center md:min-h-[min(54vh,640px)] md:pb-24">
@@ -264,7 +264,7 @@ function NewsArticle() {
               Home
             </Link>
             <span className="mx-2 text-slate-300">/</span>
-            <Link to="/news" className="transition hover:text-[#31C950]">
+            <Link to="/latest-updates" className="transition hover:text-[#31C950]">
               News
             </Link>
             <span className="mx-2 text-slate-300">/</span>
@@ -287,7 +287,7 @@ function NewsArticle() {
 
           <div className="mx-auto mt-16 max-w-[42rem] border-t border-slate-200 pt-10">
             <Link
-              to="/news"
+              to="/latest-updates"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-[14px] font-semibold text-[#1a3553] shadow-sm transition hover:border-[#31C950]/50 hover:bg-[#31C950]/[0.06] hover:text-[#31C950]"
             >
               <span aria-hidden className="text-lg leading-none">

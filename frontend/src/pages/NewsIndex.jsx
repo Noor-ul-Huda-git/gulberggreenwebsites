@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import PageHero from '../components/layout/PageHero.jsx'
+import { STATIC_PAGE_SEO } from '../data/staticPageSeo.js'
 import { fetchNewsPosts } from '../lib/api.js'
+import { usePageSeo } from '../lib/usePageSeo.js'
 
 function formatNewsDate(iso) {
   try {
@@ -17,6 +19,9 @@ function formatNewsDate(iso) {
 }
 
 function NewsIndex() {
+  const seo = STATIC_PAGE_SEO.latestUpdates
+  usePageSeo(seo)
+
   const [searchParams, setSearchParams] = useSearchParams()
   const page = useMemo(() => {
     const raw = searchParams.get('page')
@@ -82,11 +87,10 @@ function NewsIndex() {
             News &amp; insights
           </p>
           <h1 className="mt-4 max-w-4xl font-[Poppins,Manrope,system-ui,sans-serif] text-3xl font-bold leading-[1.12] tracking-[-0.03em] text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.55)] md:text-4xl lg:text-[2.65rem]">
-            Latest updates from Gulberg Greens
+            {seo.h1}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-white/88 [text-shadow:0_1px_12px_rgba(0,0,0,0.55)] md:text-base">
-            Official announcements, market perspectives, and development milestones — published by the sales &amp; marketing
-            team.
+            {seo.metaDescription}
           </p>
         </div>
       </PageHero>
@@ -155,7 +159,7 @@ function NewsIndex() {
                   >
                     {post.primary_image ? (
                       <Link
-                        to={`/news/${post.slug}`}
+                        to={`/latest-updates/${post.slug}`}
                         className="relative block aspect-[16/10] overflow-hidden bg-slate-100"
                         tabIndex={-1}
                         aria-hidden
@@ -172,7 +176,7 @@ function NewsIndex() {
                     )}
                     <div className="flex flex-1 flex-col p-6 md:p-7">
                       <h2 className="font-[Poppins,Manrope,system-ui,sans-serif] text-lg font-semibold leading-snug tracking-[-0.02em] text-[#1a2332] md:text-xl">
-                        <Link to={`/news/${post.slug}`} className="transition hover:text-[#31C950]">
+                        <Link to={`/latest-updates/${post.slug}`} className="transition hover:text-[#31C950]">
                           {post.title}
                         </Link>
                       </h2>
@@ -181,7 +185,7 @@ function NewsIndex() {
                         {formatNewsDate(post.published_at).toUpperCase()}
                       </p>
                       <Link
-                        to={`/news/${post.slug}`}
+                        to={`/latest-updates/${post.slug}`}
                         className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[#31C950] transition hover:gap-2"
                       >
                         Read more

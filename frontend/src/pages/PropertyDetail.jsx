@@ -14,6 +14,8 @@ import {
   IconRuler,
   IconWhatsAppBrand,
 } from '../components/properties/PropertyIcons.jsx'
+import PropertySchema from '../components/seo/PropertySchema.jsx'
+import { propertyDetailPath } from '../data/propertyListingTypes.js'
 import { contactInfo } from '../data/siteContent.js'
 import { fetchProperties, fetchProperty } from '../lib/api.js'
 
@@ -118,6 +120,45 @@ function formatReference(property) {
   return 'PROPERTY'
 }
 
+function formatArea(property) {
+  if (!property || property.area_marlas == null || property.area_marlas === '') return '-'
+  const unit = property.area_unit_display || 'Marla'
+  const plural = Number(property.area_marlas) === 1 || unit.endsWith('s') ? '' : 's'
+  return `${property.area_marlas} ${unit}${plural}`
+}
+
+function stripHtml(value) {
+  return String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function truncateMeta(value, max = 155) {
+  const text = stripHtml(value)
+  if (text.length <= max) return text
+  return `${text.slice(0, max - 1).trim()}…`
+}
+
+function upsertMeta(name, content) {
+  let tag = document.head.querySelector(`meta[name="${name}"]`)
+  if (!tag) {
+    tag = document.createElement('meta')
+    tag.setAttribute('name', name)
+    document.head.appendChild(tag)
+  }
+  tag.setAttribute('content', content)
+  return tag
+}
+
+function upsertCanonical(href) {
+  let tag = document.head.querySelector('link[rel="canonical"]')
+  if (!tag) {
+    tag = document.createElement('link')
+    tag.setAttribute('rel', 'canonical')
+    document.head.appendChild(tag)
+  }
+  tag.setAttribute('href', href)
+  return tag
+}
+
 function buildInquiryMailto(property, form) {
   const subject = `Inquiry: ${property.title}`
   const body = [
@@ -212,7 +253,7 @@ function SimilarListingsCarousel({ title, items }) {
               key={`${p.id}-${p.slug}`}
               className="w-[min(100%,280px)] shrink-0 overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm"
             >
-              <Link to={`/properties/${p.slug}`} className="relative block">
+              <Link to={propertyDetailPath(p)} className="relative block">
                 <div className="relative aspect-[4/3] bg-slate-100">
                   {img ? (
                     <img src={img} alt="" className="h-full w-full object-cover" />
@@ -267,7 +308,7 @@ function SimilarListingsCarousel({ title, items }) {
                     <span className="text-slate-500" aria-hidden>
                       ⇅
                     </span>
-                    {p.area_marlas} Marla{Number(p.area_marlas) === 1 ? '' : 's'}
+                    {formatArea(p)}
                   </p>
                 ) : null}
 
@@ -397,6 +438,33 @@ function PropertyDetail() {
   }, [slug])
 
   const images = useMemo(() => (property ? galleryUrls(property) : []), [property])
+
+  useEffect(() => {
+    if (!property) return undefined
+
+    const previousTitle = document.title
+    const previousDescription = document.head.querySelector('meta[name="description"]')?.getAttribute('content') || ''
+    const previousCanonical = document.head.querySelector('link[rel="canonical"]')?.getAttribute('href') || ''
+
+    const title = property.meta_title || `${property.title} | Gulberg Greens Islamabad`
+    const description =
+      property.meta_description ||
+      truncateMeta(property.short_description || property.description) ||
+      truncateMeta(`${property.title} in ${property.location || property.block || 'Gulberg Greens Islamabad'}.`)
+    const canonical =
+      property.canonical_url ||
+      `https://gulberggreens.com.pk${propertyDetailPath(property).replace(/\/?$/, '/')}`
+
+    document.title = title
+    upsertMeta('description', description)
+    upsertCanonical(canonical)
+
+    return () => {
+      document.title = previousTitle
+      if (previousDescription) upsertMeta('description', previousDescription)
+      if (previousCanonical) upsertCanonical(previousCanonical)
+    }
+  }, [property])
 
   useEffect(() => {
     setActiveIndex(0)
@@ -577,7 +645,7 @@ function PropertyDetail() {
     {
       key: 'size',
       label: 'Size',
-      value: property.area_marlas != null ? `${property.area_marlas} Marla${Number(property.area_marlas) === 1 ? '' : 's'}` : '-',
+      value: formatArea(property),
     },
     {
       key: 'category',
@@ -612,6 +680,7 @@ function PropertyDetail() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_55%)] font-[Poppins,Manrope,system-ui,sans-serif] text-slate-900">
+      <PropertySchema property={property} />
       {showCallModal ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="property-call-modal-title">
           <button
@@ -692,7 +761,7 @@ function PropertyDetail() {
           />
           <div className="min-w-0">
             <h1 className="max-w-5xl break-words text-[1.5rem] font-medium leading-[1.2] tracking-[-0.025em] text-slate-800 md:text-[1.75rem] lg:text-[1.875rem]">
-              {property.title}
+              {property.seo_h1 || property.h1 || property.title}
             </h1>
             <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[12px] text-slate-500 md:text-[13px]">
               <IconPin className="text-[#31C950]" size="h-3.5 w-3.5" aria-hidden />
@@ -778,7 +847,7 @@ function PropertyDetail() {
                   <IconRuler className="text-[#1a3553]" size="h-4 w-4" />
                   <div>
                     <p className="text-[16px] font-semibold text-[#1a3553]">{property.area_marlas}</p>
-                    <p className="text-[11px] text-slate-500">Marla</p>
+                    <p className="text-[11px] text-slate-500">{property.area_unit_display || 'Marla'}</p>
                   </div>
                 </div>
               ) : null}

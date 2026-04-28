@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import LogoMarquee from '../components/home/LogoMarquee.jsx'
 import { IconWhatsAppBrand } from '../components/properties/PropertyIcons.jsx'
 import { fetchProperties } from '../lib/api.js'
+import { propertyDetailPath } from '../data/propertyListingTypes.js'
+import { STATIC_PAGE_SEO } from '../data/staticPageSeo.js'
 import {
   contactInfo,
   homeFaqItems,
@@ -10,6 +12,7 @@ import {
   mapDirectionsUrl,
   mapEmbedUrl,
 } from '../data/siteContent.js'
+import { usePageSeo } from '../lib/usePageSeo.js'
 import heroBg from '../assets/nbg.jpg'
 // import lakeBg from '../assets/lake.jpg'
 import lakeBg from '../assets/nlake2.jpg'
@@ -64,7 +67,7 @@ const spotlightRows = [
     image: imgGullbergMall,
     imageAlt: 'Aerial view of lit commercial and residential development along a main road at night',
     imageFirst: false,
-    cta: { label: 'Latest updates', to: '/news' },
+    cta: { label: 'Latest updates', to: '/latest-updates' },
   },
   {
     id: 'plots-blocks',
@@ -108,7 +111,7 @@ const spotlightRows = [
     image: imgNbg2,
     imageAlt: 'Gulberg Greens community — modern housing, greenery, and planned amenities',
     imageFirst: false,
-    cta: { label: 'Contact us', to: '/contact-us' },
+    cta: { label: 'Contact us', to: '/contact' },
   },
 ]
 
@@ -519,6 +522,9 @@ function FaqToggleIcon({ open, className = '' }) {
 }
 
 function Home() {
+  const seo = STATIC_PAGE_SEO.home
+  usePageSeo(seo)
+
   const amenityCarouselRef = useRef(null)
 
   const [faqOpenIndex, setFaqOpenIndex] = useState(null)
@@ -620,7 +626,7 @@ function Home() {
                 IBECHS · Islamabad
               </p> */}
               <h1 className="mt-4 font-[Poppins,Manrope,system-ui,sans-serif] text-[1.85rem] font-bold leading-[1.15] tracking-[-0.035em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45),0_1px_3px_rgba(0,0,0,0.35)] md:mt-5 md:text-[2.35rem] lg:text-[2.85rem]">
-                Gulberg Greens Islamabad
+                {seo.h1}
               </h1>
               <p className="mt-5 max-w-2xl text-[15px] leading-[1.75] text-white/90 [text-shadow:0_1px_16px_rgba(0,0,0,0.4)] md:mt-6 md:text-[17px] md:leading-[1.8]">
                 Gulberg Greens Islamabad is a premium real estate development by IBECHS, offering residential plots,
@@ -895,7 +901,7 @@ function Home() {
                 return (
                   <Link
                     key={p.id}
-                    to={`/properties/${p.slug}`}
+                    to={propertyDetailPath(p)}
                     className="group flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-black/[0.03] transition hover:border-[#31C950]/35 hover:shadow-md"
                   >
                     <div className="relative aspect-[4/3] bg-slate-100">
