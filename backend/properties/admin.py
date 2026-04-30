@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 
-from .models import Agent, Property, PropertyImage
+from .models import Agent, ListingEmail, Property, PropertyImage
 
 
 @admin.register(Agent)
@@ -65,3 +67,96 @@ class PropertyImageAdmin(admin.ModelAdmin):
     list_filter = ('property_listing__listing_type',)
     search_fields = ('property_listing__title',)
     ordering = ('property_listing', 'sort_order', 'id')
+
+
+@admin.register(ListingEmail)
+class ListingEmailAdmin(admin.ModelAdmin):
+    list_display = (
+        'created_at',
+        'property_admin_link',
+        'sender_email',
+        'sender_name',
+        'phone_short',
+        'message_preview',
+        'is_read',
+    )
+    list_display_links = ('created_at', 'sender_email')
+    list_filter = ('is_read', 'created_at', 'property_listing__listing_type')
+    list_editable = ('is_read',)
+    search_fields = (
+        'sender_name',
+        'sender_email',
+        'sender_phone',
+        'message',
+        'property_listing__title',
+        'property_listing__slug',
+    )
+    date_hierarchy = 'created_at'
+    ordering = ('-created_at',)
+    list_per_page = 25
+    readonly_fields = (
+        'property_admin_link',
+        'sender_name',
+        'sender_email',
+        'sender_phone',
+        'message',
+        'submitted_ip',
+        'user_agent',
+        'created_at',
+    )
+    fieldsets = (
+        (
+            'Inquiry',
+            {
+                'fields': ('sender_name', 'sender_email', 'sender_phone', 'message'),
+                'description': 'Submitted from the public property page. One inquiry per email address per listing.',
+            },
+        ),
+        (
+            'Listing',
+            {'fields': ('property_admin_link',)},
+        ),
+        (
+            'Technical',
+            {
+                'fields': ('submitted_ip', 'user_agent', 'created_at'),
+                'classes': ('collapse',),
+            },
+        ),
+    )
+
+    @admin.display(description='Property')
+    def property_admin_link(self, obj):
+        if not obj.property_listing_id:
+            return '—'
+        url = reverse('admin:properties_property_change', args=[obj.property_listing_id])
+        title = (obj.property_listing.title or '')[:80]
+        return format_html('<a href="{}"><strong>{}</strong></a>', url, title)
+
+    @admin.display(description='Phone')
+    def phone_short(self, obj):
+        p = (obj.sender_phone or '').strip()
+        return p[:24] + ('…' if len(p) > 24 else '')
+
+    @admin.display(description='Message')
+    def message_preview(self, obj):
+        m = (obj.message or '').replace('\n', ' ').strip()
+        if len(m) > 90:
+            return m[:90] + '…'
+        return m or '—'
+
+    def has_add_permission(self, request):
+        return False
+
+    actions = ('mark_read', 'mark_unread')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('property_listing')
+
+    @admin.action(description='Mark selected as read')
+    def mark_read(self, request, queryset):
+        queryset.update(is_read=True)
+
+    @admin.action(description='Mark selected as unread')
+    def mark_unread(self, request, queryset):
+        queryset.update(is_read=False)

@@ -136,6 +136,18 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Admin uploads (news + property images): encode as WebP, cap longest edge for smaller files.
+IMAGE_WEBP_MAX_EDGE = int(os.getenv('IMAGE_WEBP_MAX_EDGE', '2400'))
+IMAGE_WEBP_QUALITY = int(os.getenv('IMAGE_WEBP_QUALITY', '82'))
+# Used when WebP encoding fails (e.g. rare Pillow builds); CKEditor uploads still become JPEG, not raw PNG.
+IMAGE_JPEG_QUALITY = int(os.getenv('IMAGE_JPEG_QUALITY', '85'))
+
+# CKEditor 5 inline images (news/property rich text). Include "jpg" — widget default omitted it.
+CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff']
+CKEDITOR_5_MAX_FILE_SIZE = int(os.getenv('CKEDITOR_5_MAX_FILE_SIZE', '0'))  # MB; 0 = unlimited
+# CKEditor inline images → WebP when possible, else optimized JPEG (see config/ckeditor_upload.py).
+CKEDITOR_5_OPTIMIZE_TO_WEBP = os.getenv('CKEDITOR_5_OPTIMIZE_TO_WEBP', 'true').lower() == 'true'
+
 CORS_ALLOWED_ORIGINS = [
     o.strip()
     for o in os.getenv(
@@ -240,9 +252,21 @@ CKEDITOR_5_CONFIGS = {
             'heading', '|',
             'bold', 'italic', 'underline', 'strikethrough', 'link', '|',
             'bulletedList', 'numberedList', 'blockQuote', '|',
+            'uploadImage',
             'insertTable', 'horizontalLine', '|',
             'undo', 'redo', 'sourceEditing',
         ],
+        'image': {
+            'toolbar': [
+                'imageTextAlternative',
+                '|',
+                'imageStyle:inline',
+                'imageStyle:block',
+                'imageStyle:side',
+                '|',
+                'linkImage',
+            ],
+        },
         'table': {
             'contentToolbar': [
                 'tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties'

@@ -1,6 +1,20 @@
+from django import forms
 from django.contrib import admin
+from django.utils import timezone
 
 from .models import NewsImage, NewsPost
+
+
+class NewsPostAdminForm(forms.ModelForm):
+    class Meta:
+        model = NewsPost
+        fields = '__all__'
+
+    def clean_published_at(self):
+        value = self.cleaned_data.get('published_at')
+        if value is None:
+            return timezone.now()
+        return value
 
 
 class NewsImageInline(admin.TabularInline):
@@ -18,11 +32,12 @@ class NewsImageInline(admin.TabularInline):
 
 @admin.register(NewsPost)
 class NewsPostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'image_count', 'author_name', 'published_at', 'is_published')
+    form = NewsPostAdminForm
+    list_display = ('id', 'title', 'slug', 'image_count', 'author_name', 'published_at', 'is_published')
     list_filter = ('is_published', 'published_at')
-    search_fields = ('title', 'description', 'author_name')
-    prepopulated_fields = {'slug': ('title',)}
+    search_fields = ('title', 'slug', 'description', 'author_name')
     date_hierarchy = 'published_at'
+    readonly_fields = ('slug',)
     inlines = [NewsImageInline]
     ordering = ('-published_at',)
     fieldsets = (
@@ -30,6 +45,19 @@ class NewsPostAdmin(admin.ModelAdmin):
         ('Article', {'fields': ('description',)}),
         ('Meta', {'fields': ('author_name', 'published_at', 'is_published')}),
     )
+
+    class Media:
+        js = ('admin/js/news_slug_live_preview.js',)
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'slug':
+            kwargs.setdefault(
+                'help_text',
+                'Stored value (read-only). It is built from the title when you save. A random '
+                '<strong>10-digit</strong> suffix is appended after the slug (property-style). '
+                'Watch the <strong>live preview</strong> below while you type the title.',
+            )
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
     @admin.display(description='Images')
     def image_count(self, obj):

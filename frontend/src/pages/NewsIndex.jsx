@@ -18,6 +18,23 @@ function formatNewsDate(iso) {
   }
 }
 
+/** API excerpt may contain entities or stray tags after strip_tags — plain text only (no innerHTML). */
+function excerptPlainText(raw) {
+  if (!raw || typeof raw !== 'string') return ''
+  return raw
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\u00a0/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&#160;/gi, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function NewsIndex() {
   const seo = STATIC_PAGE_SEO.latestUpdates
   usePageSeo(seo)
@@ -115,21 +132,25 @@ function NewsIndex() {
       <div className="bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_50%)]">
         <div className="container-shell py-14 md:py-16 lg:py-20">
           {loading ? (
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
+            <div className="grid auto-rows-fr gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="animate-pulse overflow-hidden rounded-2xl border border-slate-100/80 bg-white shadow-sm"
+                  className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-100/80 bg-white shadow-sm"
                 >
-                  <div className="aspect-[16/10] bg-slate-200" />
-                  <div className="space-y-3 p-6">
-                    <div className="h-3 w-20 rounded bg-slate-200" />
-                    <div className="h-5 w-full rounded bg-slate-200" />
-                    <div className="h-5 w-[85%] rounded bg-slate-200" />
-                    <div className="mt-4 space-y-2">
+                  <div className="aspect-[16/10] shrink-0 bg-slate-200" />
+                  <div className="flex min-h-0 flex-1 flex-col p-6">
+                    <div className="space-y-3">
+                      <div className="h-3 w-20 rounded bg-slate-200" />
+                      <div className="h-5 w-full rounded bg-slate-200" />
+                      <div className="h-5 w-[85%] rounded bg-slate-200" />
+                    </div>
+                    <div className="mt-3 space-y-1.5">
                       <div className="h-3 w-full rounded bg-slate-100" />
-                      <div className="h-3 w-full rounded bg-slate-100" />
-                      <div className="h-3 w-2/3 rounded bg-slate-100" />
+                      <div className="h-3 w-4/5 rounded bg-slate-100" />
+                    </div>
+                    <div className="mt-auto pt-4">
+                      <div className="h-2.5 w-28 rounded bg-slate-200" />
                     </div>
                   </div>
                 </div>
@@ -151,51 +172,54 @@ function NewsIndex() {
 
           {!loading && !error && posts.length > 0 ? (
             <>
-              <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-12">
-                {posts.map((post) => (
-                  <article
-                    key={post.slug}
-                    className="group flex flex-col overflow-hidden rounded-2xl border border-slate-100/90 bg-white shadow-[0_12px_40px_-24px_rgba(15,23,42,0.12)] ring-1 ring-slate-900/[0.03] transition hover:-translate-y-1 hover:shadow-[0_20px_50px_-24px_rgba(15,23,42,0.18)]"
-                  >
-                    {post.primary_image ? (
+              <div className="grid auto-rows-fr gap-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-12">
+                {posts.map((post) => {
+                  const href = `/latest-updates/${post.slug}`
+                  const excerpt = excerptPlainText(post.excerpt)
+                  return (
+                    <article
+                      key={post.slug}
+                      className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-100/90 bg-white shadow-[0_12px_40px_-24px_rgba(15,23,42,0.12)] ring-1 ring-slate-900/[0.03] transition hover:-translate-y-1 hover:shadow-[0_20px_50px_-24px_rgba(15,23,42,0.18)]"
+                    >
                       <Link
-                        to={`/latest-updates/${post.slug}`}
-                        className="relative block aspect-[16/10] overflow-hidden bg-slate-100"
-                        tabIndex={-1}
-                        aria-hidden
+                        to={href}
+                        className="group flex h-full min-h-0 flex-col rounded-2xl outline-none transition focus-visible:ring-2 focus-visible:ring-[#31C950] focus-visible:ring-offset-2"
                       >
-                        <img
-                          src={post.primary_image}
-                          alt=""
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                          loading="lazy"
-                        />
+                        {post.primary_image ? (
+                          <div className="relative flex aspect-[16/10] shrink-0 items-center justify-center overflow-hidden bg-slate-100">
+                            <img
+                              src={post.primary_image}
+                              alt=""
+                              className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.02]"
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : (
+                          <div className="aspect-[16/10] shrink-0 bg-gradient-to-br from-slate-100 to-slate-50" aria-hidden />
+                        )}
+                        <div className="flex min-h-0 flex-1 flex-col p-6 md:p-7">
+                          <h2 className="font-[Poppins,Manrope,system-ui,sans-serif] text-lg font-semibold leading-snug tracking-[-0.02em] text-[#1a2332] transition group-hover:text-[#31C950] md:text-xl">
+                            {post.title}
+                          </h2>
+                          {excerpt ? (
+                            <div className="relative mt-3 min-h-[2.875rem] shrink-0">
+                              <p className="line-clamp-2 text-[15px] leading-relaxed text-slate-500/85">
+                                {excerpt}
+                              </p>
+                              <div
+                                className="pointer-events-none absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-white to-transparent"
+                                aria-hidden
+                              />
+                            </div>
+                          ) : null}
+                          <p className="mt-auto pt-4 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
+                            {formatNewsDate(post.published_at).toUpperCase()}
+                          </p>
+                        </div>
                       </Link>
-                    ) : (
-                      <div className="aspect-[16/10] bg-gradient-to-br from-slate-100 to-slate-50" aria-hidden />
-                    )}
-                    <div className="flex flex-1 flex-col p-6 md:p-7">
-                      <h2 className="font-[Poppins,Manrope,system-ui,sans-serif] text-lg font-semibold leading-snug tracking-[-0.02em] text-[#1a2332] md:text-xl">
-                        <Link to={`/latest-updates/${post.slug}`} className="transition hover:text-[#31C950]">
-                          {post.title}
-                        </Link>
-                      </h2>
-                      <p className="mt-4 flex-1 text-[15px] leading-relaxed text-slate-600">{post.excerpt}</p>
-                      <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
-                        {formatNewsDate(post.published_at).toUpperCase()}
-                      </p>
-                      <Link
-                        to={`/latest-updates/${post.slug}`}
-                        className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[#31C950] transition hover:gap-2"
-                      >
-                        Read more
-                        <span aria-hidden className="text-lg leading-none">
-                          »
-                        </span>
-                      </Link>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  )
+                })}
               </div>
 
               {totalPages > 1 ? (

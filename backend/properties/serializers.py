@@ -101,3 +101,19 @@ class PropertySerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(obj.featured_image.url)
         return obj.featured_image.url
+
+
+class ListingEmailCreateSerializer(serializers.Serializer):
+    """Public inquiry form → stored as ListingEmail (one per listing per sender email)."""
+
+    name = serializers.CharField(max_length=200, trim_whitespace=True)
+    email = serializers.EmailField(max_length=254)
+    phone = serializers.CharField(max_length=20, allow_blank=True, trim_whitespace=True)
+    message = serializers.CharField(max_length=8000, allow_blank=True, trim_whitespace=True)
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+    def validate_phone(self, value):
+        digits = ''.join(c for c in (value or '') if c.isdigit())
+        return digits[:15]

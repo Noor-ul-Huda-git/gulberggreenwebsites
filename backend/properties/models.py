@@ -2,9 +2,12 @@ import secrets
 import uuid
 from urllib.parse import quote
 
+from django.core.files.storage import default_storage
 from django.db import models
 from django_ckeditor_5.fields import CKEditor5Field
 from django.utils.text import slugify
+
+from common.image_webp import optimize_upload_for_web
 
 
 SITE_ORIGIN = 'https://gulberggreens.com.pk'
@@ -225,7 +228,31 @@ class Property(models.Model):
             if not Property.objects.exclude(pk=self.pk).filter(slug=candidate).exists():
                 return candidate
 
+    def _optimize_featured_image_if_needed(self):
+        if not self.featured_image:
+            return
+        old_name = None
+        if self.pk:
+            prev = Property.objects.only('featured_image').filter(pk=self.pk).first()
+            if prev and prev.featured_image:
+                old_name = prev.featured_image.name
+        cur = self.featured_image.name
+        if old_name is not None and cur == old_name:
+            return
+        optimized = optimize_upload_for_web(self.featured_image)
+        if not optimized:
+            return
+        self.featured_image.save(optimized.name, optimized, save=False)
+
     def save(self, *args, **kwargs):
+        old_featured_name = None
+        if self.pk:
+            prev_row = Property.objects.only('featured_image').filter(pk=self.pk).first()
+            if prev_row and prev_row.featured_image:
+                old_featured_name = prev_row.featured_image.name
+
+        self._optimize_featured_image_if_needed()
+
         title, description, h1 = self.generate_seo()
         if not self.meta_title:
             self.meta_title = title
@@ -234,15 +261,21 @@ class Property(models.Model):
         if not self.seo_h1:
             self.seo_h1 = h1
 
-        if self.slug:
+        try:
+            if self.slug:
+                super().save(*args, **kwargs)
+                return
+
+            self.slug = f'property-{uuid.uuid4().hex[:12]}'
             super().save(*args, **kwargs)
-            return
 
-        self.slug = f'property-{uuid.uuid4().hex[:12]}'
-        super().save(*args, **kwargs)
-
-        self.slug = self._build_serialized_slug()
-        super().save(update_fields=('slug',))
+            self.slug = self._build_serialized_slug()
+            super().save(update_fields=('slug',))
+        finally:
+            if old_featured_name:
+                new_name = self.featured_image.name if self.featured_image else None
+                if new_name != old_featured_name and default_storage.exists(old_featured_name):
+                    default_storage.delete(old_featured_name)
 
 
 class PropertyImage(models.Model):
@@ -261,3 +294,60 @@ class PropertyImage(models.Model):
 
     def __str__(self):
         return f'{self.property_listing_id} — image {self.sort_order}'
+
+    def save(self, *args, **kwargs):
+        old_name = None
+        if self.pk:
+            prev = PropertyImage.objects.filter(pk=self.pk).only('image').first()
+            if prev and prev.image:
+                old_name = prev.image.name
+
+        if self.image:
+            cur = self.image.name
+            if old_name is None or cur != old_name:
+                optimized = optimize_upload_for_web(self.image)
+                if optimized:
+                    self.image.save(optimized.name, optimized, save=False)
+
+        super().save(*args, **kwargs)
+
+        if old_name and self.image and old_name != self.image.name:
+            if default_storage.exists(old_name):
+                default_storage.delete(old_name)
+
+
+class ListingEmail(models.Model):
+    """Inquiry submitted from the public property page (one per listing per sender email)."""
+
+    property_listing = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name='listing_emails',
+        verbose_name='Property listing',
+    )
+    sender_name = models.CharField(max_length=200)
+    sender_email = models.EmailField(max_length=254, db_index=True)
+    sender_phone = models.CharField(max_length=40, blank=True)
+    message = models.TextField()
+    submitted_ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=512, blank=True)
+    is_read = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text='Mark when staff has reviewed this inquiry.',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Listing email inquiry'
+        verbose_name_plural = 'Listing email inquiries'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('property_listing', 'sender_email'),
+                name='listingemail_unique_listing_sender_email',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.sender_email} → listing #{self.property_listing_id}'

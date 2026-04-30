@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useParams } from 'react-router-dom'
 import { AnimatePresence, motion as Motion } from 'framer-motion'
 import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
@@ -17,7 +18,7 @@ import {
 import PropertySchema from '../components/seo/PropertySchema.jsx'
 import { propertyDetailPath } from '../data/propertyListingTypes.js'
 import { contactInfo } from '../data/siteContent.js'
-import { fetchProperties, fetchProperty } from '../lib/api.js'
+import { fetchProperties, fetchProperty, submitPropertyListingEmail } from '../lib/api.js'
 
 /** Primary heading / strip — matches site nav emphasis */
 const BRAND_NAVY = '#1a3553'
@@ -114,6 +115,13 @@ function whatsappHref(title, phoneNumber) {
   return `https://wa.me/${phone}?text=${text}`
 }
 
+/** Sidebar — twin solid #00a651 CTAs, square corners, CALL (left) then WhatsApp (right). */
+const DETAIL_CTA_H = 'min-h-[52px] py-3'
+const detailCtaRowClass = 'flex w-full min-w-0 items-stretch gap-2'
+const detailCtaSolidBase = `property-listing-call-cta flex min-h-0 flex-1 flex-row items-center justify-center gap-2 rounded-none bg-[#00a651] px-4 !text-white shadow-none transition hover:bg-[#008f47] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 active:scale-[0.98] ${DETAIL_CTA_H}`
+const detailCtaCallBtnClass = `${detailCtaSolidBase} cursor-pointer text-[13px] uppercase tracking-[0.07em]`
+const detailCtaWhatsAppLinkClass = `${detailCtaSolidBase} min-w-0 text-[14px] font-semibold`
+
 function formatReference(property) {
   if (property.slug) return property.slug.toUpperCase()
   if (property.id != null) return `ID${property.id}`
@@ -164,22 +172,6 @@ function upsertCanonical(href) {
   }
   tag.setAttribute('href', href)
   return tag
-}
-
-function buildInquiryMailto(property, form) {
-  const subject = `Inquiry: ${property.title}`
-  const body = [
-    `Property: ${property.title}`,
-    form.name ? `Name: ${form.name}` : null,
-    form.email ? `Email: ${form.email}` : null,
-    form.phone ? `Phone: +92 ${form.phone}` : null,
-    '',
-    form.message || 'I would like to get more details about this property.',
-  ]
-    .filter(Boolean)
-    .join('\n')
-
-  return `mailto:${contactInfo.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 }
 
 function IconUser({ className = '', size = 'h-4 w-4' }) {
@@ -329,10 +321,10 @@ function SimilarListingsCarousel({ title, items }) {
                   </a>
                   <a
                     href={`tel:${tel}`}
-                    className="inline-flex items-center justify-center gap-2 rounded-md bg-[#31C950] px-3 py-2 text-[12px] font-semibold text-white transition hover:bg-[#28b048]"
+                    className="property-listing-call-cta inline-flex items-center justify-center gap-2 rounded-none bg-[#00a651] px-3 py-2 text-[12px] uppercase tracking-[0.07em] !text-white transition hover:bg-[#008f47]"
                   >
-                    <IconPhone size="h-4 w-4" />
-                    Call
+                    <IconPhone className="!text-white" size="h-4 w-4" strokeWidth={2} />
+                    CALL
                   </a>
                 </div>
               </div>
@@ -398,7 +390,9 @@ function PropertyDetail() {
   const [activeTab, setActiveTab] = useState('overview')
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
   const [inquiryStatus, setInquiryStatus] = useState(null)
+  const [inquiryMessage, setInquiryMessage] = useState('')
   const [showCallModal, setShowCallModal] = useState(false)
+  const [showInquirySuccessModal, setShowInquirySuccessModal] = useState(false)
   const [copiedField, setCopiedField] = useState('')
   const [inquiryForm, setInquiryForm] = useState({
     name: '',
@@ -408,6 +402,21 @@ function PropertyDetail() {
   })
   const [similarAround, setSimilarAround] = useState([])
   const [similarByAgent, setSimilarByAgent] = useState([])
+  const [mobileFavorite, setMobileFavorite] = useState(false)
+
+  const handleMobileShare = useCallback(async () => {
+    if (!property) return
+    const url = typeof window !== 'undefined' ? window.location.href : ''
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: property.title, url })
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url)
+      }
+    } catch {
+      /* user cancelled or unsupported */
+    }
+  }, [property])
 
   useEffect(() => {
     let cancelled = false
@@ -420,6 +429,10 @@ function PropertyDetail() {
     setCopiedField('')
     setSimilarAround([])
     setSimilarByAgent([])
+    setInquiryStatus(null)
+    setInquiryMessage('')
+    setInquiryForm({ name: '', email: '', phone: '', message: '' })
+    setShowInquirySuccessModal(false)
     ;(async () => {
       try {
         const data = await fetchProperty({ slug, categorySlug, block: decodeURIComponent(block) })
@@ -558,19 +571,53 @@ function PropertyDetail() {
   const handleInquiryChange = (field) => (event) => {
     setInquiryForm((prev) => ({ ...prev, [field]: event.target.value }))
     setInquiryStatus(null)
+    setInquiryMessage('')
   }
 
   const handlePhoneChange = (event) => {
     const digits = event.target.value.replace(/\D/g, '').replace(/^92/, '').slice(0, 10)
     setInquiryForm((prev) => ({ ...prev, phone: digits }))
     setInquiryStatus(null)
+    setInquiryMessage('')
   }
 
-  const handleInquirySubmit = (event) => {
+  const inquiryFormLocked = inquiryStatus === 'sent' || inquiryStatus === 'duplicate'
+
+  const handleInquirySubmit = async (event) => {
     event.preventDefault()
-    window.location.href = buildInquiryMailto(property, inquiryForm)
-    setInquiryStatus('sent')
+    if (!property?.id || inquiryFormLocked) return
+    setInquiryStatus('sending')
+    setInquiryMessage('')
+    try {
+      const result = await submitPropertyListingEmail(property.id, {
+        name: inquiryForm.name.trim(),
+        email: inquiryForm.email.trim(),
+        phone: inquiryForm.phone,
+        message: inquiryForm.message.trim(),
+      })
+      if (result.duplicate) {
+        setInquiryStatus('duplicate')
+        setInquiryMessage(result.detail)
+        return
+      }
+      if (result.ok !== true) {
+        setInquiryStatus('error')
+        setInquiryMessage('Unexpected response from server. Please try again.')
+        return
+      }
+      setInquiryStatus('sent')
+      setInquiryMessage(result.detail || 'Your inquiry has been received. Our team will get back to you soon.')
+    } catch (err) {
+      setInquiryStatus('error')
+      setInquiryMessage(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+    }
   }
+
+  useEffect(() => {
+    if (inquiryStatus === 'sent') {
+      setShowInquirySuccessModal(true)
+    }
+  }, [inquiryStatus])
 
   const handleCopy = async (key, value) => {
     try {
@@ -770,7 +817,64 @@ function PropertyDetail() {
         </div>
       ) : null}
 
-      <div className="border-b border-slate-200/80 bg-white">
+      {showInquirySuccessModal
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/70 px-4 py-8"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="inquiry-success-title"
+            >
+              <button
+                type="button"
+                className="absolute inset-0 cursor-default"
+                aria-label="Close success message"
+                onClick={() => setShowInquirySuccessModal(false)}
+              />
+              <div className="relative z-10 w-full max-w-[26rem] overflow-hidden rounded-2xl bg-white shadow-[0_25px_80px_rgba(15,23,42,0.28)]">
+                <div className="h-1 w-full bg-[#5cb85c]" aria-hidden />
+                <button
+                  type="button"
+                  onClick={() => setShowInquirySuccessModal(false)}
+                  className="absolute right-4 top-4 z-20 text-slate-400 transition hover:text-slate-700"
+                  aria-label="Close"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-7 w-7" aria-hidden>
+                    <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <div className="px-8 pb-9 pt-12 text-center sm:px-10">
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#5cb85c] shadow-[0_8px_24px_rgba(92,184,92,0.35)]">
+                    <svg viewBox="0 0 24 24" className="h-11 w-11 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                      <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <h2 id="inquiry-success-title" className="mt-6 text-2xl font-bold tracking-tight text-[#5cb85c]">
+                    Success!
+                  </h2>
+                  <p className="mt-4 text-[15px] leading-relaxed text-slate-800">
+                    Your message has been sent successfully. You will receive a reply at the email address you provided.
+                  </p>
+                  <p className="mt-5 text-[14px] leading-relaxed text-slate-700">
+                    <strong className="text-slate-900">Note:</strong> Please add{' '}
+                    <span className="font-semibold text-[#1a3553]">{contactInfo.email}</span> to your email safelist or
+                    whitelist so our reply is not filtered as spam.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowInquirySuccessModal(false)}
+                    className="mt-8 inline-flex min-w-[8.5rem] items-center justify-center rounded-md bg-[#428bca] px-10 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white shadow-sm transition hover:bg-[#357ebd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#428bca]"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+
+      <div className="hidden border-b border-slate-200/80 bg-white lg:block">
         <div className="container-shell max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
           <PageBreadcrumbs
             variant="onLight"
@@ -795,8 +899,17 @@ function PropertyDetail() {
 
       <div className="container-shell max-w-7xl px-4 py-3 sm:px-6 lg:px-8 lg:py-4">
         <div className="grid min-w-0 gap-5 lg:grid-cols-12 lg:items-start lg:gap-6">
-          <div className="min-w-0 lg:col-span-8">
-            <div className="relative w-full max-w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-200 shadow-[0_4px_24px_-4px_rgba(26,53,83,0.12)]">
+          <div className="min-w-0 max-lg:-mx-4 lg:col-span-8">
+            <div className="mb-2 flex items-center lg:hidden">
+              <Link
+                to="/properties"
+                className="inline-flex items-center gap-1 py-1 text-[13px] font-semibold text-[#1a3553] transition hover:text-[#00a651]"
+              >
+                <IconChevronLeft size="h-5 w-5" />
+                Properties
+              </Link>
+            </div>
+            <div className="relative w-full max-w-full overflow-hidden border border-slate-200 bg-slate-200 shadow-[0_4px_24px_-4px_rgba(26,53,83,0.12)] max-lg:rounded-none max-lg:border-x-0 lg:rounded-lg">
               <div className="group relative aspect-[16/11] min-h-[260px] w-full sm:min-h-[340px] lg:min-h-[520px]">
                 <AnimatePresence mode="wait">
                   {activeUrl ? (
@@ -838,11 +951,86 @@ function PropertyDetail() {
                   </>
                 ) : null}
 
-                {images.length ? (
-                  <div className="absolute bottom-4 left-4 rounded-md border border-white/20 bg-[#1a3553]/85 px-3 py-1.5 text-[12px] font-medium text-white backdrop-blur-sm">
-                    {activeIndex + 1} / {images.length} photos
+                {images.length > 1 ? (
+                  <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 lg:hidden" aria-hidden>
+                    {images.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setActiveIndex(idx)}
+                        className={`h-1.5 w-1.5 rounded-full transition ${idx === activeIndex ? 'bg-white' : 'bg-white/45'}`}
+                        aria-label={`Photo ${idx + 1}`}
+                      />
+                    ))}
                   </div>
                 ) : null}
+
+                {images.length ? (
+                  <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded border border-white/25 bg-black/50 px-2 py-1 text-[11px] font-medium text-white backdrop-blur-sm max-lg:bottom-10 lg:bottom-4 lg:left-4 lg:right-auto">
+                    <span aria-hidden>📷</span>
+                    <span>
+                      {activeIndex + 1}/{images.length}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="mt-0 space-y-3 border-b border-slate-200 bg-white px-3 py-3 lg:hidden">
+              <div className="flex items-start justify-between gap-3">
+                <p className="min-w-0 flex-1 text-[1.35rem] font-semibold tabular-nums leading-tight tracking-tight text-slate-900">
+                  {formatPkr(property.price)}
+                </p>
+                <div className="flex shrink-0 items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setMobileFavorite((v) => !v)}
+                    className="flex h-10 w-10 items-center justify-center rounded-none text-slate-600 transition hover:text-[#00a651]"
+                    aria-label={mobileFavorite ? 'Remove from saved' : 'Save listing'}
+                  >
+                    <svg viewBox="0 0 24 24" fill={mobileFavorite ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" className="h-6 w-6" aria-hidden>
+                      <path d="M12 21s-6.716-4.11-8.5-8.5C2.716 8.11 5.58 4 9.5 4c1.74 0 3.41.81 4.5 2.09A6.98 6.98 0 0114.5 4c3.92 0 6.784 4.11 6 8.5C18.716 16.89 12 21 12 21z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleMobileShare()}
+                    className="flex h-10 w-10 items-center justify-center rounded-none text-slate-600 transition hover:text-[#00a651]"
+                    aria-label="Share listing"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6" aria-hidden>
+                      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v15" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <p className="text-[12px] leading-snug text-slate-500">{addressLine}</p>
+              {property.area_marlas != null ? (
+                <p className="flex items-center gap-2 text-[13px] font-medium text-slate-800">
+                  <IconRuler className="text-[#00a651]" size="h-4 w-4" aria-hidden />
+                  {formatArea(property)}
+                </p>
+              ) : null}
+              <div className="mx-auto flex w-[90%] max-w-full items-stretch justify-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowCallModal(true)}
+                  className={`${detailCtaCallBtnClass} min-w-0 flex-1`}
+                  aria-label="View phone numbers to call"
+                >
+                  <IconPhone className="shrink-0 !text-white" size="h-7 w-7" strokeWidth={2.1} />
+                  CALL
+                </button>
+                <a
+                  href={whatsappHref(property.title, primaryContactPhone)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${detailCtaWhatsAppLinkClass} min-w-0 flex-1`}
+                  aria-label={`WhatsApp about ${property.title}`}
+                >
+                  <IconWhatsAppBrand className="shrink-0 text-white" size="h-7 w-7" />
+                  WhatsApp
+                </a>
               </div>
             </div>
 
@@ -863,7 +1051,7 @@ function PropertyDetail() {
               </div>
             ) : null}
 
-            <div className="mt-3 border-b border-slate-200 bg-white py-3">
+            <div className="mt-3 hidden border-b border-slate-200 bg-white py-3 lg:block">
               {property.area_marlas != null ? (
                 <div className="flex items-center gap-3 px-1 sm:px-2">
                   <IconRuler className="text-[#1a3553]" size="h-4 w-4" />
@@ -875,15 +1063,17 @@ function PropertyDetail() {
               ) : null}
             </div>
 
-            <div className="mt-3 w-full max-w-full overflow-x-auto overscroll-x-contain">
-              <div className="flex w-max min-w-max max-w-none items-center gap-1 bg-[#111111] p-1 text-white" style={{width: "100%", borderRadius: "5px", background: "gray"}}>
+            <div className="mt-3 w-full max-w-full overflow-x-auto overscroll-x-contain max-lg:-mx-4 max-lg:px-0">
+              <div className="flex w-full min-w-0 items-stretch border-b border-slate-200 bg-white max-lg:gap-0 lg:w-max lg:max-w-none lg:gap-1 lg:rounded-lg lg:border lg:border-slate-200 lg:bg-slate-100 lg:p-1">
                 {detailTabs.map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => handleTabClick(tab.id)}
-                    className={`shrink-0 rounded-full px-4 py-2.5 text-[12px] font-medium transition sm:px-5 sm:py-3 sm:text-[13px] ${
-                      activeTab === tab.id ? 'bg-white text-[#1a3553] shadow-sm' : 'hover:bg-white/8'
+                    className={`min-w-0 flex-1 shrink-0 px-2 py-2.5 text-[12px] font-medium transition sm:px-4 sm:py-3 sm:text-[13px] max-lg:border-b-2 max-lg:border-transparent max-lg:text-center lg:rounded-full lg:px-5 ${
+                      activeTab === tab.id
+                        ? 'max-lg:border-[#00a651] max-lg:text-[#00a651] lg:bg-white lg:text-[#1a3553] lg:shadow-sm'
+                        : 'max-lg:text-slate-600 lg:hover:bg-white/8'
                     }`}
                   >
                     {tab.label}
@@ -901,38 +1091,37 @@ function PropertyDetail() {
                 transition={{ duration: 0.4, delay: 0.05 }}
                 className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_16px_48px_-24px_rgba(26,53,83,0.45)]"
               >
-                <div className="border-b border-slate-100 px-4 py-4 sm:px-5 sm:py-5">
-                  {/* <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Price</p> */}
+                <div className="hidden border-b border-slate-100 px-4 py-4 sm:px-5 sm:py-5 lg:block">
                   <p className="mt-2 break-words text-[1.45rem] font-medium tabular-nums tracking-[-0.02em] text-slate-800 sm:text-[1.65rem] md:text-[1.85rem]">
                     {formatPkr(property.price)}
                   </p>
 
-                  <div className="mt-4 flex min-w-0 flex-col gap-2.5 sm:flex-row sm:gap-3">
+                  <div className={`mt-4 min-w-0 ${detailCtaRowClass}`}>
+                    <button
+                      type="button"
+                      onClick={() => setShowCallModal(true)}
+                      className={detailCtaCallBtnClass}
+                      aria-label="View phone numbers to call"
+                    >
+                      <IconPhone className="shrink-0 !text-white" size="h-7 w-7" strokeWidth={2.1} />
+                      CALL
+                    </button>
                     <a
                       href={whatsappHref(property.title, primaryContactPhone)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex min-h-[48px] min-w-0 flex-1 items-center justify-center gap-2 rounded-lg border border-[#128C7E] bg-[#25D366] px-4 py-3 text-[14px] font-semibold !text-white shadow-sm transition duration-200 hover:-translate-y-px hover:border-[#0f7a6e] hover:bg-[#20BD5A] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] active:scale-[0.98]"
+                      className={detailCtaWhatsAppLinkClass}
                       aria-label={`WhatsApp about ${property.title}`}
                     >
-                      <IconWhatsAppBrand className="text-white" size="h-5 w-5" />
+                      <IconWhatsAppBrand className="shrink-0 text-white" size="h-7 w-7" />
                       WhatsApp
                     </a>
-                    <button
-                      type="button"
-                      onClick={() => setShowCallModal(true)}
-                      className="inline-flex min-h-[48px] min-w-0 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200/95 bg-white px-4 py-3 text-[14px] font-semibold !text-slate-800 shadow-sm transition duration-200 hover:-translate-y-px hover:border-[#31C950]/45 hover:bg-[#ecfdf5]/95 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a3553] active:scale-[0.98]"
-                      aria-label="View phone numbers to call"
-                    >
-                      <IconPhone className="text-[#31C950]" size="h-5 w-5" strokeWidth={1.75} />
-                      Call
-                    </button>
                   </div>
                 </div>
 
                 <div className="px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Customer inquiry</p>
-                  <form onSubmit={handleInquirySubmit} className="mt-4 min-w-0 space-y-3">
+                  <form onSubmit={(e) => void handleInquirySubmit(e)} className="mt-4 min-w-0 space-y-3">
                     <div className="flex min-w-0 items-center rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 transition focus-within:border-[#31C950]/55 focus-within:bg-white">
                       <span className="mr-2 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-slate-200 bg-white text-slate-500 sm:mr-3">
                         <IconUser size="h-4 w-4" />
@@ -943,7 +1132,8 @@ function PropertyDetail() {
                         onChange={handleInquiryChange('name')}
                         placeholder="Your name"
                         required
-                        className="min-w-0 flex-1 bg-transparent py-1 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                        disabled={inquiryFormLocked}
+                        className="min-w-0 flex-1 bg-transparent py-1 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
                       />
                     </div>
                     <div className="flex min-w-0 items-center rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 transition focus-within:border-[#31C950]/55 focus-within:bg-white">
@@ -956,7 +1146,8 @@ function PropertyDetail() {
                         onChange={handleInquiryChange('email')}
                         placeholder="Your email"
                         required
-                        className="min-w-0 flex-1 bg-transparent py-1 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                        disabled={inquiryFormLocked}
+                        className="min-w-0 flex-1 bg-transparent py-1 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
                       />
                     </div>
                     <div className="flex min-w-0 items-center rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 transition focus-within:border-[#31C950]/55 focus-within:bg-white">
@@ -971,7 +1162,8 @@ function PropertyDetail() {
                         onChange={handlePhoneChange}
                         maxLength={10}
                         placeholder="3001234567"
-                        className="min-w-0 flex-1 bg-transparent py-1 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                        disabled={inquiryFormLocked}
+                        className="min-w-0 flex-1 bg-transparent py-1 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
                       />
                     </div>
                     <textarea
@@ -979,20 +1171,25 @@ function PropertyDetail() {
                       value={inquiryForm.message}
                       onChange={handleInquiryChange('message')}
                       placeholder={`I would like to inquire about ${property.title}`}
-                      className="w-full resize-y rounded-md border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#31C950]/55 focus:bg-white"
+                      disabled={inquiryFormLocked}
+                      className="w-full resize-y rounded-md border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#31C950]/55 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                     />
                     <button
                       type="submit"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#31C950]/30 bg-[#31C950] px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#28b048]"
+                      disabled={inquiryFormLocked || inquiryStatus === 'sending'}
+                      className="property-listing-call-cta inline-flex w-full min-h-[52px] items-center justify-center gap-2 rounded-none bg-[#00a651] px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.07em] !text-white shadow-none transition hover:bg-[#008f47] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 enabled:active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      <IconMail size="h-4 w-4" />
-                      Send Email
+                      <IconMail className="!text-white" size="h-5 w-5" />
+                      {inquiryStatus === 'sending' ? 'Sending…' : 'Send Email'}
                     </button>
                   </form>
 
                   <div className="mt-5 border-t border-slate-100 pt-4 text-sm text-slate-600">
-                    {inquiryStatus === 'sent' ? (
-                      <p className="mt-3 text-[12px] text-[#31C950]">Your email app has been opened for this inquiry.</p>
+                    {inquiryStatus === 'duplicate' ? (
+                      <p className="mt-3 text-[13px] leading-relaxed text-amber-800">{inquiryMessage}</p>
+                    ) : null}
+                    {inquiryStatus === 'error' ? (
+                      <p className="mt-3 text-[13px] leading-relaxed text-rose-700">{inquiryMessage}</p>
                     ) : null}
                   </div>
                 </div>
@@ -1016,14 +1213,18 @@ function PropertyDetail() {
 
               <div className="mt-4" id="overview">
                 <h3 className="text-[1.35rem] font-semibold tracking-tight text-[#1a3553]">Details</h3>
-                <div className="mt-4 grid gap-x-6 gap-y-3 md:grid-cols-2">
+                <div className="mt-4 max-lg:divide-y max-lg:divide-slate-200 max-lg:overflow-hidden max-lg:rounded-none max-lg:border max-lg:border-slate-200 max-lg:bg-white grid gap-x-6 gap-y-3 md:grid-cols-2">
                   {propertyFacts.map((item) => (
                     <div
                       key={item.key}
-                      className="grid grid-cols-1 gap-1 bg-slate-50/70 px-4 py-3 sm:grid-cols-[minmax(0,9.5rem)_minmax(0,1fr)] sm:items-center sm:gap-x-4 md:grid-cols-[10rem_minmax(0,1fr)]"
+                      className="max-lg:flex max-lg:items-center max-lg:justify-between max-lg:gap-3 max-lg:bg-white max-lg:px-3 max-lg:py-3 grid grid-cols-1 gap-1 bg-slate-50/70 px-4 py-3 sm:grid-cols-[minmax(0,9.5rem)_minmax(0,1fr)] sm:items-center sm:gap-x-4 md:grid-cols-[10rem_minmax(0,1fr)] lg:bg-slate-50/70"
                     >
-                      <span className="text-[13px] font-medium text-slate-700 sm:text-[15px] sm:font-normal">{item.label}</span>
-                      <span className="min-w-0 break-words text-[15px] font-medium text-[#1a3553] md:truncate">{item.value}</span>
+                      <span className="text-[12px] font-medium text-slate-500 max-lg:shrink-0 sm:text-[13px] md:text-[15px] lg:font-normal lg:text-slate-700">
+                        {item.label}
+                      </span>
+                      <span className="min-w-0 max-w-[65%] text-right text-[14px] font-semibold text-slate-900 max-lg:truncate sm:text-[15px] md:font-medium md:text-[#1a3553] lg:max-w-none lg:text-left">
+                        {item.value}
+                      </span>
                     </div>
                   ))}
                 </div>

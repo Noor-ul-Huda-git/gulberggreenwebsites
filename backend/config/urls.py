@@ -14,7 +14,7 @@ urlpatterns = [
     path('robots.txt', robots_txt, name='robots-txt'),
     path('sitemap.xml', sitemap_xml, name='sitemap-xml'),
     path('admin/', admin.site.urls),
-    path('ckeditor5/', include('django_ckeditor_5.urls')),
+    # CKEditor upload lives under /api/ so reverse proxies that only forward /api/* still reach Django.
     path('api/', include('config.api_urls')),
 ]
 

@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { motion as Motion } from 'framer-motion'
 import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import PageHero from '../components/layout/PageHero.jsx'
-import { IconBath, IconBed, IconPhone, IconRuler, IconWhatsAppBrand } from '../components/properties/PropertyIcons.jsx'
+import { IconBath, IconBed, IconPhone, IconRuler, IconWhatsAppListing } from '../components/properties/PropertyIcons.jsx'
 import {
   LISTING_TYPE_OPTIONS,
   PROPERTY_BLOCK_OPTIONS,
@@ -112,17 +112,21 @@ function whatsappHref(title) {
 }
 
 /**
- * Listing CTAs — list + grid.
- * Global `a { color: inherit }` (index.css) can beat layered utilities; use `!text-*` so label color is reliable.
- * Call: outline. WhatsApp: brand green (`!text-white` so it wins over global `a { color: inherit }`).
+ * Listing CTAs — list + grid: square outlined WhatsApp + solid CALL (same height).
+ * CALL sits in a `flex-1` slot; `w-[30%]` is 30% of that remaining width (after WhatsApp + gap).
+ * Global `a { color: inherit }` — use `!text-white` on the CALL link.
  */
-const listingCtaBaseClass =
-  'inline-flex min-h-[2.75rem] flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200/95 bg-white px-4 text-sm font-semibold !text-slate-800 shadow-sm transition duration-200 hover:-translate-y-px hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a3553] active:scale-[0.98] sm:min-h-[2.75rem] sm:flex-none sm:px-5'
+const LISTING_CTA_H = 'h-12 min-h-[3rem]'
 
-const listingCtaWhatsAppClass =
-  'inline-flex min-h-[2.75rem] flex-1 items-center justify-center gap-2 rounded-lg border border-[#128C7E] bg-[#25D366] px-4 text-sm font-semibold !text-white shadow-sm transition duration-200 hover:-translate-y-px hover:border-[#0f7a6e] hover:bg-[#20BD5A] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] active:scale-[0.98] sm:min-h-[2.75rem] sm:flex-none sm:px-5'
+const listingCtaRowClass = 'flex w-full min-w-0 items-stretch gap-2'
 
-const listingCtaCallClass = `${listingCtaBaseClass} hover:border-[#31C950]/50 hover:bg-[#ecfdf5]/90`
+const listingCtaCallRemainderClass = 'flex min-h-0 min-w-0 flex-1 items-stretch'
+
+/** Square ghost: light grey fill, border matches listing SVG bubble (#4caf50). */
+const listingCtaWhatsAppOutlineClass = `inline-flex ${LISTING_CTA_H} w-12 shrink-0 items-center justify-center rounded-md border border-[#4caf50] bg-[#f0f2f5] shadow-none transition duration-200 hover:bg-[#e4e8ec] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4caf50] active:scale-[0.98]`
+
+/** CALL — #00a651 fill, Montserrat (see `.property-listing-call-cta` in index.css) */
+const listingCtaCallSolidClass = `property-listing-call-cta flex min-w-0 w-[30%] max-w-full ${LISTING_CTA_H} items-center justify-center gap-2.5 rounded-[10px] bg-[#00a651] px-5 text-[13px] uppercase tracking-[0.07em] !text-white shadow-none transition duration-200 hover:bg-[#008f47] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 active:scale-[0.98]`
 
 function IconListView({ className = '' }) {
   return (
@@ -695,25 +699,28 @@ function Properties() {
                             </div>
                           ) : null}
 
-                          <div className="mt-4 grid grid-cols-2 items-stretch gap-2 border-t border-slate-100 pt-3 md:mt-5 md:gap-3 md:pt-4">
-                            <a
-                              href={whatsappHref(p.title)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={listingCtaWhatsAppClass}
-                              aria-label={`WhatsApp about ${p.title}`}
-                            >
-                              <IconWhatsAppBrand className="text-white" size="h-[18px] w-[18px] sm:h-5 sm:w-5" />
-                              WhatsApp
-                            </a>
-                            <a
-                              href={telHref}
-                              className={listingCtaCallClass}
-                              aria-label={`Call about ${p.title}`}
-                            >
-                              <IconPhone className="shrink-0 text-[#31C950]" size="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={2} />
-                              Call
-                            </a>
+                          <div className="mt-4 border-t border-slate-100 pt-3 md:mt-5 md:pt-4">
+                            <div className={listingCtaRowClass}>
+                              <a
+                                href={whatsappHref(p.title)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={listingCtaWhatsAppOutlineClass}
+                                aria-label={`WhatsApp about ${p.title}`}
+                              >
+                                <IconWhatsAppListing size="h-8 w-8" />
+                              </a>
+                              <div className={listingCtaCallRemainderClass}>
+                                <a
+                                  href={telHref}
+                                  className={listingCtaCallSolidClass}
+                                  aria-label={`Call about ${p.title}`}
+                                >
+                                  <IconPhone className="shrink-0 !text-white" size="h-[22px] w-[22px]" strokeWidth={2.1} />
+                                  CALL
+                                </a>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -775,25 +782,28 @@ function Properties() {
                             <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-slate-600">{description}</p>
                           ) : null}
 
-                          <div className="mt-auto flex flex-wrap items-stretch gap-3 pt-4">
-                            <a
-                              href={whatsappHref(p.title)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={listingCtaWhatsAppClass}
-                              aria-label={`WhatsApp about ${p.title}`}
-                            >
-                              <IconWhatsAppBrand className="text-white" size="h-[18px] w-[18px] sm:h-5 sm:w-5" />
-                              WhatsApp
-                            </a>
-                            <a
-                              href={telHref}
-                              className={listingCtaCallClass}
-                              aria-label={`Call about ${p.title}`}
-                            >
-                              <IconPhone className="shrink-0 text-[#31C950]" size="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={2} />
-                              Call
-                            </a>
+                          <div className="mt-auto w-full pt-4">
+                            <div className={listingCtaRowClass}>
+                              <a
+                                href={whatsappHref(p.title)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={listingCtaWhatsAppOutlineClass}
+                                aria-label={`WhatsApp about ${p.title}`}
+                              >
+                                <IconWhatsAppListing size="h-8 w-8" />
+                              </a>
+                              <div className={listingCtaCallRemainderClass}>
+                                <a
+                                  href={telHref}
+                                  className={listingCtaCallSolidClass}
+                                  aria-label={`Call about ${p.title}`}
+                                >
+                                  <IconPhone className="shrink-0 !text-white" size="h-[22px] w-[22px]" strokeWidth={2.1} />
+                                  CALL
+                                </a>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

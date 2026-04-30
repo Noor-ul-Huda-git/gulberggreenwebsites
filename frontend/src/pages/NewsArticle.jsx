@@ -1,8 +1,29 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import PageHero from '../components/layout/PageHero.jsx'
 import { fetchNewsPost } from '../lib/api.js'
+import { usePageSeo } from '../lib/usePageSeo.js'
+
+const SITE_ORIGIN = 'https://gulberggreens.com.pk'
+
+function newsBodyMetaDescription(htmlOrText, maxLen) {
+  const raw = htmlOrText?.trim() ?? ''
+  if (!raw) {
+    return 'Latest news and updates from Gulberg Greens Islamabad.'
+  }
+  const plain = raw
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!plain) {
+    return 'Latest news and updates from Gulberg Greens Islamabad.'
+  }
+  if (plain.length <= maxLen) return plain
+  return plain.slice(0, maxLen)
+}
 
 function formatNewsDate(iso) {
   try {
@@ -27,7 +48,7 @@ function ArticleBody({ text }) {
   if (/<[a-z][\s\S]*>/i.test(raw)) {
     return (
       <div
-        className="news-article-body max-w-none text-[17px] leading-[1.88] text-slate-700 [&_a]:text-[#1a3553] [&_a]:font-medium [&_a]:underline [&_a]:decoration-slate-300 [&_a]:underline-offset-2 [&_a]:transition hover:[&_a]:text-[#31C950] [&_strong]:font-semibold [&_em]:italic [&_h2]:mt-12 [&_h2]:font-semibold [&_h2]:text-[#1a3553] [&_h2]:tracking-tight [&_h3]:mt-8 [&_h3]:font-semibold [&_h3]:text-[#1a3553] [&_h4]:mt-6 [&_h4]:font-semibold [&_h4]:text-slate-800 [&_p+p]:mt-5 [&_p]:leading-[1.88] [&_ul]:my-5 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-5 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-slate-200 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-600 [&_pre]:my-5 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-slate-100 [&_pre]:p-4 [&_pre]:text-[15px] [&_hr]:my-10 [&_hr]:border-slate-200"
+        className="news-article-body max-w-none text-[17px] leading-[1.88] text-slate-700 [&_a]:text-[#1a3553] [&_a]:font-medium [&_a]:underline [&_a]:decoration-slate-300 [&_a]:underline-offset-2 [&_a]:transition hover:[&_a]:text-[#31C950] [&_strong]:font-semibold [&_em]:italic [&_h2]:mt-12 [&_h2]:font-semibold [&_h2]:text-[#1a3553] [&_h2]:tracking-tight [&_h3]:mt-8 [&_h3]:font-semibold [&_h3]:text-[#1a3553] [&_h4]:mt-6 [&_h4]:font-semibold [&_h4]:text-slate-800 [&_p+p]:mt-5 [&_p]:leading-[1.88] [&_ul]:my-5 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-5 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-slate-200 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-600 [&_img]:mx-auto [&_img]:my-6 [&_img]:block [&_img]:max-h-[min(70vh,48rem)] [&_img]:w-auto [&_img]:max-w-full [&_img]:rounded-xl [&_img]:border [&_img]:border-slate-200/60 [&_pre]:my-5 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-slate-100 [&_pre]:p-4 [&_pre]:text-[15px] [&_hr]:my-10 [&_hr]:border-slate-200"
         dangerouslySetInnerHTML={{ __html: raw }}
       />
     )
@@ -84,11 +105,11 @@ function ArticleImageGallery({ images }) {
   return (
     <div className="relative mx-auto max-w-4xl">
       <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 shadow-[0_24px_70px_-32px_rgba(15,23,42,0.28)] ring-1 ring-slate-900/[0.04]">
-        <div className="relative aspect-[16/9] w-full md:aspect-[2/1]">
+        <div className="flex min-h-[11rem] w-full items-center justify-center px-2 py-3 sm:min-h-[13rem] md:px-5 md:py-6">
           <img
             src={current.url}
             alt={current.alt_text || `Article image ${index + 1} of ${n}`}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="mx-auto block max-h-[min(78vh,52rem)] w-auto max-w-full object-contain object-center"
             loading={index === 0 ? 'eager' : 'lazy'}
           />
         </div>
@@ -170,6 +191,25 @@ function NewsArticle() {
       cancelled = true
     }
   }, [slug])
+
+  const articleSeo = useMemo(() => {
+    if (loading) return null
+    if (!post) {
+      return {
+        metaTitle: 'Article not found | Gulberg Greens Islamabad',
+        metaDescription:
+          'This update may have been removed or the link is incorrect. Browse all latest news from Gulberg Greens Islamabad.',
+        canonicalOverride: `${SITE_ORIGIN}/latest-updates`,
+      }
+    }
+    return {
+      metaTitle: post.title,
+      metaDescription: newsBodyMetaDescription(post.description, 130),
+      canonicalOverride: `${SITE_ORIGIN}/latest-updates/${post.slug}`,
+    }
+  }, [loading, post])
+
+  usePageSeo(articleSeo)
 
   if (loading) {
     return (

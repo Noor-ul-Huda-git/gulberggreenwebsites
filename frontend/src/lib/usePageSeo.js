@@ -37,9 +37,12 @@ export function usePageSeo(seo) {
           : `${window.location.origin}${window.location.pathname}`
         : seo.canonical
 
+    /** When set (e.g. news under both `/news/` and `/latest-updates/`), forces one preferred URL for search engines. */
+    const canonicalHref = seo.canonicalOverride || selfCanonical || seo.canonical
+
     document.title = seo.metaTitle
     upsertMeta('description', seo.metaDescription)
-    upsertCanonical(selfCanonical || seo.canonical)
+    upsertCanonical(canonicalHref)
 
     return () => {
       document.title = previousTitle

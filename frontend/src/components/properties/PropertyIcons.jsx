@@ -109,6 +109,23 @@ export function IconWhatsAppBrand({ className, size = 'h-[26px] w-[26px]' }) {
   )
 }
 
+/** Two-tone bubble (Material green + light handset); viewBox 0 0 20 20 — property listing ghost button. */
+export function IconWhatsAppListing({ className, size = 'h-8 w-8' }) {
+  return (
+    <svg className={svgIconClass(className, size)} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <path fill="none" d="M0 0h20v20H0z" />
+      <path
+        fill="#4caf50"
+        d="M10 3.6a6.4 6.4 0 0 0-5.18 10.15l-.8 2.38 2.46-.79A6.4 6.4 0 1 0 10 3.6z"
+      />
+      <path
+        fill="#fafafa"
+        d="M13.83 12.72a1.86 1.86 0 0 1-1.3.93c-.34.08-.79.13-2.3-.5a8.26 8.26 0 0 1-3.27-2.9 3.79 3.79 0 0 1-.78-2 2.12 2.12 0 0 1 .67-1.61.95.95 0 0 1 .67-.24h.22c.2.02.3.03.42.34l.6 1.43a.4.4 0 0 1 .02.35 1.14 1.14 0 0 1-.21.3c-.1.12-.2.2-.29.32-.09.1-.19.22-.08.42a5.87 5.87 0 0 0 1.07 1.33 4.83 4.83 0 0 0 1.54.96.41.41 0 0 0 .47-.08 8 8 0 0 0 .51-.68.37.37 0 0 1 .47-.15c.18.07 1.12.53 1.32.63s.32.14.36.23a1.66 1.66 0 0 1-.11.92z"
+      />
+    </svg>
+  )
+}
+
 export function IconMail({ className, size = 'h-[18px] w-[18px]' }) {
   return (
     <svg className={svgIconClass(className, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>

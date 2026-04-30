@@ -1,13 +1,16 @@
 from decimal import Decimal, InvalidOperation
 
+from django.db import IntegrityError, transaction
 from django.db.models import Prefetch, Q
 from django.http import Http404
-from rest_framework import generics
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Property, PropertyImage
-from .serializers import PropertySerializer
+from .models import ListingEmail, Property, PropertyImage
+from .serializers import ListingEmailCreateSerializer, PropertySerializer
 
 
 class HealthCheckAPIView(APIView):
@@ -126,3 +129,57 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
             raise Http404
 
         return obj
+
+
+def _client_ip(request):
+    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+    if xff:
+        return xff.split(',')[0].strip()[:45]
+    return (request.META.get('REMOTE_ADDR') or '')[:45] or None
+
+
+class PropertyListingEmailCreateAPIView(APIView):
+    """
+    Store a listing inquiry from the website form.
+    At most one stored inquiry per (published listing, sender email).
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, property_id):
+        prop = get_object_or_404(Property.objects.filter(is_published=True), pk=property_id)
+        ser = ListingEmailCreateSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
+        phone_digits = data.get('phone') or ''
+        phone_display = f'+92 {phone_digits}' if phone_digits else ''
+        body = (data.get('message') or '').strip() or f'I would like to inquire about {prop.title}.'
+        if ListingEmail.objects.filter(property_listing=prop, sender_email=data['email']).exists():
+            return Response(
+                {
+                    'detail': 'You have already submitted an inquiry for this listing using this email address.',
+                    'code': 'duplicate',
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        try:
+            with transaction.atomic():
+                ListingEmail.objects.create(
+                    property_listing=prop,
+                    sender_name=data['name'],
+                    sender_email=data['email'],
+                    sender_phone=phone_display,
+                    message=body,
+                    submitted_ip=_client_ip(request),
+                    user_agent=(request.META.get('HTTP_USER_AGENT') or '')[:512],
+                )
+        except IntegrityError:
+            return Response(
+                {
+                    'detail': 'You have already submitted an inquiry for this listing using this email address.',
+                    'code': 'duplicate',
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        return Response({'detail': 'Your inquiry has been received.', 'ok': True}, status=status.HTTP_201_CREATED)

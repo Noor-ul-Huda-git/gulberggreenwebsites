@@ -60,6 +60,44 @@ export async function fetchProperty({ slug, categorySlug, block } = {}) {
   return response.json()
 }
 
+/**
+ * Submit the property inquiry form to the API (stored as ListingEmail; one per listing per email).
+ * @param {number} propertyId
+ * @param {{ name: string, email: string, phone: string, message: string }} payload
+ * @returns {Promise<{ ok: true, detail?: string } | { duplicate: true, detail: string }>}
+ */
+export async function submitPropertyListingEmail(propertyId, payload) {
+  const response = await fetch(`${getApiBase()}/properties/${Number(propertyId)}/listing-emails/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+  let data = {}
+  try {
+    data = await response.json()
+  } catch {
+    /* non-JSON body */
+  }
+  if (response.status === 201 || response.status === 200) {
+    return { ok: true, detail: typeof data.detail === 'string' ? data.detail : undefined }
+  }
+  if (response.status === 409) {
+    return {
+      duplicate: true,
+      detail: typeof data.detail === 'string' ? data.detail : 'You have already submitted an inquiry for this listing.',
+    }
+  }
+  const raw =
+    (typeof data.detail === 'string' && data.detail) ||
+    (Array.isArray(data.non_field_errors) && data.non_field_errors[0]) ||
+    (data.email && Array.isArray(data.email) && data.email[0]) ||
+    (data.name && Array.isArray(data.name) && data.name[0])
+  throw new Error(raw || `Request failed (${response.status})`)
+}
+
 /** Fallback if API omits `page_size` (older deployments). */
 const NEWS_PAGE_SIZE_FALLBACK = 20
 
