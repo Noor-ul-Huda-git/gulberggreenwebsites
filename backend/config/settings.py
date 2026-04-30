@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ckeditor',
+    'django_ckeditor_5',
     'corsheaders',
     'rest_framework',
     'properties',
@@ -233,22 +233,28 @@ JAZZMIN_UI_TWEAKS = {
     'default_theme_mode': 'light',
 }
 
-# Rich text (news article body) — WYSIWYG in Django admin
-CKEDITOR_CONFIGS = {
+# Rich text (news + property descriptions) — CKEditor 5 in Django admin.
+CKEDITOR_5_CONFIGS = {
     'default': {
-        'toolbar': 'blog',
-        'toolbar_blog': [
-            ['Bold', 'Italic', 'Underline', 'Strike'],
-            ['Subscript', 'Superscript'],
-            ['Format', 'RemoveFormat'],
-            ['NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Blockquote'],
-            ['Link', 'Unlink'],
-            ['HorizontalRule', 'SpecialChar'],
-            ['Maximize', 'ShowBlocks', 'Source'],
+        'toolbar': [
+            'heading', '|',
+            'bold', 'italic', 'underline', 'strikethrough', 'link', '|',
+            'bulletedList', 'numberedList', 'blockQuote', '|',
+            'insertTable', 'horizontalLine', '|',
+            'undo', 'redo', 'sourceEditing',
         ],
-        'format_tags': 'p;h2;h3;h4;pre',
-        'height': 420,
-        'width': '100%',
-        'removeDialogTabs': 'link:advanced;image:advanced',
+        'table': {
+            'contentToolbar': [
+                'tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties'
+            ],
+        },
+        'heading': {
+            'options': [
+                {'model': 'paragraph', 'title': 'Paragraph', 'class': 'ck-heading_paragraph'},
+                {'model': 'heading2', 'view': 'h2', 'title': 'Heading 2', 'class': 'ck-heading_heading2'},
+                {'model': 'heading3', 'view': 'h3', 'title': 'Heading 3', 'class': 'ck-heading_heading3'},
+                {'model': 'heading4', 'view': 'h4', 'title': 'Heading 4', 'class': 'ck-heading_heading4'},
+            ],
+        },
     },
 }

@@ -1,4 +1,4 @@
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 from django.db import models
 from django.utils.text import slugify
 
@@ -6,7 +6,9 @@ from django.utils.text import slugify
 class NewsPost(models.Model):
     title = models.CharField(max_length=280)
     slug = models.SlugField(max_length=300, unique=True, blank=True)
-    description = RichTextField(
+    description = CKEditor5Field(
+        'Description',
+        config_name='default',
         help_text='Full article: use the toolbar for bold, headings, lists, and links. This HTML is shown on the website.',
     )
     author_name = models.CharField(max_length=120)

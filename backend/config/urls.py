@@ -14,6 +14,7 @@ urlpatterns = [
     path('robots.txt', robots_txt, name='robots-txt'),
     path('sitemap.xml', sitemap_xml, name='sitemap-xml'),
     path('admin/', admin.site.urls),
+    path('ckeditor5/', include('django_ckeditor_5.urls')),
     path('api/', include('config.api_urls')),
 ]
 

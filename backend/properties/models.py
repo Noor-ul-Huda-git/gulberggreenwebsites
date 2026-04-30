@@ -2,8 +2,8 @@ import secrets
 import uuid
 from urllib.parse import quote
 
-from ckeditor.fields import RichTextField
 from django.db import models
+from django_ckeditor_5.fields import CKEditor5Field
 from django.utils.text import slugify
 
 
@@ -72,7 +72,9 @@ class Property(models.Model):
     price = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
     location = models.CharField(max_length=255, blank=True)
     short_description = models.CharField(max_length=320, blank=True)
-    description = RichTextField(
+    description = CKEditor5Field(
+        'Description',
+        config_name='default',
         blank=True,
         help_text='Full listing copy: use the toolbar for bold, headings, lists, and links. HTML is shown on the property page.',
     )

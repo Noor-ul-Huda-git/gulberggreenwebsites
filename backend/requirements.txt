@@ -2,5 +2,6 @@ django
 djangorestframework
 django-cors-headers
 django-ckeditor
+django-ckeditor-5
 django-jazzmin>=3.0,<4
 pillow
