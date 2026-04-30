@@ -383,7 +383,7 @@ function DetailSkeleton() {
 }
 
 function PropertyDetail() {
-  const { slug } = useParams()
+  const { categorySlug = '', block = '', slug = '' } = useParams()
   const [property, setProperty] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -415,7 +415,7 @@ function PropertyDetail() {
     setSimilarByAgent([])
     ;(async () => {
       try {
-        const data = await fetchProperty(slug)
+        const data = await fetchProperty({ slug, categorySlug, block: decodeURIComponent(block) })
         if (cancelled) return
         if (!data) {
           setProperty(null)
@@ -435,7 +435,7 @@ function PropertyDetail() {
     return () => {
       cancelled = true
     }
-  }, [slug])
+  }, [slug, categorySlug, block])
 
   const images = useMemo(() => (property ? galleryUrls(property) : []), [property])
 
@@ -451,9 +451,11 @@ function PropertyDetail() {
       property.meta_description ||
       truncateMeta(property.short_description || property.description) ||
       truncateMeta(`${property.title} in ${property.location || property.block || 'Gulberg Greens Islamabad'}.`)
-    const canonical =
-      property.canonical_url ||
-      `https://gulberggreens.com.pk${propertyDetailPath(property).replace(/\/?$/, '/')}`
+    const isLocalPreview =
+      typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    const canonical = isLocalPreview
+      ? `${window.location.origin}${propertyDetailPath(property)}`
+      : property.canonical_url || `https://gulberggreens.com.pk${propertyDetailPath(property).replace(/\/?$/, '/')}`
 
     document.title = title
     upsertMeta('description', description)

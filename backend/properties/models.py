@@ -1,3 +1,6 @@
+import uuid
+from urllib.parse import quote
+
 from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils.text import slugify
@@ -47,7 +50,7 @@ class Property(models.Model):
         default=ListingType.PLOTS,
     )
     purpose = models.CharField(max_length=80, blank=True)
-    block = models.CharField(max_length=100, blank=True)
+    block = models.CharField(max_length=100)
     plot_number = models.CharField(
         max_length=50,
         blank=True,
@@ -143,7 +146,8 @@ class Property(models.Model):
 
     @property
     def canonical_url(self):
-        return f'{SITE_ORIGIN}/properties/{self.category_slug}/{self.slug}/'
+        block_segment = quote((self.block or '').strip(), safe='')
+        return f'{SITE_ORIGIN}/properties/{self.category_slug}/{block_segment}/{self.slug}/'
 
     def _area_label(self):
         if self.area_marlas in (None, ''):
@@ -210,18 +214,11 @@ class Property(models.Model):
         h1 = f'{subject} for {purpose} in {block}, Gulberg Greens Islamabad'
         return title[:90], description[:180], h1[:220]
 
+    def _build_serialized_slug(self):
+        base_slug = slugify(self.title) or 'property'
+        return f'{base_slug}-{self.pk}'
+
     def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.title) or 'property'
-            slug = base_slug
-            suffix = 1
-
-            while Property.objects.exclude(pk=self.pk).filter(slug=slug).exists():
-                suffix += 1
-                slug = f'{base_slug}-{suffix}'
-
-            self.slug = slug
-
         title, description, h1 = self.generate_seo()
         if not self.meta_title:
             self.meta_title = title
@@ -230,7 +227,15 @@ class Property(models.Model):
         if not self.seo_h1:
             self.seo_h1 = h1
 
+        if self.slug:
+            super().save(*args, **kwargs)
+            return
+
+        self.slug = f'property-{uuid.uuid4().hex[:12]}'
         super().save(*args, **kwargs)
+
+        self.slug = self._build_serialized_slug()
+        super().save(update_fields=('slug',))
 
 
 class PropertyImage(models.Model):

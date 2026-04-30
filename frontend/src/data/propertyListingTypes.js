@@ -193,6 +193,9 @@ export function propertyBlockSeo(categorySlug, block) {
 
 export function propertyDetailPath(property) {
   const categorySlug = PROPERTY_LISTING_TYPE_SLUGS[property?.listing_type]
-  if (categorySlug && property?.slug) return `/properties/${categorySlug}/${property.slug}`
+  const blockSegment = String(property?.block || '').trim()
+  if (categorySlug && blockSegment && property?.slug) {
+    return `/properties/${categorySlug}/${encodeURIComponent(blockSegment)}/${property.slug}`
+  }
   return property?.slug ? `/properties/${property.slug}` : '/properties'
 }

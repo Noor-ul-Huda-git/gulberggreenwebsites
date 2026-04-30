@@ -26,6 +26,7 @@ export const appRouteObjects = [
   { path: '/properties/office', element: <Properties /> },
   { path: '/properties/shop', element: <Properties /> },
   { path: '/properties/house', element: <Properties /> },
+  { path: '/properties/:categorySlug/:block/:slug', element: <PropertyDetail /> },
   { path: '/properties/:categorySlug/:slug', element: <PropertyRouteResolver /> },
   { path: '/properties/:slug', element: <PropertyDetail /> },
   { path: '*', element: <Navigate to="/" replace /> },

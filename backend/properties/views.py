@@ -1,6 +1,7 @@
 from decimal import Decimal, InvalidOperation
 
 from django.db.models import Prefetch, Q
+from django.http import Http404
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -112,3 +113,16 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
                 Prefetch('images', queryset=PropertyImage.objects.order_by('sort_order', 'id')),
             )
         )
+
+    def get_object(self):
+        obj = super().get_object()
+        category_slug = (self.kwargs.get('category_slug') or '').strip()
+        block = (self.kwargs.get('block') or '').strip()
+
+        if category_slug and obj.category_slug != category_slug:
+            raise Http404
+
+        if block and (obj.block or '').strip().lower() != block.lower():
+            raise Http404
+
+        return obj

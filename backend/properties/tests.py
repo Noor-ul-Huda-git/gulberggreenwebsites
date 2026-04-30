@@ -38,10 +38,22 @@ class PropertyApiTests(APITestCase):
         self.assertEqual(response.data['results'][0]['id'], self.published_property.id)
 
     def test_property_api_exposes_generated_seo_fields(self):
-        response = self.client.get(reverse('property-detail', kwargs={'slug': self.published_property.slug}))
+        response = self.client.get(
+            reverse(
+                'property-detail',
+                kwargs={
+                    'category_slug': self.published_property.category_slug,
+                    'block': self.published_property.block,
+                    'slug': self.published_property.slug,
+                },
+            )
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('meta_title', response.data)
         self.assertIn('meta_description', response.data)
         self.assertIn('seo_h1', response.data)
         self.assertEqual(response.data['category_slug'], 'plots')
-        self.assertEqual(response.data['canonical_url'], f'https://gulberggreens.com.pk/properties/plots/{self.published_property.slug}/')
+        self.assertEqual(
+            response.data['canonical_url'],
+            f'https://gulberggreens.com.pk/properties/plots/A%20Executive/{self.published_property.slug}/',
+        )

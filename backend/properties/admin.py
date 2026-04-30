@@ -35,12 +35,18 @@ class PropertyAdmin(admin.ModelAdmin):
     list_filter = ('listing_type', 'block', 'is_featured', 'is_published')
     search_fields = ('title', 'slug', 'location', 'block', 'plot_number', 'category', 'short_description', 'meta_title', 'seo_h1')
     list_editable = ('is_featured', 'is_published')
-    prepopulated_fields = {'slug': ('title',)}
+    readonly_fields = ('slug',)
     ordering = ('-is_featured', '-updated_at')
     autocomplete_fields = ('primary_agent', 'secondary_agent')
     inlines = (PropertyImageInline,)
     fieldsets = (
-        (None, {'fields': ('title', 'slug', 'listing_type', 'purpose', 'is_featured', 'is_published')}),
+        (
+            None,
+            {
+                'fields': ('title', 'slug', 'listing_type', 'purpose', 'is_featured', 'is_published'),
+                'description': 'Slug is auto-generated from title and updates live while typing. Serial number is appended on save.',
+            },
+        ),
         ('Location & size', {'fields': ('block', 'plot_number', 'category', ('area_marlas', 'area_unit'), 'location')}),
         ('Pricing', {'fields': ('price',)}),
         ('Agents', {'fields': ('primary_agent', 'secondary_agent'), 'description': 'Pick saved agents, or use the + beside the field to add a new agent in a popup.'}),
@@ -50,7 +56,7 @@ class PropertyAdmin(admin.ModelAdmin):
     )
 
     class Media:
-        js = ('admin/js/property_price_preview.js',)
+        js = ('admin/js/property_price_preview.js', 'admin/js/property_slug_preview.js')
 
 
 @admin.register(PropertyImage)

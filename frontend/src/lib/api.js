@@ -39,8 +39,15 @@ export async function fetchProperties(params = {}) {
   return response.json()
 }
 
-export async function fetchProperty(slug) {
-  const response = await fetch(`${getApiBase()}/properties/${encodeURIComponent(slug)}/`)
+export async function fetchProperty({ slug, categorySlug, block } = {}) {
+  const encodedSlug = encodeURIComponent(String(slug || '').trim())
+  const encodedCategory = encodeURIComponent(String(categorySlug || '').trim())
+  const encodedBlock = encodeURIComponent(String(block || '').trim())
+  const detailPath =
+    encodedCategory && encodedBlock
+      ? `${getApiBase()}/properties/${encodedCategory}/${encodedBlock}/${encodedSlug}/`
+      : `${getApiBase()}/properties/${encodedSlug}/`
+  const response = await fetch(detailPath)
 
   if (response.status === 404) {
     return null
