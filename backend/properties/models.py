@@ -1,3 +1,4 @@
+import secrets
 import uuid
 from urllib.parse import quote
 
@@ -147,7 +148,7 @@ class Property(models.Model):
     @property
     def canonical_url(self):
         block_segment = quote((self.block or '').strip(), safe='')
-        return f'{SITE_ORIGIN}/properties/{self.category_slug}/{block_segment}/{self.slug}/'
+        return f'{SITE_ORIGIN}/properties/{self.category_slug}/{block_segment}/{self.slug}'
 
     def _area_label(self):
         if self.area_marlas in (None, ''):
@@ -216,7 +217,11 @@ class Property(models.Model):
 
     def _build_serialized_slug(self):
         base_slug = slugify(self.title) or 'property'
-        return f'{base_slug}-{self.pk}'
+        while True:
+            serial = f'{secrets.randbelow(10**10):010d}'
+            candidate = f'{base_slug}-{serial}'
+            if not Property.objects.exclude(pk=self.pk).filter(slug=candidate).exists():
+                return candidate
 
     def save(self, *args, **kwargs):
         title, description, h1 = self.generate_seo()

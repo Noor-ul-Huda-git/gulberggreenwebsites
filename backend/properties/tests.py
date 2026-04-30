@@ -55,5 +55,5 @@ class PropertyApiTests(APITestCase):
         self.assertEqual(response.data['category_slug'], 'plots')
         self.assertEqual(
             response.data['canonical_url'],
-            f'https://gulberggreens.com.pk/properties/plots/A%20Executive/{self.published_property.slug}/',
+            f'https://gulberggreens.com.pk/properties/plots/A%20Executive/{self.published_property.slug}',
         )

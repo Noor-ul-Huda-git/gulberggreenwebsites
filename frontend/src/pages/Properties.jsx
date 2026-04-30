@@ -208,10 +208,17 @@ function Properties() {
     const previousCanonical = document.head.querySelector('link[rel="canonical"]')?.getAttribute('href') || ''
     const previousRobots = document.head.querySelector('meta[name="robots"]')?.getAttribute('content') || ''
 
+    const selfCanonical =
+      typeof window !== 'undefined'
+        ? window.location.pathname === '/'
+          ? window.location.origin
+          : `${window.location.origin}${window.location.pathname}`
+        : pageSeo.canonical
+
     document.title = pageSeo.metaTitle
     upsertMeta('description', pageSeo.metaDescription)
     upsertMeta('robots', location.search ? 'noindex, follow' : 'index, follow')
-    upsertCanonical(pageSeo.canonical)
+    upsertCanonical(selfCanonical || pageSeo.canonical)
 
     return () => {
       document.title = previousTitle

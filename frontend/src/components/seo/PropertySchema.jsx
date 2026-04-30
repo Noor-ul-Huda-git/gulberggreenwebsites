@@ -9,7 +9,12 @@ function propertyImage(property) {
 function PropertySchema({ property }) {
   if (!property) return null
 
-  const url = property.canonical_url || `https://gulberggreens.com.pk${propertyDetailPath(property).replace(/\/?$/, '/')}`
+  const url =
+    typeof window !== 'undefined'
+      ? window.location.pathname === '/'
+        ? window.location.origin
+        : `${window.location.origin}${window.location.pathname}`
+      : property.canonical_url || `https://gulberggreens.com.pk${propertyDetailPath(property)}`
   const image = propertyImage(property)
   const schema = {
     '@context': 'https://schema.org',

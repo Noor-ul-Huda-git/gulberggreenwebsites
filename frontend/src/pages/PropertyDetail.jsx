@@ -120,6 +120,13 @@ function formatReference(property) {
   return 'PROPERTY'
 }
 
+function trailingSlugNumber(slug) {
+  const clean = String(slug || '').trim()
+  if (!clean) return ''
+  const m = clean.match(/(\d+)\s*$/)
+  return m ? m[1] : ''
+}
+
 function formatArea(property) {
   if (!property || property.area_marlas == null || property.area_marlas === '') return '-'
   const unit = property.area_unit_display || 'Marla'
@@ -446,16 +453,29 @@ function PropertyDetail() {
     const previousDescription = document.head.querySelector('meta[name="description"]')?.getAttribute('content') || ''
     const previousCanonical = document.head.querySelector('link[rel="canonical"]')?.getAttribute('href') || ''
 
-    const title = property.meta_title || `${property.title} | Gulberg Greens Islamabad`
-    const description =
-      property.meta_description ||
-      truncateMeta(property.short_description || property.description) ||
-      truncateMeta(`${property.title} in ${property.location || property.block || 'Gulberg Greens Islamabad'}.`)
-    const isLocalPreview =
-      typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    const canonical = isLocalPreview
-      ? `${window.location.origin}${propertyDetailPath(property)}`
-      : property.canonical_url || `https://gulberggreens.com.pk${propertyDetailPath(property).replace(/\/?$/, '/')}`
+    const blockLabel = formatBlockLabel(property.block, property.location)
+    const sizeLabel = formatArea(property)
+    const priceLabel = property.price != null && property.price !== '' ? formatPkr(property.price) : ''
+    const serialNumber = trailingSlugNumber(property.slug)
+    const titleParts = [
+      serialNumber ? `${property.title || 'Property'} (${serialNumber})` : property.title || 'Property',
+      blockLabel,
+      sizeLabel,
+      priceLabel,
+    ].filter((v) => v && v !== '-')
+    const title = `${titleParts.join(', ')} | Gulberg Greens Islamabad`
+    const descriptionSource =
+      stripHtml(property.description) ||
+      stripHtml(property.short_description) ||
+      stripHtml(property.meta_description) ||
+      `${property.title} in ${property.location || property.block || 'Gulberg Greens Islamabad'}.`
+    const description = descriptionSource.slice(0, 130).trim()
+    const canonical =
+      typeof window !== 'undefined'
+        ? window.location.pathname === '/'
+          ? window.location.origin
+          : `${window.location.origin}${window.location.pathname}`
+        : property.canonical_url || `https://gulberggreens.com.pk${propertyDetailPath(property)}`
 
     document.title = title
     upsertMeta('description', description)

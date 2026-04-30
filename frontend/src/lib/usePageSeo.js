@@ -30,9 +30,16 @@ export function usePageSeo(seo) {
     const previousDescription = document.head.querySelector('meta[name="description"]')?.getAttribute('content') || ''
     const previousCanonical = document.head.querySelector('link[rel="canonical"]')?.getAttribute('href') || ''
 
+    const selfCanonical =
+      typeof window !== 'undefined'
+        ? window.location.pathname === '/'
+          ? window.location.origin
+          : `${window.location.origin}${window.location.pathname}`
+        : seo.canonical
+
     document.title = seo.metaTitle
     upsertMeta('description', seo.metaDescription)
-    upsertCanonical(seo.canonical)
+    upsertCanonical(selfCanonical || seo.canonical)
 
     return () => {
       document.title = previousTitle
