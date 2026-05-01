@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useParams } from 'react-router-dom'
 import { AnimatePresence, motion as Motion } from 'framer-motion'
-import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import {
   IconBath,
   IconBed,
@@ -217,7 +216,7 @@ function SimilarListingsCarousel({ title, items }) {
   return (
     <section className="mt-12 border-t border-slate-200 pt-10">
       <div className="flex items-start justify-between gap-4">
-        <h2 className="max-w-3xl text-lg font-semibold leading-snug tracking-tight text-slate-900 md:text-xl">{title}</h2>
+        <p className="max-w-3xl text-lg font-semibold leading-snug tracking-tight text-slate-900 md:text-xl">{title}</p>
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
           <button
             type="button"
@@ -365,14 +364,6 @@ function DetailSkeleton() {
   return (
     <div className="min-h-screen bg-white">
       <div className="h-9" style={{ backgroundColor: BRAND_NAVY }} />
-      <div className="border-b border-slate-100 bg-white">
-        <div className="container-shell max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-          <PageBreadcrumbs
-            variant="onLight"
-            items={[{ to: '/', label: 'Home' }, { to: '/properties', label: 'Properties' }, { label: 'Loading…' }]}
-          />
-        </div>
-      </div>
       <div className="container-shell max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="h-4 w-48 animate-pulse rounded bg-slate-200" />
         <div className="mt-8 aspect-[21/9] max-h-[min(56vh,520px)] animate-pulse rounded-lg bg-slate-200" />
@@ -639,11 +630,6 @@ function PropertyDetail() {
     return (
       <div className="min-h-[50vh] bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_100%)] px-4 py-14 sm:px-6 sm:py-20">
         <div className="container-shell mx-auto max-w-7xl">
-          <PageBreadcrumbs
-            variant="onLight"
-            className="mb-10"
-            items={[{ to: '/', label: 'Home' }, { to: '/properties', label: 'Properties' }, { label: 'Error' }]}
-          />
           <div className="text-center">
             <p className="text-lg font-semibold text-[#1a3553]">Something went wrong</p>
             <p className="mt-2 text-sm text-slate-600">Please try again shortly.</p>
@@ -663,11 +649,6 @@ function PropertyDetail() {
     return (
       <div className="min-h-[50vh] bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_100%)] px-4 py-14 sm:px-6 sm:py-20">
         <div className="container-shell mx-auto max-w-7xl">
-          <PageBreadcrumbs
-            variant="onLight"
-            className="mb-10"
-            items={[{ to: '/', label: 'Home' }, { to: '/properties', label: 'Properties' }, { label: 'Not found' }]}
-          />
           <div className="text-center">
             <p className="text-lg font-semibold text-[#1a3553]">Listing not found</p>
             <p className="mt-2 text-sm text-slate-600">It may have been removed or unpublished.</p>
@@ -772,9 +753,9 @@ function PropertyDetail() {
                 </svg>
               </button>
 
-              <h2 id="property-call-modal-title" className="text-center text-[1.35rem] font-semibold tracking-tight text-[#1a3553] sm:text-[2rem]">
+              <p id="property-call-modal-title" className="text-center text-[1.35rem] font-semibold tracking-tight text-[#1a3553] sm:text-[2rem]">
                 Contact Us
-              </h2>
+              </p>
               <div className="mt-5 divide-y divide-slate-200 rounded-lg border border-slate-100 bg-white sm:mt-7">
                 {effectiveCallContacts.map((item) => (
                   <div
@@ -849,9 +830,9 @@ function PropertyDetail() {
                       <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
-                  <h2 id="inquiry-success-title" className="mt-6 text-2xl font-bold tracking-tight text-[#5cb85c]">
+                  <p id="inquiry-success-title" className="mt-6 text-2xl font-bold tracking-tight text-[#5cb85c]">
                     Success!
-                  </h2>
+                  </p>
                   <p className="mt-4 text-[15px] leading-relaxed text-slate-800">
                     Your message has been sent successfully. You will receive a reply at the email address you provided.
                   </p>
@@ -876,18 +857,9 @@ function PropertyDetail() {
 
       <div className="hidden border-b border-slate-200/80 bg-white lg:block">
         <div className="container-shell max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-          <PageBreadcrumbs
-            variant="onLight"
-            className="mb-3"
-            items={[
-              { to: '/', label: 'Home' },
-              { to: '/properties', label: 'Properties' },
-              { label: property.title },
-            ]}
-          />
           <div className="min-w-0">
             <h1 className="max-w-5xl break-words text-[1.5rem] font-medium leading-[1.2] tracking-[-0.025em] text-slate-800 md:text-[1.75rem] lg:text-[1.875rem]">
-              {property.seo_h1 || property.h1 || property.title}
+              {property.title}
             </h1>
             <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[12px] text-slate-500 md:text-[13px]">
               <IconPin className="text-[#31C950]" size="h-3.5 w-3.5" aria-hidden />
@@ -1208,7 +1180,7 @@ function PropertyDetail() {
               transition={{ duration: 0.4 }}
             >
               {/* <section id="overview" className="scroll-mt-28">
-                <h2 className="text-xl font-semibold tracking-tight text-[#1a3553] md:text-2xl">Overview</h2>
+                <p className="text-xl font-semibold tracking-tight text-[#1a3553] md:text-2xl">Overview</p>
               </section> */}
 
               <div className="mt-4" id="overview">
@@ -1232,7 +1204,7 @@ function PropertyDetail() {
 
               {property.short_description ? (
                 <div id="summary" className="mt-6 scroll-mt-28 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                  <h2 className="text-lg font-semibold leading-snug text-[#1a3553] md:text-xl">{property.short_description}</h2>
+                  <p className="text-lg font-semibold leading-snug text-[#1a3553] md:text-xl">{property.short_description}</p>
                 </div>
               ) : null}
 
