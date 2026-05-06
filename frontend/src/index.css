@@ -1,15 +1,11 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Petit+Formal+Script&display=swap");
+/* @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap"); */
+/* @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"); */
 @import "tailwindcss";
 
 :root {
   color: #334155;
   background-color: #ffffff;
-  font-family:
-    "Manrope", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -40,13 +36,6 @@ textarea {
 
 #root {
   min-height: 100vh;
-}
-
-/** Welcome splash — decorative script (banner only) */
-.petit-formal-script-regular {
-  font-family: "Petit Formal Script", cursive;
-  font-weight: 400;
-  font-style: normal;
 }
 
 .page-shell {

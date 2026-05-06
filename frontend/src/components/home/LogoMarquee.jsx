@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react'
-import { useReducedMotion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
 
 const LIST_CLASS =
   'flex shrink-0 items-center gap-10 py-4 pl-4 pr-4 md:gap-14 md:pl-6 md:pr-6 lg:gap-16 lg:py-5'
@@ -19,8 +18,16 @@ function LogoMarquee({ logos }) {
   const draggingRef = useRef(false)
   const lastPointerXRef = useRef(0)
   const rafRef = useRef(0)
-  const reduceMotion = useReducedMotion()
-  const prefersReduced = reduceMotion === true
+  const [prefersReduced, setPrefersReduced] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setPrefersReduced(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
 
   useEffect(() => {
     if (prefersReduced) return undefined

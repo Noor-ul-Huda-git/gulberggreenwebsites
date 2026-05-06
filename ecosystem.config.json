@@ -11,7 +11,7 @@
       "name": "gulberg-frontend",
       "cwd": "./frontend",
       "script": "npm",
-      "args": ["run", "dev"]
+      "args": ["run", "build"]
     }
   ]
 }

@@ -13,14 +13,14 @@ import {
   mapEmbedUrl,
 } from '../data/siteContent.js'
 import { usePageSeo } from '../lib/usePageSeo.js'
-import heroBg from '../assets/nbg.jpg'
+import heroBg from '../assets/nbg.webp'
 // import lakeBg from '../assets/lake.jpg'
-import lakeBg from '../assets/nlake2.jpg'
-import imgGullbergMall from '../assets/ngullbergmall.jpg'
-import imgHouses from '../assets/nhouses.jpg'
-import imgHelipad from '../assets/nhelipad.jpg'
-import imgPrimeDestination from '../assets/primeDest.jpg'
-import imgNbg2 from '../assets/nbg2.jpg'
+import lakeBg from '../assets/nlake2.webp'
+import imgGullbergMall from '../assets/ngullbergmall.webp'
+import imgHouses from '../assets/nhouses.webp'
+import imgHelipad from '../assets/nhelipad.webp'
+import imgPrimeDestination from '../assets/primeDest.webp'
+import imgNbg2 from '../assets/nbg2.webp'
 import brandAlliedBank from '../assets/Brands/allied-bank-limited-logo.png'
 import brandBankAlfalah from '../assets/Brands/bank-alfalah-logo.png'
 import brandMcb from '../assets/Brands/mcb-logo.png'
@@ -533,6 +533,7 @@ function Home() {
   const [amenityTx, setAmenityTx] = useState(0)
   const [amenityCardWidth, setAmenityCardWidth] = useState(0)
   const [homeFeaturedListings, setHomeFeaturedListings] = useState([])
+  const [showDeferredSections, setShowDeferredSections] = useState(false)
 
   const amenityMaxSlide = Math.max(0, categoryCards.length - amenityItemsVisible)
 
@@ -549,8 +550,9 @@ function Home() {
   }
 
   useEffect(() => {
+    if (!showDeferredSections) return undefined
     let cancelled = false
-    ;(async () => {
+    const load = async () => {
       try {
         const res = await fetchProperties({ page: '1' })
         if (cancelled) return
@@ -565,11 +567,15 @@ function Home() {
       } catch {
         if (!cancelled) setHomeFeaturedListings([])
       }
-    })()
+    }
+    const timer = window.setTimeout(() => {
+      void load()
+    }, 250)
     return () => {
       cancelled = true
+      window.clearTimeout(timer)
     }
-  }, [])
+  }, [showDeferredSections])
 
   useEffect(() => {
     const mq = () => {
@@ -605,6 +611,26 @@ function Home() {
     return () => ro.disconnect()
   }, [amenityItemsVisible, amenitySlide])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    let cancelled = false
+    const reveal = () => {
+      if (!cancelled) setShowDeferredSections(true)
+    }
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(reveal, { timeout: 1500 })
+      return () => {
+        cancelled = true
+        window.cancelIdleCallback(id)
+      }
+    }
+    const timer = window.setTimeout(reveal, 350)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [])
+
   return (
     <div className="bg-white font-[Poppins,Manrope,system-ui,sans-serif]">
       <section className="relative flex min-h-[min(92vh,920px)] flex-col overflow-hidden">
@@ -612,6 +638,9 @@ function Home() {
           src={heroBg}
           alt=""
           className="absolute inset-0 h-full w-full object-cover object-center"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/25 via-transparent to-slate-900/40" />
         <div
@@ -872,7 +901,7 @@ function Home() {
         </div>
       </section>
 
-      {homeFeaturedListings.length > 0 ? (
+      {showDeferredSections && homeFeaturedListings.length > 0 ? (
         <section className="border-t border-slate-100 bg-[#fafbfc] py-10 md:py-14" aria-labelledby="home-listings-heading">
           <div className="container-shell">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -934,6 +963,7 @@ function Home() {
         </section>
       ) : null}
       
+      {showDeferredSections ? (
       <section
         className="relative isolate min-h-[min(88vh,920px)] overflow-hidden"
         aria-labelledby="lake-heading"
@@ -943,6 +973,8 @@ function Home() {
             src={lakeBg}
             alt=""
             className="h-full w-full object-cover object-center"
+            loading="lazy"
+            decoding="async"
           />
           <div
             className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-slate-900/55 to-emerald-950/40"
@@ -994,10 +1026,14 @@ function Home() {
           aria-hidden
         />
       </section>
+      ) : (
+        <div className="h-12 border-t border-slate-100 bg-white" aria-hidden />
+      )}
 
 
       
 
+      {showDeferredSections ? (
       <section
         className="relative border-t border-slate-100 bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_55%,#f9fafb_100%)] py-16 md:py-24"
         aria-label="Project highlights"
@@ -1075,6 +1111,7 @@ function Home() {
                       <img
                         src={row.image}
                         alt={row.imageAlt}
+                        loading="lazy"
                         decoding="async"
                         className="h-full w-full object-cover"
                       />
@@ -1090,7 +1127,9 @@ function Home() {
           </div>
         </div>
       </section>
+      ) : null}
 
+      {showDeferredSections ? (
       <section
         className="border-t border-slate-100 bg-white py-12 md:py-16"
         aria-labelledby="registrations-heading"
@@ -1106,7 +1145,9 @@ function Home() {
 
         <LogoMarquee logos={registrationLogos} />
       </section>
+      ) : null}
 
+      {showDeferredSections ? (
       <section
         className="border-t border-slate-100 bg-white py-12 md:py-16"
         aria-labelledby="brands-facilities-heading"
@@ -1122,7 +1163,9 @@ function Home() {
 
         <LogoMarquee logos={topBrandsLogos} />
       </section>
+      ) : null}
 
+      {showDeferredSections ? (
       <section
         className="border-t border-slate-100 bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_100%)] py-12 md:py-16"
         aria-labelledby="social-showcase-heading"
@@ -1217,6 +1260,7 @@ function Home() {
           </div>
         </div>
       </section>
+      ) : null}
 
       {/* <section className="border-t border-slate-200 bg-white py-12 md:py-16" aria-labelledby="home-location-heading">
         <div className="container-shell">
@@ -1254,6 +1298,7 @@ function Home() {
         </div>
       </section> */}
 
+      {showDeferredSections ? (
       <section
         className="relative border-t border-slate-200 bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_45%,#f8fafc_100%)] py-16 md:py-24"
         aria-labelledby="home-faq-heading"
@@ -1325,6 +1370,7 @@ function Home() {
           </div>
         </div>
       </section>
+      ) : null}
 
     </div>
   )

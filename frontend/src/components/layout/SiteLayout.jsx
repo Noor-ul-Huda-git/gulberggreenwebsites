@@ -1,6 +1,5 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useLocation, useRoutes } from 'react-router-dom'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { appRouteObjects } from '../../appRoutes.jsx'
 import FloatingContactActions from './FloatingContactActions.jsx'
 import Footer from './Footer.jsx'
@@ -8,14 +7,10 @@ import Header from './Header.jsx'
 // import WelcomeBanner from './WelcomeBanner.jsx'
 // import { markClientNavigationToHome } from './welcomeBannerSession.js'
 
-const MotionPage = motion.div
-
 // const isHomePath = (p) => p === '/' || p === ''
 
 function SiteLayout() {
   const location = useLocation()
-  const [displayLocation, setDisplayLocation] = useState(location)
-  const locationRef = useRef(location)
   /** WelcomeBanner (disabled): run before banner mounts for session flag. */
   // const prevPathnameRef = useRef(location.pathname)
   const pathname = location.pathname
@@ -24,10 +19,6 @@ function SiteLayout() {
   //   markClientNavigationToHome()
   // }
   // prevPathnameRef.current = pathname
-
-  useEffect(() => {
-    locationRef.current = location
-  }, [location])
 
   /**
    * Reset scroll on route change, except when navigating to an in-page hash (e.g. /#home-faq-heading).
@@ -56,20 +47,7 @@ function SiteLayout() {
     }
   }, [pathname, location.hash])
 
-  /**
-   * `displayLocation` lags real `location` during pathname transitions (exit animation).
-   * For the same pathname, keep it in sync when only search/hash change (e.g. news pagination).
-   */
-  useEffect(() => {
-    if (
-      location.pathname === displayLocation.pathname &&
-      (location.search !== displayLocation.search || location.hash !== displayLocation.hash)
-    ) {
-      setDisplayLocation(location)
-    }
-  }, [location, displayLocation.pathname, displayLocation.search, displayLocation.hash])
-
-  const element = useRoutes(appRouteObjects, displayLocation)
+  const element = useRoutes(appRouteObjects)
 
   /** Listing-only: dark hero + full bleed. Detail `/properties/:slug` uses padded main + light header. */
   const isPropertiesListing = pathname === '/properties' || pathname === '/properties/'
@@ -87,38 +65,10 @@ function SiteLayout() {
       ? 'pt-[5.75rem] md:pt-24'
       : ''
 
-  const reduceMotion = useReducedMotion()
-  /** Fade only — avoids slide motion site-wide (better for accessibility & calmer UX). */
-  const pageTransition = { duration: reduceMotion ? 0.12 : 0.22, ease: 'easeOut' }
-
-  const pageVariants = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-  }
-
   return (
     <div className="page-shell">
       <Header />
-      <main className={mainTopPad}>
-        <AnimatePresence
-          mode="wait"
-          initial={false}
-          onExitComplete={() => setDisplayLocation(locationRef.current)}
-        >
-          <MotionPage
-            key={location.pathname}
-            className="w-full"
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            variants={pageVariants}
-            transition={pageTransition}
-          >
-            {element}
-          </MotionPage>
-        </AnimatePresence>
-      </main>
+      <main className={mainTopPad}>{element}</main>
       <Footer />
       {showFloatingContact ? <FloatingContactActions /> : null}
       {/** Full-screen welcome splash only on the home route (temporarily disabled) */}
