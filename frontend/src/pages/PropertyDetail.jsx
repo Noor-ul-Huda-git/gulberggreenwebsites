@@ -36,7 +36,7 @@ function formatPkr(value) {
 
   for (const unit of units) {
     if (abs >= unit.value) {
-      const compact = (n / unit.value).toFixed(1).replace(/\.0$/, '')
+      const compact = (n / unit.value).toFixed(2).replace(/\.?0+$/, '')
       return `PKR ${compact} ${unit.label}`
     }
   }
