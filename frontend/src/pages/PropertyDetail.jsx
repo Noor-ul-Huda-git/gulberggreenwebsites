@@ -134,11 +134,19 @@ function trailingSlugNumber(slug) {
   return m ? m[1] : ''
 }
 
+function formatMarlasValue(value) {
+  if (value == null || value === '') return ''
+  const num = Number(value)
+  if (!Number.isNaN(num) && Number.isInteger(num)) return String(num)
+  return String(value).replace(/\.0+$/, '')
+}
+
 function formatArea(property) {
   if (!property || property.area_marlas == null || property.area_marlas === '') return '-'
   const unit = property.area_unit_display || 'Marla'
-  const plural = Number(property.area_marlas) === 1 || unit.endsWith('s') ? '' : 's'
-  return `${property.area_marlas} ${unit}${plural}`
+  const marlas = formatMarlasValue(property.area_marlas)
+  const plural = Number(marlas) === 1 || unit.endsWith('s') ? '' : 's'
+  return `${marlas} ${unit}${plural}`
 }
 
 function stripHtml(value) {
@@ -1028,7 +1036,7 @@ function PropertyDetail() {
                 <div className="flex items-center gap-3 px-1 sm:px-2">
                   <IconRuler className="text-[#1a3553]" size="h-4 w-4" />
                   <div>
-                    <p className="text-[16px] font-semibold text-[#1a3553]">{property.area_marlas}</p>
+                    <p className="text-[16px] font-semibold text-[#1a3553]">{formatMarlasValue(property.area_marlas)}</p>
                     <p className="text-[11px] text-slate-500">{property.area_unit_display || 'Marla'}</p>
                   </div>
                 </div>

@@ -68,11 +68,19 @@ function getPlainDescription(property) {
   return source.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
+function formatMarlasValue(value) {
+  if (value == null || value === '') return ''
+  const num = Number(value)
+  if (!Number.isNaN(num) && Number.isInteger(num)) return String(num)
+  return String(value).replace(/\.0+$/, '')
+}
+
 function formatArea(property) {
   if (property.area_marlas == null || property.area_marlas === '') return ''
   const unit = property.area_unit_display || 'Marla'
-  const plural = Number(property.area_marlas) === 1 || unit.endsWith('s') ? '' : 's'
-  return `${property.area_marlas} ${unit}${plural}`
+  const marlas = formatMarlasValue(property.area_marlas)
+  const plural = Number(marlas) === 1 || unit.endsWith('s') ? '' : 's'
+  return `${marlas} ${unit}${plural}`
 }
 
 function getSizeMeta(property) {
