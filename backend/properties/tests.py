@@ -57,3 +57,26 @@ class PropertyApiTests(APITestCase):
             response.data['canonical_url'],
             f'https://gulberggreens.com.pk/properties/plots/A%20Executive/{self.published_property.slug}',
         )
+
+    def test_properties_all_sitemap_endpoint_lists_only_published(self):
+        response = self.client.get(reverse('property-list-all-sitemap'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        row = response.data[0]
+        self.assertEqual(row['type'], 'plots')
+        self.assertEqual(row['slug'], self.published_property.slug)
+        self.assertIn('updated_at', row)
+        self.assertIn('block_slug', row)
+
+    def test_seo_redirect_poperties_typo(self):
+        response = self.client.get('/poperties/plots', follow=False)
+        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        self.assertEqual(response['Location'], '/properties/plots')
+
+    def test_seo_redirect_listing_legacy(self):
+        response = self.client.get(
+            reverse('seo-redirect-listing', kwargs={'slug': self.published_property.slug}),
+            follow=False,
+        )
+        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        self.assertEqual(response['Location'], f'/properties/{self.published_property.slug}')

@@ -464,6 +464,7 @@ function PropertyDetail() {
     const previousTitle = document.title
     const previousDescription = document.head.querySelector('meta[name="description"]')?.getAttribute('content') || ''
     const previousCanonical = document.head.querySelector('link[rel="canonical"]')?.getAttribute('href') || ''
+    const previousRobots = document.head.querySelector('meta[name="robots"]')?.getAttribute('content') || ''
 
     const blockLabel = formatBlockLabel(property.block, property.location)
     const sizeLabel = formatArea(property)
@@ -491,12 +492,14 @@ function PropertyDetail() {
 
     document.title = title
     upsertMeta('description', description)
+    upsertMeta('robots', 'index, follow')
     upsertCanonical(canonical)
 
     return () => {
       document.title = previousTitle
       if (previousDescription) upsertMeta('description', previousDescription)
       if (previousCanonical) upsertCanonical(previousCanonical)
+      if (previousRobots) upsertMeta('robots', previousRobots)
     }
   }, [property])
 

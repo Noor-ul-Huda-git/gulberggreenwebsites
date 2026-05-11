@@ -18,6 +18,34 @@ class HealthCheckAPIView(APIView):
         return Response({'status': 'ok', 'service': 'gulberg-greens-api'})
 
 
+class AllPropertiesSitemapAPIView(APIView):
+    """
+    Published listings as URL segments for sitemap builders (see SEO implementation guide).
+    `type` is the public category path segment (e.g. plots, farm-house), not the raw DB value.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        rows = (
+            Property.objects.filter(is_published=True)
+            .only('slug', 'listing_type', 'block', 'updated_at')
+            .order_by('id')
+            .iterator(chunk_size=500)
+        )
+        data = [
+            {
+                'type': p.category_slug,
+                'block_slug': p.block_slug,
+                'slug': p.slug,
+                'updated_at': p.updated_at.isoformat() if p.updated_at else None,
+            }
+            for p in rows
+        ]
+        return Response(data)
+
+
 def _decimal_param(raw):
     if raw is None or raw == '':
         return None

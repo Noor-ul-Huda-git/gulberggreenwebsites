@@ -15,12 +15,12 @@ FIXED_SITEMAP_URLS = (
     ('/properties/flat/', 'daily', '0.8'),
     ('/properties/house/', 'daily', '0.8'),
     ('/properties/farm-house/', 'weekly', '0.8'),
-    ('/properties/commercial-plots/', 'weekly', '0.8'),
+    ('/properties/commercial-plots/', 'weekly', '0.7'),
     ('/properties/office/', 'weekly', '0.7'),
     ('/properties/shop/', 'weekly', '0.7'),
-    ('/latest-updates/', 'weekly', '0.7'),
+    ('/latest-updates/', 'daily', '0.8'),
     ('/gulberg-map/', 'monthly', '0.6'),
-    ('/contact/', 'monthly', '0.5'),
+    ('/contact/', 'monthly', '0.6'),
 )
 
 

@@ -29,6 +29,7 @@ export function usePageSeo(seo) {
     const previousTitle = document.title
     const previousDescription = document.head.querySelector('meta[name="description"]')?.getAttribute('content') || ''
     const previousCanonical = document.head.querySelector('link[rel="canonical"]')?.getAttribute('href') || ''
+    const previousRobots = document.head.querySelector('meta[name="robots"]')?.getAttribute('content') || ''
 
     const selfCanonical =
       typeof window !== 'undefined'
@@ -42,12 +43,14 @@ export function usePageSeo(seo) {
 
     document.title = seo.metaTitle
     upsertMeta('description', seo.metaDescription)
+    upsertMeta('robots', 'index, follow')
     upsertCanonical(canonicalHref)
 
     return () => {
       document.title = previousTitle
       if (previousDescription) upsertMeta('description', previousDescription)
       if (previousCanonical) upsertCanonical(previousCanonical)
+      if (previousRobots) upsertMeta('robots', previousRobots)
     }
   }, [seo])
 }

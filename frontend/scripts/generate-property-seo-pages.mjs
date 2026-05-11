@@ -27,15 +27,17 @@ function injectSeo(html, seo) {
   const title = `<title>${escapeHtml(seo.metaTitle)}</title>`
   const description = `<meta name="description" content="${escapeHtml(seo.metaDescription)}" />`
   const canonical = `<link rel="canonical" href="${escapeHtml(seo.canonical)}" />`
+  const robots = '<meta name="robots" content="index, follow" />'
 
   let next = html
     .replace(/<title>[\s\S]*?<\/title>/i, title)
     .replace(/\s*<meta\s+name=["']description["'][^>]*>\s*/gi, '\n')
+    .replace(/\s*<meta\s+name=["']robots["'][^>]*>\s*/gi, '\n')
     .replace(/\s*<link\s+rel=["']canonical["'][^>]*>\s*/gi, '\n')
 
   next = next.replace(
     /(<meta\s+name=["']viewport["'][^>]*>\s*)/i,
-    `$1\n    ${description}\n    ${canonical}\n    `,
+    `$1\n    ${description}\n    ${canonical}\n    ${robots}\n    `,
   )
 
   return next
