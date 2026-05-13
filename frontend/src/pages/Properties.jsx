@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion as Motion } from 'framer-motion'
 import PageBreadcrumbs from '../components/layout/PageBreadcrumbs.jsx'
 import PageHero from '../components/layout/PageHero.jsx'
@@ -8,9 +8,11 @@ import {
   LISTING_TYPE_OPTIONS,
   PROPERTY_BLOCK_OPTIONS,
   PROPERTY_CATEGORY_SEO,
+  PROPERTY_LISTING_TYPE_SLUGS,
   propertyBlockFromSlug,
   propertyBlockSeo,
   propertyDetailPath,
+  slugifyPropertyBlock,
 } from '../data/propertyListingTypes.js'
 import { contactInfo } from '../data/siteContent.js'
 import { STATIC_PAGE_SEO } from '../data/staticPageSeo.js'
@@ -18,6 +20,140 @@ import { fetchProperties } from '../lib/api.js'
 
 const MARLA_FILTER_OPTIONS = [5, 7, 10, 20, 30, 40]
 const ROOM_COUNT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8]
+
+const ALLOWED_LISTING_TYPE = new Set(
+  LISTING_TYPE_OPTIONS.map((o) => o.value).filter(Boolean),
+)
+
+/** Stable string compare for SPA filter query (order-independent). */
+function filterQueryFingerprint(sp) {
+  const entries = [...sp.entries()].filter(([, v]) => v !== null && String(v).trim() !== '')
+  entries.sort(([a], [b]) => a.localeCompare(b))
+  return entries.map(([k, v]) => `${k}=${v}`).join('&')
+}
+
+/** Filters stored only in query (listing type / block live in path when chosen). Aliases stripped on rebuild. */
+const EXTRA_FILTER_KEYS = [
+  'search',
+  'min_price',
+  'max_price',
+  'min_marlas',
+  'max_marlas',
+  'min_marla',
+  'max_marla',
+  'bedrooms',
+  'baths',
+]
+
+/** Always removed from canonical query (encoded in pathname when applicable). */
+const LISTING_TYPE_QUERY_KEY = 'listing_type'
+
+/**
+ * Extra filters + listing_type (never in query when path has a category) + block (only on bare `/properties`).
+ */
+const ALL_REWRITTABLE_QUERY_KEYS = [...EXTRA_FILTER_KEYS, LISTING_TYPE_QUERY_KEY, 'block']
+
+function normalizeListingPath(pathname) {
+  const p = pathname.replace(/\/+$/, '')
+  return p === '' ? '/' : p
+}
+
+/** Canonical listing URL: `/properties`, `/properties/{category}`, or `/properties/{category}/{blockSlug}`. */
+function desiredPropertiesListingPath(listingType, blockLabel) {
+  if (!listingType) return '/properties'
+  const slug = PROPERTY_LISTING_TYPE_SLUGS[listingType]
+  if (!slug) return '/properties'
+  const blockSeg = slugifyPropertyBlock(String(blockLabel || '').trim())
+  if (!blockSeg) return `/properties/${slug}`
+  return `/properties/${slug}/${blockSeg}`
+}
+
+function isBarePropertiesListingPath(pathname) {
+  return normalizeListingPath(pathname) === '/properties'
+}
+
+/**
+ * Hydration helpers: extras always from query; listing_type/block from query ONLY on `/properties`
+ * when path does not already encode a category. Path always wins when category or block slug is present.
+ */
+function readExtraFiltersFromSearchParams(sp) {
+  const get = (k) => sp.get(k)?.trim() ?? ''
+  const minMarlas = get('min_marlas') || get('min_marla')
+  const maxMarlas = get('max_marlas') || get('max_marla')
+  return {
+    search: get('search') || '',
+    minPrice: get('min_price') || '',
+    maxPrice: get('max_price') || '',
+    minMarlas: minMarlas || '',
+    maxMarlas: maxMarlas || '',
+    bedrooms: get('bedrooms') || '',
+    baths: get('baths') || '',
+  }
+}
+
+function readListingTypeFromSearchWhenAllowed(searchParams, forcedListingType, pathname) {
+  if (forcedListingType) return ''
+  if (!isBarePropertiesListingPath(pathname)) return ''
+  const lt = searchParams.get('listing_type')?.trim() ?? ''
+  return lt && ALLOWED_LISTING_TYPE.has(lt) ? lt : ''
+}
+
+function readBlockFromSearchWhenAllowed(searchParams, forcedBlock) {
+  if (forcedBlock) return ''
+  return searchParams.get('block')?.trim() ?? ''
+}
+
+/** First render must match the URL so the URL-sync effect does not strip query params before layout runs. */
+function createInitialFilterSnapshot(pathname, search, forcedListingType, forcedBlock) {
+  const qp = new URLSearchParams(String(search || '').replace(/^\?/, ''))
+  const extras = readExtraFiltersFromSearchParams(qp)
+  const brNum = Number(extras.bedrooms)
+  const baNum = Number(extras.baths)
+
+  let listingType = ''
+  let block = ''
+  if (forcedListingType) {
+    listingType = forcedListingType
+    block = forcedBlock ? String(forcedBlock) : ''
+  } else {
+    listingType = readListingTypeFromSearchWhenAllowed(qp, forcedListingType, pathname)
+    block = readBlockFromSearchWhenAllowed(qp, forcedBlock)
+  }
+
+  return {
+    search: extras.search,
+    minPrice: extras.minPrice,
+    maxPrice: extras.maxPrice,
+    minMarlas: extras.minMarlas,
+    maxMarlas: extras.maxMarlas,
+    bedrooms: extras.bedrooms && ROOM_COUNT_OPTIONS.includes(brNum) ? String(brNum) : '',
+    baths: extras.baths && ROOM_COUNT_OPTIONS.includes(baNum) ? String(baNum) : '',
+    listingType,
+    block,
+  }
+}
+
+/** Rebuild query: price/marlas/beds/search + optional `block` only on `/properties` (no category in path). */
+function buildExtraFilterSearchParams(extras, baseParams) {
+  const p = new URLSearchParams(typeof baseParams === 'string' ? baseParams : baseParams?.toString() || '')
+  for (const k of ALL_REWRITTABLE_QUERY_KEYS) p.delete(k)
+  if (extras.search) p.set('search', extras.search)
+  if (extras.minPrice) p.set('min_price', String(extras.minPrice).trim())
+  if (extras.maxPrice) p.set('max_price', String(extras.maxPrice).trim())
+  if (extras.minMarlas) p.set('min_marlas', String(extras.minMarlas).trim())
+  if (extras.maxMarlas) p.set('max_marlas', String(extras.maxMarlas).trim())
+  if (extras.bedrooms) p.set('bedrooms', String(extras.bedrooms).trim())
+  if (extras.baths) p.set('baths', String(extras.baths).trim())
+  if (extras.blockForQuery) p.set('block', String(extras.blockForQuery).trim())
+  return p
+}
+
+function canonicalListingUrlKey(pathname, search) {
+  const path = normalizeListingPath(pathname)
+  const qs = new URLSearchParams(String(search || '').replace(/^\?/, ''))
+  const fp = filterQueryFingerprint(qs)
+  return fp ? `${path}?${fp}` : path
+}
 
 function upsertMeta(name, content) {
   let tag = document.head.querySelector(`meta[name="${name}"]`)
@@ -173,6 +309,7 @@ const listItem = {
 
 function Properties() {
   const location = useLocation()
+  const navigate = useNavigate()
   const pathParts = useMemo(() => {
     const normalized = location.pathname.replace(/\/+$/, '')
     const prefix = '/properties/'
@@ -189,17 +326,39 @@ function Properties() {
   const pageSeo = blockSeo || categorySeo || STATIC_PAGE_SEO.properties
   const forcedListingType = categorySeo?.listingType || ''
 
-  const [searchInput, setSearchInput] = useState('')
-  const [search, setSearch] = useState('')
-  const [listingType, setListingType] = useState('')
-  const [block, setBlock] = useState('')
-  const [minPrice, setMinPrice] = useState('')
-  const [maxPrice, setMaxPrice] = useState('')
-  const [minMarlas, setMinMarlas] = useState('')
-  const [maxMarlas, setMaxMarlas] = useState('')
-  const [bedrooms, setBedrooms] = useState('')
-  const [baths, setBaths] = useState('')
-
+  const [searchInput, setSearchInput] = useState(
+    () => createInitialFilterSnapshot(location.pathname, location.search, forcedListingType, forcedBlock).search,
+  )
+  const [search, setSearch] = useState(
+    () => createInitialFilterSnapshot(location.pathname, location.search, forcedListingType, forcedBlock).search,
+  )
+  const [listingType, setListingType] = useState(
+    () => createInitialFilterSnapshot(location.pathname, location.search, forcedListingType, forcedBlock).listingType,
+  )
+  const [block, setBlock] = useState(
+    () => createInitialFilterSnapshot(location.pathname, location.search, forcedListingType, forcedBlock).block,
+  )
+  /** When true, listing type / block from local state wins over path (so user can pick "All"). */
+  const [listingTypeChosenByUser, setListingTypeChosenByUser] = useState(false)
+  const [blockChosenByUser, setBlockChosenByUser] = useState(false)
+  const [minPrice, setMinPrice] = useState(
+    () => createInitialFilterSnapshot(location.pathname, location.search, forcedListingType, forcedBlock).minPrice,
+  )
+  const [maxPrice, setMaxPrice] = useState(
+    () => createInitialFilterSnapshot(location.pathname, location.search, forcedListingType, forcedBlock).maxPrice,
+  )
+  const [minMarlas, setMinMarlas] = useState(
+    () => createInitialFilterSnapshot(location.pathname, location.search, forcedListingType, forcedBlock).minMarlas,
+  )
+  const [maxMarlas, setMaxMarlas] = useState(
+    () => createInitialFilterSnapshot(location.pathname, location.search, forcedListingType, forcedBlock).maxMarlas,
+  )
+  const [bedrooms, setBedrooms] = useState(
+    () => createInitialFilterSnapshot(location.pathname, location.search, forcedListingType, forcedBlock).bedrooms,
+  )
+  const [baths, setBaths] = useState(
+    () => createInitialFilterSnapshot(location.pathname, location.search, forcedListingType, forcedBlock).baths,
+  )
   const [items, setItems] = useState([])
   const [nextPageToLoad, setNextPageToLoad] = useState(2)
   const [hasMore, setHasMore] = useState(false)
@@ -207,6 +366,61 @@ function Properties() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(null)
   const [viewMode, setViewMode] = useState('list')
+
+  const effectiveListingType = listingTypeChosenByUser ? listingType.trim() : listingType.trim() || forcedListingType
+
+  const blockTrimmed = block.trim()
+  const effectiveBlock = blockChosenByUser ? blockTrimmed : blockTrimmed || forcedBlock
+
+  const minMarlaSelectOptions = useMemo(() => {
+    const base = [...MARLA_FILTER_OPTIONS]
+    if (minMarlas === '') return base
+    const sel = Number(minMarlas)
+    if (!Number.isFinite(sel) || base.includes(sel)) return base
+    return [...base, sel].sort((a, b) => a - b)
+  }, [minMarlas])
+
+  const maxMarlaSelectOptions = useMemo(() => {
+    const base = [...MARLA_FILTER_OPTIONS]
+    if (maxMarlas === '') return base
+    const sel = Number(maxMarlas)
+    if (!Number.isFinite(sel) || base.includes(sel)) return base
+    return [...base, sel].sort((a, b) => a - b)
+  }, [maxMarlas])
+
+  useLayoutEffect(() => {
+    const qp = new URLSearchParams(location.search.replace(/^\?/, ''))
+    const extras = readExtraFiltersFromSearchParams(qp)
+    setSearch(extras.search)
+    setSearchInput(extras.search)
+    setMinPrice(extras.minPrice)
+    setMaxPrice(extras.maxPrice)
+    setMinMarlas(extras.minMarlas)
+    setMaxMarlas(extras.maxMarlas)
+
+    const brNum = Number(extras.bedrooms)
+    setBedrooms(extras.bedrooms && ROOM_COUNT_OPTIONS.includes(brNum) ? String(brNum) : '')
+
+    const baNum = Number(extras.baths)
+    setBaths(extras.baths && ROOM_COUNT_OPTIONS.includes(baNum) ? String(baNum) : '')
+
+    setListingTypeChosenByUser(false)
+    setBlockChosenByUser(false)
+
+    if (forcedListingType) {
+      setListingType(forcedListingType)
+    } else {
+      const lt = readListingTypeFromSearchWhenAllowed(qp, forcedListingType, location.pathname)
+      setListingType(lt)
+    }
+
+    if (forcedBlock) {
+      setBlock(forcedBlock)
+    } else {
+      const bl = readBlockFromSearchWhenAllowed(qp, forcedBlock)
+      setBlock(bl)
+    }
+  }, [location.pathname, location.search, forcedListingType, forcedBlock])
 
   useEffect(() => {
     const previousTitle = document.title
@@ -223,7 +437,7 @@ function Properties() {
 
     document.title = pageSeo.metaTitle
     upsertMeta('description', pageSeo.metaDescription)
-    upsertMeta('robots', location.search ? 'noindex, follow' : 'index, follow')
+    upsertMeta('robots', 'index, follow')
     upsertCanonical(selfCanonical || pageSeo.canonical)
 
     return () => {
@@ -232,25 +446,48 @@ function Properties() {
       if (previousCanonical) upsertCanonical(previousCanonical)
       if (previousRobots) upsertMeta('robots', previousRobots)
     }
-  }, [location.search, pageSeo])
-
-  useEffect(() => {
-    if (forcedListingType) {
-      setListingType(forcedListingType)
-    }
-  }, [forcedListingType])
-
-  useEffect(() => {
-    setBlock(forcedBlock)
-  }, [forcedBlock])
+  }, [pageSeo])
 
   useEffect(() => {
     const t = window.setTimeout(() => setSearch(searchInput), 380)
     return () => window.clearTimeout(t)
   }, [searchInput])
 
-  const effectiveListingType = forcedListingType || listingType
-  const effectiveBlock = forcedBlock || block
+  useEffect(() => {
+    const desiredPath = desiredPropertiesListingPath(effectiveListingType, effectiveBlock)
+    const baseQs = new URLSearchParams(location.search.replace(/^\?/, ''))
+    const nextQs = buildExtraFilterSearchParams(
+      {
+        search,
+        minPrice,
+        maxPrice,
+        minMarlas,
+        maxMarlas,
+        bedrooms,
+        baths,
+        blockForQuery:
+          !effectiveListingType && String(effectiveBlock || '').trim() ? String(effectiveBlock).trim() : '',
+      },
+      baseQs,
+    )
+    const targetKey = canonicalListingUrlKey(desiredPath, nextQs.toString())
+    const currentKey = canonicalListingUrlKey(location.pathname, location.search)
+    if (targetKey === currentKey) return
+    navigate({ pathname: desiredPath, search: nextQs.toString() }, { replace: true })
+  }, [
+    effectiveListingType,
+    effectiveBlock,
+    search,
+    minPrice,
+    maxPrice,
+    minMarlas,
+    maxMarlas,
+    bedrooms,
+    baths,
+    navigate,
+    location.pathname,
+    location.search,
+  ])
 
   const filterParams = useMemo(
     () => ({
@@ -297,7 +534,7 @@ function Properties() {
     return () => {
       cancelled = true
     }
-  }, [filterKey, filterParams])
+  }, [filterKey])
 
   const loadMore = async () => {
     if (!hasMore || loadingMore || loading) return
@@ -321,6 +558,8 @@ function Properties() {
   const resetFilters = () => {
     setSearchInput('')
     setSearch('')
+    setListingTypeChosenByUser(false)
+    setBlockChosenByUser(false)
     setListingType(forcedListingType)
     setBlock(forcedBlock)
     setMinPrice('')
@@ -329,6 +568,9 @@ function Properties() {
     setMaxMarlas('')
     setBedrooms('')
     setBaths('')
+    const cleared = new URLSearchParams(location.search.replace(/^\?/, ''))
+    for (const k of ALL_REWRITTABLE_QUERY_KEYS) cleared.delete(k)
+    navigate({ pathname: location.pathname, search: cleared.toString() }, { replace: true })
   }
 
   const showLoadMore = hasMore && items.length > 0
@@ -378,9 +620,11 @@ function Properties() {
                   </span>
                   <select
                     value={effectiveListingType}
-                    onChange={(e) => setListingType(e.target.value)}
-                    disabled={Boolean(forcedListingType)}
-                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)] disabled:cursor-not-allowed disabled:opacity-70"
+                    onChange={(e) => {
+                      setListingTypeChosenByUser(true)
+                      setListingType(e.target.value)
+                    }}
+                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
                   >
                     {LISTING_TYPE_OPTIONS.map((opt) => (
                       <option key={opt.label} value={opt.value} className="bg-slate-900 text-white">
@@ -393,9 +637,11 @@ function Properties() {
                   <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">Block</span>
                   <select
                     value={effectiveBlock}
-                    onChange={(e) => setBlock(e.target.value)}
-                    disabled={Boolean(forcedBlock)}
-                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)] disabled:cursor-not-allowed disabled:opacity-70"
+                    onChange={(e) => {
+                      setBlockChosenByUser(true)
+                      setBlock(e.target.value)
+                    }}
+                    className="appearance-none rounded-xl border border-white/25 bg-black/20 px-4 py-3 text-[14px] text-white outline-none transition focus:border-[#31C950]/65 focus:shadow-[0_0_0_3px_rgba(49,201,80,0.18)]"
                   >
                     <option value="" className="bg-slate-900 text-white">
                       Any block
@@ -439,8 +685,8 @@ function Properties() {
                       <option value="" className="bg-slate-900 text-white">
                         Min
                       </option>
-                      {MARLA_FILTER_OPTIONS.map((n) => (
-                        <option key={n} value={String(n)} className="bg-slate-900 text-white">
+                      {minMarlaSelectOptions.map((n) => (
+                        <option key={`min-marla-${n}`} value={String(n)} className="bg-slate-900 text-white">
                           {n} Marla{n === 1 ? '' : 's'}
                         </option>
                       ))}
@@ -454,8 +700,8 @@ function Properties() {
                       <option value="" className="bg-slate-900 text-white">
                         Max
                       </option>
-                      {MARLA_FILTER_OPTIONS.map((n) => (
-                        <option key={n} value={String(n)} className="bg-slate-900 text-white">
+                      {maxMarlaSelectOptions.map((n) => (
+                        <option key={`max-marla-${n}`} value={String(n)} className="bg-slate-900 text-white">
                           {n} Marla{n === 1 ? '' : 's'}
                         </option>
                       ))}

@@ -1,6 +1,7 @@
 import { useLocation, useRoutes } from 'react-router-dom'
 import { useEffect, useLayoutEffect } from 'react'
 import { appRouteObjects } from '../../appRoutes.jsx'
+import { isPropertiesListingExplorerPath } from '../../data/propertyListingTypes.js'
 import FloatingContactActions from './FloatingContactActions.jsx'
 import Footer from './Footer.jsx'
 import Header from './Header.jsx'
@@ -49,8 +50,8 @@ function SiteLayout() {
 
   const element = useRoutes(appRouteObjects)
 
-  /** Listing-only: dark hero + full bleed. Detail `/properties/:slug` uses padded main + light header. */
-  const isPropertiesListing = pathname === '/properties' || pathname === '/properties/'
+  /** Listing explorer (/properties… with filters + dark hero) — padded main skips so header overlays hero like /properties. */
+  const isPropertiesListing = isPropertiesListingExplorerPath(pathname)
   const isContactPage = pathname === '/contact' || pathname === '/contact/' || pathname === '/contact-us' || pathname === '/contact-us/'
   const isPropertyRoute = pathname.startsWith('/properties')
   /** Home + inner pages; omitted on `/properties/*` (listing/detail have inline CTAs) and contact page. */

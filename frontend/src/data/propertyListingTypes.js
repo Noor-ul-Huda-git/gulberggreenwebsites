@@ -165,6 +165,34 @@ export function isPropertyBlockSlug(value) {
   return Boolean(propertyBlockFromSlug(value))
 }
 
+/**
+ * URLs that render the Properties listing explorer + dark hero (filters, cards).
+ * Excludes standalone property URLs: /properties/:slug, /properties/:cat/:propertySlug,
+ * and /properties/:cat/:block/:propertySlug.
+ */
+export function isPropertiesListingExplorerPath(pathname) {
+  const raw = String(pathname || '').trim()
+  const n = raw.replace(/\/+$/, '') || '/'
+  if (n === '/properties') return true
+  if (!n.startsWith('/properties')) return false
+
+  const inner = n.slice('/properties'.length).replace(/^\//, '')
+  if (!inner) return true
+
+  const segments = inner.split('/').filter(Boolean)
+  if (segments.length === 0) return true
+
+  const categorySlug = segments[0]
+  if (!PROPERTY_CATEGORY_SEO[categorySlug]) return false
+
+  if (segments.length === 1) return true
+
+  const secondIsBlock = isPropertyBlockSlug(segments[1])
+  if (!secondIsBlock) return false
+
+  return segments.length === 2
+}
+
 export function propertyBlockPath(categorySlug, block) {
   const blockSlug = slugifyPropertyBlock(block)
   return categorySlug && blockSlug ? `/properties/${categorySlug}/${blockSlug}` : '/properties'

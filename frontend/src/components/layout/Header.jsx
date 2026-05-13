@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import logoGulbergGreens from '../../assets/logo-gulberg-greens-0.png'
+import { isPropertiesListingExplorerPath } from '../../data/propertyListingTypes.js'
 
 const homeNavItems = [
   { label: 'Home', to: '/', end: true, hasDropdown: true },
@@ -73,13 +74,13 @@ function Header() {
     }
     setMobileOpen(false)
   }
-  /** Dark hero image + scrim — use light nav (same as updates). */
-  const isPropertiesListing = path === '/properties' || path === '/properties/'
+  /** Dark hero image + scrim — listing explorer (/properties plus category/block filter paths). */
+  const isPropertiesListing = isPropertiesListingExplorerPath(path)
   const isDarkHeroNav =
     path.startsWith('/news') || path.startsWith('/latest-updates') || path.startsWith('/gulberg-map') || isPropertiesListing
 
   return (
-    <header className="absolute inset-x-0 top-0 z-50 bg-transparent">
+    <header className="absolute inset-x-0 top-0 z-[80] bg-transparent">
       <div className="container-shell flex items-center justify-between gap-4 py-5 md:py-6">
         <NavLink to="/" className="flex shrink-0 items-center" onClick={() => setMobileOpen(false)}>
           <img
