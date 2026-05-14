@@ -163,7 +163,9 @@ IMAGE_JPEG_QUALITY = int(os.getenv('IMAGE_JPEG_QUALITY', '85'))
 
 # CKEditor 5 inline images (news/property rich text). Include "jpg" — widget default omitted it.
 CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff']
-CKEDITOR_5_MAX_FILE_SIZE = int(os.getenv('CKEDITOR_5_MAX_FILE_SIZE', '0'))  # MB; 0 = unlimited
+# Cap inline image uploads (admin CKEditor). 0 / negative in env → use safe default (prevents giant uploads → DoS/disk fill).
+_ck_mb = int(os.getenv('CKEDITOR_5_MAX_FILE_SIZE', '8'))
+CKEDITOR_5_MAX_FILE_SIZE = 8 if _ck_mb <= 0 else min(_ck_mb, 50)
 # CKEditor inline images → WebP when possible, else optimized JPEG (see config/ckeditor_upload.py).
 CKEDITOR_5_OPTIMIZE_TO_WEBP = os.getenv('CKEDITOR_5_OPTIMIZE_TO_WEBP', 'true').lower() == 'true'
 
