@@ -3,9 +3,23 @@
     {
       "name": "gulberg-backend",
       "cwd": "./backend",
-      "script": "manage.py",
-      "interpreter": "python3",
-      "args": ["runserver", "127.0.0.1:8000"]
+      "script": ".venv/bin/python",
+      "interpreter": "none",
+      "args": [
+        "-m",
+        "gunicorn",
+        "--bind",
+        "127.0.0.1:8000",
+        "--workers",
+        "3",
+        "--timeout",
+        "120",
+        "--access-logfile",
+        "-",
+        "--error-logfile",
+        "-",
+        "config.wsgi:application"
+      ]
     },
     {
       "name": "gulberg-frontend",
