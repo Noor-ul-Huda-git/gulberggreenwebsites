@@ -49,6 +49,16 @@ export const PROPERTY_BLOCK_OPTIONS = [
 ]
 
 export const PROPERTY_CATEGORY_SEO = {
+  /** Browse all listing types; block filter uses `/properties/all/{blockSlug}`. */
+  all: {
+    listingType: null,
+    breadcrumb: 'All listing types',
+    metaTitle: 'All Properties for Sale in Gulberg Greens Islamabad | IBECHS',
+    metaDescription:
+      'Browse houses, plots, commercial space and more for sale in Gulberg Greens Islamabad. Filter by block, size and price in a secure gated community by IBECHS.',
+    h1: 'All Properties for Sale in Gulberg Greens Islamabad',
+    canonical: 'https://gulberggreens.com.pk/properties/all/',
+  },
   plots: {
     listingType: 'plots',
     breadcrumb: 'Plots',
@@ -114,8 +124,11 @@ export const PROPERTY_CATEGORY_SEO = {
   },
 }
 
+/** Maps API `listing_type` → URL category segment (excludes synthetic `all`). */
 export const PROPERTY_LISTING_TYPE_SLUGS = Object.fromEntries(
-  Object.entries(PROPERTY_CATEGORY_SEO).map(([slug, config]) => [config.listingType, slug]),
+  Object.entries(PROPERTY_CATEGORY_SEO)
+    .filter(([, config]) => config.listingType != null && config.listingType !== '')
+    .map(([slug, config]) => [config.listingType, slug]),
 )
 
 export const PROPERTY_TYPE_LABELS = {
@@ -221,9 +234,9 @@ export function propertyBlockSeo(categorySlug, block) {
 
 export function propertyDetailPath(property) {
   const categorySlug = PROPERTY_LISTING_TYPE_SLUGS[property?.listing_type]
-  const blockSegment = String(property?.block || '').trim()
-  if (categorySlug && blockSegment && property?.slug) {
-    return `/properties/${categorySlug}/${encodeURIComponent(blockSegment)}/${property.slug}`
+  const blockSlug = slugifyPropertyBlock(String(property?.block || '').trim())
+  if (categorySlug && blockSlug && property?.slug) {
+    return `/properties/${categorySlug}/${blockSlug}/${property.slug}`
   }
   return property?.slug ? `/properties/${property.slug}` : '/properties'
 }

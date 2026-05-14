@@ -148,13 +148,16 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
     def get_object(self):
         obj = super().get_object()
         category_slug = (self.kwargs.get('category_slug') or '').strip()
-        block = (self.kwargs.get('block') or '').strip()
+        block_kw = (self.kwargs.get('block') or '').strip()
 
         if category_slug and obj.category_slug != category_slug:
             raise Http404
 
-        if block and (obj.block or '').strip().lower() != block.lower():
-            raise Http404
+        if block_kw:
+            obj_block = (obj.block or '').strip()
+            expected_slug = (obj.block_slug or '').strip()
+            if obj_block.lower() != block_kw.lower() and expected_slug.lower() != block_kw.lower():
+                raise Http404
 
         return obj
 

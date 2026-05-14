@@ -3,6 +3,9 @@
 Matched when Django handles the request. For the usual setup (SPA `dist/` served by nginx with
 try_files … /index.html), also include `deploy/nginx-legacy-301-rewrites.conf` in nginx `server {}`
 above `location /` so bots get real 301s before the SPA shell.
+
+Path-based listing URLs (`/properties/all/{blockSlug}`, `/properties/{category}/{blockSlug}`, etc.)
+and query cleanup for filters are handled in the SPA; only static legacy paths are listed here.
 """
 
 from django.urls import path

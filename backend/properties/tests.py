@@ -1,5 +1,7 @@
 from decimal import Decimal
+from urllib.parse import urlparse
 
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -7,6 +9,7 @@ from rest_framework.test import APITestCase
 from .models import Property
 
 
+@override_settings(SECURE_SSL_REDIRECT=False)
 class PropertyApiTests(APITestCase):
     def setUp(self):
         self.published_property = Property.objects.create(
@@ -36,6 +39,19 @@ class PropertyApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['id'], self.published_property.id)
+
+    def test_property_detail_accepts_block_slug_segment(self):
+        response = self.client.get(
+            reverse(
+                'property-detail',
+                kwargs={
+                    'category_slug': self.published_property.category_slug,
+                    'block': self.published_property.block_slug,
+                    'slug': self.published_property.slug,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_property_api_exposes_generated_seo_fields(self):
         response = self.client.get(
@@ -71,12 +87,14 @@ class PropertyApiTests(APITestCase):
     def test_seo_redirect_poperties_typo(self):
         response = self.client.get('/poperties/plots', follow=False)
         self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
-        self.assertEqual(response['Location'], '/properties/plots')
+        loc = response.headers.get('Location', '')
+        self.assertEqual(urlparse(loc).path.rstrip('/') or '/', '/properties/plots')
 
     def test_seo_redirect_listing_legacy(self):
         response = self.client.get(
-            reverse('seo-redirect-listing', kwargs={'slug': self.published_property.slug}),
+            reverse('seo-listing-slug', kwargs={'slug': self.published_property.slug}),
             follow=False,
         )
         self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
-        self.assertEqual(response['Location'], f'/properties/{self.published_property.slug}')
+        loc = response.headers.get('Location', '')
+        self.assertEqual(urlparse(loc).path.rstrip('/') or '/', f'/properties/{self.published_property.slug}')

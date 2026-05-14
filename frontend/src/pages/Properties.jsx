@@ -32,7 +32,7 @@ function filterQueryFingerprint(sp) {
   return entries.map(([k, v]) => `${k}=${v}`).join('&')
 }
 
-/** Filters stored only in query (listing type / block live in path when chosen). Aliases stripped on rebuild. */
+/** Filters stored only in query string (listing type and block use path segments, not ?params). */
 const EXTRA_FILTER_KEYS = [
   'search',
   'min_price',
@@ -49,7 +49,7 @@ const EXTRA_FILTER_KEYS = [
 const LISTING_TYPE_QUERY_KEY = 'listing_type'
 
 /**
- * Extra filters + listing_type (never in query when path has a category) + block (only on bare `/properties`).
+ * Extra filters + listing_type + legacy `block` query (stripped on rebuild; block is path-only now).
  */
 const ALL_REWRITTABLE_QUERY_KEYS = [...EXTRA_FILTER_KEYS, LISTING_TYPE_QUERY_KEY, 'block']
 
@@ -58,12 +58,18 @@ function normalizeListingPath(pathname) {
   return p === '' ? '/' : p
 }
 
-/** Canonical listing URL: `/properties`, `/properties/{category}`, or `/properties/{category}/{blockSlug}`. */
+/** Canonical listing URL: `/properties`, `/properties/{category}|all`, or `.../{blockSlug}`. */
 function desiredPropertiesListingPath(listingType, blockLabel) {
-  if (!listingType) return '/properties'
-  const slug = PROPERTY_LISTING_TYPE_SLUGS[listingType]
-  if (!slug) return '/properties'
   const blockSeg = slugifyPropertyBlock(String(blockLabel || '').trim())
+  if (!listingType) {
+    if (!blockSeg) return '/properties'
+    return `/properties/all/${blockSeg}`
+  }
+  const slug = PROPERTY_LISTING_TYPE_SLUGS[listingType]
+  if (!slug) {
+    if (!blockSeg) return '/properties'
+    return `/properties/all/${blockSeg}`
+  }
   if (!blockSeg) return `/properties/${slug}`
   return `/properties/${slug}/${blockSeg}`
 }
@@ -115,6 +121,9 @@ function createInitialFilterSnapshot(pathname, search, forcedListingType, forced
   if (forcedListingType) {
     listingType = forcedListingType
     block = forcedBlock ? String(forcedBlock) : ''
+  } else if (forcedBlock) {
+    listingType = readListingTypeFromSearchWhenAllowed(qp, forcedListingType, pathname)
+    block = String(forcedBlock)
   } else {
     listingType = readListingTypeFromSearchWhenAllowed(qp, forcedListingType, pathname)
     block = readBlockFromSearchWhenAllowed(qp, forcedBlock)
@@ -133,7 +142,7 @@ function createInitialFilterSnapshot(pathname, search, forcedListingType, forced
   }
 }
 
-/** Rebuild query: price/marlas/beds/search + optional `block` only on `/properties` (no category in path). */
+/** Rebuild query: price/marlas/beds/search. Block lives only in the listing pathname (never duplicated as `?block=`). */
 function buildExtraFilterSearchParams(extras, baseParams) {
   const p = new URLSearchParams(typeof baseParams === 'string' ? baseParams : baseParams?.toString() || '')
   for (const k of ALL_REWRITTABLE_QUERY_KEYS) p.delete(k)
@@ -144,7 +153,6 @@ function buildExtraFilterSearchParams(extras, baseParams) {
   if (extras.maxMarlas) p.set('max_marlas', String(extras.maxMarlas).trim())
   if (extras.bedrooms) p.set('bedrooms', String(extras.bedrooms).trim())
   if (extras.baths) p.set('baths', String(extras.baths).trim())
-  if (extras.blockForQuery) p.set('block', String(extras.blockForQuery).trim())
   return p
 }
 
@@ -465,8 +473,6 @@ function Properties() {
         maxMarlas,
         bedrooms,
         baths,
-        blockForQuery:
-          !effectiveListingType && String(effectiveBlock || '').trim() ? String(effectiveBlock).trim() : '',
       },
       baseQs,
     )

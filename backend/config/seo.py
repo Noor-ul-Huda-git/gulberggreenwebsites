@@ -11,6 +11,7 @@ SITE_ORIGIN = 'https://gulberggreens.com.pk'
 FIXED_SITEMAP_URLS = (
     ('/', 'weekly', '1.0'),
     ('/properties/', 'daily', '0.9'),
+    ('/properties/all/', 'daily', '0.85'),
     ('/properties/plots/', 'daily', '0.9'),
     ('/properties/flat/', 'daily', '0.8'),
     ('/properties/house/', 'daily', '0.8'),
@@ -74,6 +75,8 @@ def sitemap_xml(request):
     for prop in properties.iterator():
         if prop.block_slug:
             block_urls.add(f'/properties/{prop.category_slug}/{prop.block_slug}/')
+            # “All types” filtered by block — matches SPA route `/properties/all/:blockSlug`
+            block_urls.add(f'/properties/all/{prop.block_slug}/')
         entries.append(
             _sitemap_entry(
                 prop.canonical_url,

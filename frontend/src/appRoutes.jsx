@@ -25,6 +25,7 @@ export const appRouteObjects = [
   { path: '/contact', element: withSuspense(<ContactUs />) },
   { path: '/contact-us', element: <Navigate to="/contact" replace /> },
   { path: '/properties', element: withSuspense(<Properties />) },
+  { path: '/properties/all', element: withSuspense(<Properties />) },
   { path: '/properties/plots', element: withSuspense(<Properties />) },
   { path: '/properties/flat', element: withSuspense(<Properties />) },
   { path: '/properties/commercial-plots', element: withSuspense(<Properties />) },
