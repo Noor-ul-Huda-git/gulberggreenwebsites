@@ -10,42 +10,41 @@ export const LISTING_TYPE_OPTIONS = [
   { value: 'shop', label: 'Shop' },
 ]
 
-/** Block labels must match `Property.block` in admin for API filters (`block__iexact`). */
+/** Block labels must match `Property.block` in Django admin for API filters (`block__iexact`). */
 export const PROPERTY_BLOCK_OPTIONS = [
-  'Executive Block (Greens)',
-  'A (Greens)',
-  'B (Greens)',
-  'C (Greens)',
-  'D (Greens)',
-  'E (Greens)',
-  'AA',
-  'A',
-  'A-Executive',
-  'B',
-  'C',
-  'D',
-  'E',
-  'E-Executive',
-  'F',
-  'F-Executive',
-  'G',
-  'H',
-  'I',
-  'J',
-  'K',
-  'L',
-  'M',
-  'N',
-  'O',
-  'P-1',
-  'P-2',
-  'P-3',
-  'P-4',
-  'Q',
-  'R',
-  'S',
-  'T',
-  'V',
+  'Block Executive',
+  'Block A',
+  'Block A Executive',
+  'Block A Executive 2',
+  'Block A Executive premium',
+  'Block B',
+  'Block C',
+  'Block D',
+  'D Markaz',
+  'Block E',
+  'Block E Executive',
+  'Block F',
+  'Block F Executive 1',
+  'Block F Executive 2',
+  'Block F Executive 3',
+  'Block F Executive 4',
+  'Block G',
+  'Block H',
+  'Block I',
+  'Block J',
+  'Block K',
+  'Block L',
+  'Block M',
+  'Block O',
+  'Block P1',
+  'Block P2',
+  'Block P3',
+  'Block P4',
+  'Block Q',
+  'Block R',
+  'Block S',
+  'Block T',
+  'Block V',
 ]
 
 export const PROPERTY_CATEGORY_SEO = {
@@ -166,6 +165,7 @@ export function formatPropertyBlockLabel(block) {
   const clean = String(block || '').trim().replace(/\s+/g, ' ')
   if (!clean) return ''
   if (/^block\s/i.test(clean) || /^executive\s+block/i.test(clean)) return clean
+  if (/^d\s+markaz$/i.test(clean)) return clean
   return `Block ${clean}`
 }
 

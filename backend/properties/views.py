@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .block_aliases import block_match_q
 from .models import ListingEmail, Property, PropertyImage
 from .serializers import ListingEmailCreateSerializer, PropertySerializer
 
@@ -94,7 +95,9 @@ class PropertyListAPIView(generics.ListAPIView):
             queryset = queryset.filter(listing_type=listing_type)
 
         if block:
-            queryset = queryset.filter(block__iexact=block)
+            blk_q = block_match_q(block)
+            if blk_q:
+                queryset = queryset.filter(blk_q)
 
         if featured == 'true':
             queryset = queryset.filter(is_featured=True)
