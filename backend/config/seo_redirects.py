@@ -18,6 +18,36 @@ def _p(route: str, target: str, name: str):
 
 # Order: longest / most specific first (shared prefix routes).
 urlpatterns = [
+    _p(
+        'property/7-marla-developed-possession-plot-for-sale-in-gulberg-greens-block-m/',
+        '/properties/plots/block-m',
+        'seo-property-block-m-slash',
+    ),
+    _p(
+        'property/7-marla-developed-possession-plot-for-sale-in-gulberg-greens-block-m',
+        '/properties/plots/block-m',
+        'seo-property-block-m',
+    ),
+    _p(
+        'properties/7-marla-developed-possession-plot-for-sale-in-gulberg-greens-block-m/',
+        '/properties/plots/block-m',
+        'seo-props-intermediate-block-m-slash',
+    ),
+    _p(
+        'properties/7-marla-developed-possession-plot-for-sale-in-gulberg-greens-block-m',
+        '/properties/plots/block-m',
+        'seo-props-intermediate-block-m',
+    ),
+    _p(
+        'properties/7-marla-possession-able-plot-for-sale-in-gulberg-islamabad-block-a/',
+        '/properties/plots/block-a',
+        'seo-props-legacy-block-a-slash',
+    ),
+    _p(
+        'properties/7-marla-possession-able-plot-for-sale-in-gulberg-islamabad-block-a',
+        '/properties/plots/block-a',
+        'seo-props-legacy-block-a',
+    ),
     _p('poperties/<path:path>', '/properties/%(path)s', 'seo-poperties-path'),
     _p('poperties/', '/properties', 'seo-poperties-slash'),
     _p('poperties', '/properties', 'seo-poperties'),

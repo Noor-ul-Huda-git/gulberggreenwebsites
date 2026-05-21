@@ -113,3 +113,40 @@ class PropertyApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
         loc = response.headers.get('Location', '')
         self.assertEqual(urlparse(loc).path.rstrip('/') or '/', '/')
+
+    def test_seo_redirect_property_block_m_to_plots_block_m(self):
+        for path in (
+            '/property/7-marla-developed-possession-plot-for-sale-in-gulberg-greens-block-m/',
+            '/property/7-marla-developed-possession-plot-for-sale-in-gulberg-greens-block-m',
+        ):
+            response = self.client.get(path, follow=False)
+            self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY, msg=path)
+            loc = response.headers.get('Location', '')
+            self.assertEqual(
+                urlparse(loc).path.rstrip('/') or '/',
+                '/properties/plots/block-m',
+                msg=path,
+            )
+
+    def test_seo_redirect_properties_intermediate_block_m_slug(self):
+        for path in (
+            '/properties/7-marla-developed-possession-plot-for-sale-in-gulberg-greens-block-m/',
+            '/properties/7-marla-developed-possession-plot-for-sale-in-gulberg-greens-block-m',
+        ):
+            response = self.client.get(path, follow=False)
+            self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY, msg=path)
+            loc = response.headers.get('Location', '')
+            self.assertEqual(
+                urlparse(loc).path.rstrip('/') or '/',
+                '/properties/plots/block-m',
+                msg=path,
+            )
+
+    def test_seo_redirect_properties_legacy_slug_to_block_a(self):
+        response = self.client.get(
+            '/properties/7-marla-possession-able-plot-for-sale-in-gulberg-islamabad-block-a/',
+            follow=False,
+        )
+        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        loc = response.headers.get('Location', '')
+        self.assertEqual(urlparse(loc).path.rstrip('/') or '/', '/properties/plots/block-a')
