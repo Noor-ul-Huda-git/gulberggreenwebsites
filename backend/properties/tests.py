@@ -91,10 +91,25 @@ class PropertyApiTests(APITestCase):
         self.assertEqual(urlparse(loc).path.rstrip('/') or '/', '/properties/plots')
 
     def test_seo_redirect_listing_legacy(self):
-        response = self.client.get(
-            reverse('seo-listing-slug', kwargs={'slug': self.published_property.slug}),
-            follow=False,
-        )
+        response = self.client.get('/listing/block-a-7-marla/', follow=False)
         self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
         loc = response.headers.get('Location', '')
-        self.assertEqual(urlparse(loc).path.rstrip('/') or '/', f'/properties/{self.published_property.slug}')
+        self.assertEqual(urlparse(loc).path.rstrip('/') or '/', '/properties')
+
+    def test_seo_redirect_properties_block_prefix(self):
+        response = self.client.get('/properties/block-a-7-marla/', follow=False)
+        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        loc = response.headers.get('Location', '')
+        self.assertEqual(urlparse(loc).path.rstrip('/') or '/', '/properties')
+
+    def test_seo_redirect_how_to_get_plot(self):
+        response = self.client.get('/how-to-get-plot/', follow=False)
+        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        loc = response.headers.get('Location', '')
+        self.assertEqual(urlparse(loc).path.rstrip('/') or '/', '/latest-updates')
+
+    def test_seo_redirect_home(self):
+        response = self.client.get('/home/', follow=False)
+        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        loc = response.headers.get('Location', '')
+        self.assertEqual(urlparse(loc).path.rstrip('/') or '/', '/')
