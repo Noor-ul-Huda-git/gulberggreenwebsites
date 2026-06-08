@@ -1,4 +1,4 @@
-/** Matches backend `properties.Property.ListingType` */
+import { appPath } from '../lib/appPaths.js'
 export const LISTING_TYPE_OPTIONS = [
   { value: '', label: 'All listing types' },
   { value: 'plots', label: 'Plots' },
@@ -208,7 +208,8 @@ export function isPropertiesListingExplorerPath(pathname) {
 
 export function propertyBlockPath(categorySlug, block) {
   const blockSlug = slugifyPropertyBlock(block)
-  return categorySlug && blockSlug ? `/properties/${categorySlug}/${blockSlug}` : '/properties'
+  if (!categorySlug || !blockSlug) return appPath('properties')
+  return appPath('properties', categorySlug, blockSlug)
 }
 
 export function propertyBlockSeo(categorySlug, block) {
@@ -218,7 +219,7 @@ export function propertyBlockSeo(categorySlug, block) {
   const blockLabel = formatPropertyBlockLabel(block)
   const typeLabel = PROPERTY_TYPE_LABELS[category.listingType] || category.breadcrumb
   const typeDescription = PROPERTY_TYPE_DESCRIPTIONS[category.listingType] || category.breadcrumb.toLowerCase()
-  const route = `${propertyBlockPath(categorySlug, block)}/`
+  const route = propertyBlockPath(categorySlug, block)
 
   return {
     listingType: category.listingType,
@@ -236,7 +237,7 @@ export function propertyDetailPath(property) {
   const categorySlug = PROPERTY_LISTING_TYPE_SLUGS[property?.listing_type]
   const blockSlug = slugifyPropertyBlock(String(property?.block || '').trim())
   if (categorySlug && blockSlug && property?.slug) {
-    return `/properties/${categorySlug}/${blockSlug}/${property.slug}`
+    return appPath('properties', categorySlug, blockSlug, property.slug)
   }
-  return property?.slug ? `/properties/${property.slug}` : '/properties'
+  return property?.slug ? appPath('properties', property.slug) : appPath('properties')
 }

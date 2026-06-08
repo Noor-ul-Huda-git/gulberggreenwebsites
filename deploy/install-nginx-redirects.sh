@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Installs the legacy 301 rewrite snippet for nginx and prints the exact line to add to your site.
+# Installs nginx SEO redirect snippets and prints the exact lines to add to your site config.
 #
 # Usage:
 #   ./deploy/install-nginx-redirects.sh              # print instructions only
-#   sudo ./deploy/install-nginx-redirects.sh --install # copy snippet to /etc/nginx/snippets/
+#   sudo ./deploy/install-nginx-redirects.sh --install # copy snippets to /etc/nginx/snippets/
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SNIPPET_SRC="${REPO_ROOT}/deploy/nginx-legacy-301-rewrites.conf"
-TARGET="/etc/nginx/snippets/gulberg-legacy-301.conf"
-
-if [[ ! -f "$SNIPPET_SRC" ]]; then
-  echo "Missing: $SNIPPET_SRC" >&2
-  exit 1
-fi
+SNIPPETS=(
+  "nginx-legacy-301-rewrites.conf:gulberg-legacy-301.conf"
+  "nginx-legacy-block-redirects.conf:gulberg-legacy-block-redirects.conf"
+  "nginx-trailing-slash.conf:gulberg-trailing-slash.conf"
+)
 
 if [[ "${1:-}" == "--install" ]]; then
   if [[ "${EUID:-}" -ne 0 ]]; then
@@ -22,25 +20,36 @@ if [[ "${1:-}" == "--install" ]]; then
     exit 1
   fi
   install -d -m 755 /etc/nginx/snippets
-  install -m 644 "$SNIPPET_SRC" "$TARGET"
-  echo "Installed: $TARGET"
+  for pair in "${SNIPPETS[@]}"; do
+    src_name="${pair%%:*}"
+    dest_name="${pair##*:}"
+    install -m 644 "${REPO_ROOT}/deploy/${src_name}" "/etc/nginx/snippets/${dest_name}"
+    echo "Installed: /etc/nginx/snippets/${dest_name}"
+  done
   echo
-  echo "Inside the server { } block for gulberggreens.com.pk, ABOVE 'location /', add:"
+  echo "Inside the server { } block for gulberggreens.com.pk, ABOVE 'location /', add (in this order):"
   echo "  include snippets/gulberg-legacy-301.conf;"
+  echo "  include snippets/gulberg-legacy-block-redirects.conf;"
+  echo "  include snippets/gulberg-trailing-slash.conf;"
   echo
   echo "Then: nginx -t && systemctl reload nginx"
   exit 0
 fi
 
 echo "Repo:   $REPO_ROOT"
-echo "Snippet file (source of truth for nginx 301s):"
-echo "  $SNIPPET_SRC"
+echo "Snippet files (source of truth for nginx 301s):"
+for pair in "${SNIPPETS[@]}"; do
+  src_name="${pair%%:*}"
+  echo "  ${REPO_ROOT}/deploy/${src_name}"
+done
 echo
-echo "Option A — one line in your site config (inside server { }, before location /):"
-echo "  include ${SNIPPET_SRC};"
+echo "Option A — include by absolute path (inside server { }, before location /):"
+for pair in "${SNIPPETS[@]}"; do
+  src_name="${pair%%:*}"
+  echo "  include ${REPO_ROOT}/deploy/${src_name};"
+done
 echo
 echo "Option B — copy to /etc/nginx and include by short path:"
 echo "  sudo ./deploy/install-nginx-redirects.sh --install"
-echo "  # then add inside server { }:  include snippets/gulberg-legacy-301.conf;"
 echo
 echo "After editing nginx: sudo nginx -t && sudo systemctl reload nginx"

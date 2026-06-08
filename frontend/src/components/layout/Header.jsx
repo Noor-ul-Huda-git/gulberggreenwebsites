@@ -5,10 +5,10 @@ import { isPropertiesListingExplorerPath } from '../../data/propertyListingTypes
 
 const homeNavItems = [
   { label: 'Home', to: '/', end: true, hasDropdown: true },
-  { label: 'Latest updates', to: '/latest-updates', end: false, hasDropdown: true },
-  { label: 'Gulberg Map', to: '/gulberg-map', end: false, hasDropdown: true },
+  { label: 'Latest updates', to: '/latest-updates/', end: false, hasDropdown: true },
+  { label: 'Gulberg Map', to: '/gulberg-map/', end: false, hasDropdown: true },
   { label: 'FAQ', to: '/#home-faq-heading', end: false, hasDropdown: true },
-  { label: 'Contact Us', to: '/contact', end: false, hasDropdown: true },
+  { label: 'Contact Us', to: '/contact/', end: false, hasDropdown: true },
 ]
 
 function ChevronDown({ className }) {
@@ -130,7 +130,7 @@ function Header() {
 
         <div className="flex items-center gap-3">
           <NavLink
-            to="/properties"
+            to="/properties/"
             className={`group hidden items-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition duration-300 md:inline-flex ${
               isDarkHeroNav
                 ? 'border-2 border-white bg-white !text-[#1a3553] shadow-[0_8px_28px_rgba(0,0,0,0.45)] hover:bg-white hover:!text-[#1a3553] hover:shadow-[0_12px_36px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
@@ -191,7 +191,7 @@ function Header() {
               </NavLink>
             ))}
             <NavLink
-              to="/properties"
+              to="/properties/"
               className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border border-[#31C950]/35 bg-[#31C950]/12 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#1a3553] transition hover:bg-[#31C950]/22"
               onClick={() => setMobileOpen(false)}
             >

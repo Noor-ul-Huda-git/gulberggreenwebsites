@@ -1,23 +1,68 @@
 """HTTP 301 redirects for legacy indexed URLs.
 
 Matched when Django handles the request. For the usual setup (SPA `dist/` served by nginx with
-try_files … /index.html), also include `deploy/nginx-legacy-301-rewrites.conf` in nginx `server {}`
-above `location /` so bots get real 301s before the SPA shell.
+try_files … /index.html), also include `deploy/nginx-legacy-301-rewrites.conf` and
+`deploy/nginx-legacy-block-redirects.conf` in nginx `server {}` above `location /` so bots get
+real 301s before the SPA shell.
 
 Path-based listing URLs (`/properties/all/{blockSlug}`, `/properties/{category}/{blockSlug}`, etc.)
 and query cleanup for filters are handled in the SPA; only static legacy paths are listed here.
 """
 
-from django.urls import path
+from django.http import Http404, HttpResponsePermanentRedirect
+from django.urls import path, re_path
 from django.views.generic import RedirectView
+
+from .legacy_block_redirect_data import LEGACY_BLOCK_SHORT_TO_SLUG, PROPERTY_CATEGORY_SLUGS
+
+
+def _slash(url: str) -> str:
+    """Canonical trailing slash for redirect targets (home stays `/`)."""
+    if not url or url == '/':
+        return url
+    return url if url.endswith('/') else f'{url}/'
 
 
 def _p(route: str, target: str, name: str):
-    return path(route, RedirectView.as_view(url=target, permanent=True), name=name)
+    return path(route, RedirectView.as_view(url=_slash(target), permanent=True), name=name)
 
+
+def _legacy_block_target(category: str, short_code: str, property_slug: str | None = None) -> str:
+    block_slug = LEGACY_BLOCK_SHORT_TO_SLUG.get(short_code) or LEGACY_BLOCK_SHORT_TO_SLUG.get(
+        short_code.lower(),
+    )
+    if not block_slug or block_slug == short_code or block_slug.lower() == short_code.lower():
+        raise Http404
+    base = _slash(f'/properties/{category}/{block_slug}')
+    return _slash(f'{base.rstrip("/")}/{property_slug}') if property_slug else base
+
+
+def legacy_property_block_listing_redirect(request, category, short_code):
+    if category not in PROPERTY_CATEGORY_SLUGS:
+        raise Http404
+    return HttpResponsePermanentRedirect(_legacy_block_target(category, short_code))
+
+
+def legacy_property_block_detail_redirect(request, category, short_code, property_slug):
+    if category not in PROPERTY_CATEGORY_SLUGS:
+        raise Http404
+    return HttpResponsePermanentRedirect(_legacy_block_target(category, short_code, property_slug))
+
+
+_CATEGORY_PATTERN = '|'.join(sorted(PROPERTY_CATEGORY_SLUGS, key=len, reverse=True))
 
 # Order: longest / most specific first (shared prefix routes).
 urlpatterns = [
+    re_path(
+        rf'^properties/(?P<category>{_CATEGORY_PATTERN})/(?P<short_code>[^/]+)/(?P<property_slug>[^/]+)/?$',
+        legacy_property_block_detail_redirect,
+        name='seo-legacy-block-detail',
+    ),
+    re_path(
+        rf'^properties/(?P<category>{_CATEGORY_PATTERN})/(?P<short_code>[^/]+)/?$',
+        legacy_property_block_listing_redirect,
+        name='seo-legacy-block-listing',
+    ),
     _p(
         'property/7-marla-developed-possession-plot-for-sale-in-gulberg-greens-block-m/',
         '/properties/plots/block-m',
@@ -48,7 +93,11 @@ urlpatterns = [
         '/properties/plots/block-a',
         'seo-props-legacy-block-a',
     ),
-    _p('poperties/<path:path>', '/properties/%(path)s', 'seo-poperties-path'),
+    path(
+        'poperties/<path:path>',
+        RedirectView.as_view(url='/properties/%(path)s/', permanent=True),
+        name='seo-poperties-path',
+    ),
     _p('poperties/', '/properties', 'seo-poperties-slash'),
     _p('poperties', '/properties', 'seo-poperties'),
     _p('farmhouse-for-sale/', '/properties/farm-house', 'seo-farmhouse-slash'),
@@ -79,22 +128,22 @@ urlpatterns = [
     _p('properties/house-for-sale', '/properties/house', 'seo-props-house-sale'),
     path(
         'properties/block-<path:rest>/',
-        RedirectView.as_view(url='/properties', permanent=True),
+        RedirectView.as_view(url='/properties/', permanent=True),
         name='seo-props-block-prefix-slash',
     ),
     path(
         'properties/block-<path:rest>',
-        RedirectView.as_view(url='/properties', permanent=True),
+        RedirectView.as_view(url='/properties/', permanent=True),
         name='seo-props-block-prefix',
     ),
     path(
         'properties/gulberg-<path:rest>/',
-        RedirectView.as_view(url='/properties', permanent=True),
+        RedirectView.as_view(url='/properties/', permanent=True),
         name='seo-props-gulberg-prefix-slash',
     ),
     path(
         'properties/gulberg-<path:rest>',
-        RedirectView.as_view(url='/properties', permanent=True),
+        RedirectView.as_view(url='/properties/', permanent=True),
         name='seo-props-gulberg-prefix',
     ),
     _p('instalment-plan/', '/installment-plan', 'seo-instalment-slash'),
@@ -125,22 +174,22 @@ urlpatterns = [
     _p('listing', '/properties', 'seo-listing-index'),
     path(
         'listing/<path:rest>/',
-        RedirectView.as_view(url='/properties', permanent=True),
+        RedirectView.as_view(url='/properties/', permanent=True),
         name='seo-listing-path-slash',
     ),
     path(
         'listing/<path:rest>',
-        RedirectView.as_view(url='/properties', permanent=True),
+        RedirectView.as_view(url='/properties/', permanent=True),
         name='seo-listing-path',
     ),
     path(
         'property/<slug:slug>/',
-        RedirectView.as_view(url='/properties/%(slug)s', permanent=True),
+        RedirectView.as_view(url='/properties/%(slug)s/', permanent=True),
         name='seo-property-old-slash',
     ),
     path(
         'property/<slug:slug>',
-        RedirectView.as_view(url='/properties/%(slug)s', permanent=True),
+        RedirectView.as_view(url='/properties/%(slug)s/', permanent=True),
         name='seo-property-old',
     ),
     _p('agent/', '/', 'seo-agent-slash'),

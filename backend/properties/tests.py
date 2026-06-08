@@ -71,7 +71,7 @@ class PropertyApiTests(APITestCase):
         self.assertEqual(response.data['category_slug'], 'plots')
         self.assertEqual(
             response.data['canonical_url'],
-            f'https://gulberggreens.com.pk/properties/plots/A%20Executive/{self.published_property.slug}',
+            f'https://gulberggreens.com.pk/properties/plots/block-a-executive/{self.published_property.slug}/',
         )
 
     def test_properties_all_sitemap_endpoint_lists_only_published(self):
@@ -150,3 +150,24 @@ class PropertyApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
         loc = response.headers.get('Location', '')
         self.assertEqual(urlparse(loc).path.rstrip('/') or '/', '/properties/plots/block-a')
+
+    def test_seo_redirect_legacy_short_block_code_farm_house_a(self):
+        response = self.client.get('/properties/farm-house/A/', follow=False)
+        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        loc = response.headers.get('Location', '')
+        self.assertEqual(urlparse(loc).path, '/properties/farm-house/block-a/')
+
+    def test_seo_redirect_legacy_short_block_code_with_property_slug(self):
+        response = self.client.get(
+            '/properties/farm-house/A/sample-property-slug/',
+            follow=False,
+        )
+        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        loc = response.headers.get('Location', '')
+        self.assertEqual(urlparse(loc).path, '/properties/farm-house/block-a/sample-property-slug/')
+
+    def test_seo_redirect_legacy_plots_ae_listing(self):
+        response = self.client.get('/properties/plots/AE/sample-slug/', follow=False)
+        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        loc = response.headers.get('Location', '')
+        self.assertEqual(urlparse(loc).path, '/properties/plots/block-ae/sample-slug/')

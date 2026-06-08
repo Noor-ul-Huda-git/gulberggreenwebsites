@@ -17,6 +17,7 @@ import {
 import { contactInfo } from '../data/siteContent.js'
 import { STATIC_PAGE_SEO } from '../data/staticPageSeo.js'
 import { fetchProperties } from '../lib/api.js'
+import { appPath, canonicalHref } from '../lib/appPaths.js'
 
 const MARLA_FILTER_OPTIONS = [5, 7, 10, 20, 30, 40]
 const ROOM_COUNT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -58,20 +59,20 @@ function normalizeListingPath(pathname) {
   return p === '' ? '/' : p
 }
 
-/** Canonical listing URL: `/properties`, `/properties/{category}|all`, or `.../{blockSlug}`. */
+/** Canonical listing URL: `/properties/`, `/properties/{category}|all/`, or `.../{blockSlug}/`. */
 function desiredPropertiesListingPath(listingType, blockLabel) {
   const blockSeg = slugifyPropertyBlock(String(blockLabel || '').trim())
   if (!listingType) {
-    if (!blockSeg) return '/properties'
-    return `/properties/all/${blockSeg}`
+    if (!blockSeg) return appPath('properties')
+    return appPath('properties', 'all', blockSeg)
   }
   const slug = PROPERTY_LISTING_TYPE_SLUGS[listingType]
   if (!slug) {
-    if (!blockSeg) return '/properties'
-    return `/properties/all/${blockSeg}`
+    if (!blockSeg) return appPath('properties')
+    return appPath('properties', 'all', blockSeg)
   }
-  if (!blockSeg) return `/properties/${slug}`
-  return `/properties/${slug}/${blockSeg}`
+  if (!blockSeg) return appPath('properties', slug)
+  return appPath('properties', slug, blockSeg)
 }
 
 function isBarePropertiesListingPath(pathname) {
@@ -437,11 +438,7 @@ function Properties() {
     const previousRobots = document.head.querySelector('meta[name="robots"]')?.getAttribute('content') || ''
 
     const selfCanonical =
-      typeof window !== 'undefined'
-        ? window.location.pathname === '/'
-          ? window.location.origin
-          : `${window.location.origin}${window.location.pathname}`
-        : pageSeo.canonical
+      typeof window !== 'undefined' ? canonicalHref(window.location.pathname) : pageSeo.canonical
 
     document.title = pageSeo.metaTitle
     upsertMeta('description', pageSeo.metaDescription)

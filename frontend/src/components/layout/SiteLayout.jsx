@@ -1,7 +1,9 @@
-import { useLocation, useRoutes } from 'react-router-dom'
+import { useLocation, useNavigate, useRoutes } from 'react-router-dom'
 import { useEffect, useLayoutEffect } from 'react'
 import { appRouteObjects } from '../../appRoutes.jsx'
+import { legacyBlockRedirectPath } from '../../data/blockLegacyUrlCodes.js'
 import { isPropertiesListingExplorerPath } from '../../data/propertyListingTypes.js'
+import { normalizeAppPath } from '../../lib/appPaths.js'
 import FloatingContactActions from './FloatingContactActions.jsx'
 import Footer from './Footer.jsx'
 import Header from './Header.jsx'
@@ -12,6 +14,7 @@ import Header from './Header.jsx'
 
 function SiteLayout() {
   const location = useLocation()
+  const navigate = useNavigate()
   /** WelcomeBanner (disabled): run before banner mounts for session flag. */
   // const prevPathnameRef = useRef(location.pathname)
   const pathname = location.pathname
@@ -20,6 +23,18 @@ function SiteLayout() {
   //   markClientNavigationToHome()
   // }
   // prevPathnameRef.current = pathname
+
+  useLayoutEffect(() => {
+    const legacyTarget = legacyBlockRedirectPath(location.pathname)
+    if (legacyTarget && legacyTarget !== location.pathname) {
+      navigate({ pathname: legacyTarget, search: location.search, hash: location.hash }, { replace: true })
+      return
+    }
+
+    if (pathname !== '/' && !pathname.endsWith('/')) {
+      navigate({ pathname: normalizeAppPath(pathname), search: location.search, hash: location.hash }, { replace: true })
+    }
+  }, [location.hash, location.pathname, location.search, navigate, pathname])
 
   /**
    * Reset scroll on route change, except when navigating to an in-page hash (e.g. /#home-faq-heading).

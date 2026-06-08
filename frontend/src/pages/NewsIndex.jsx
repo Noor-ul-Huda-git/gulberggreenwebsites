@@ -174,7 +174,7 @@ function NewsIndex() {
             <>
               <div className="grid auto-rows-fr gap-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-12">
                 {posts.map((post) => {
-                  const href = `/latest-updates/${post.slug}`
+                  const href = `/latest-updates/${post.slug}/`
                   const excerpt = excerptPlainText(post.excerpt)
                   return (
                     <article

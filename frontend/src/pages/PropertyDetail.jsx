@@ -18,6 +18,7 @@ import PropertySchema from '../components/seo/PropertySchema.jsx'
 import { propertyDetailPath } from '../data/propertyListingTypes.js'
 import { contactInfo } from '../data/siteContent.js'
 import { fetchProperties, fetchProperty, submitPropertyListingEmail } from '../lib/api.js'
+import { canonicalHref } from '../lib/appPaths.js'
 
 /** Primary heading / strip — matches site nav emphasis */
 const BRAND_NAVY = '#1a3553'
@@ -485,10 +486,8 @@ function PropertyDetail() {
     const description = descriptionSource.slice(0, 130).trim()
     const canonical =
       typeof window !== 'undefined'
-        ? window.location.pathname === '/'
-          ? window.location.origin
-          : `${window.location.origin}${window.location.pathname}`
-        : property.canonical_url || `https://gulberggreens.com.pk${propertyDetailPath(property)}`
+        ? canonicalHref(window.location.pathname)
+        : property.canonical_url || canonicalHref(propertyDetailPath(property))
 
     document.title = title
     upsertMeta('description', description)
@@ -645,7 +644,7 @@ function PropertyDetail() {
             <p className="text-lg font-semibold text-[#1a3553]">Something went wrong</p>
             <p className="mt-2 text-sm text-slate-600">Please try again shortly.</p>
             <Link
-              to="/properties"
+              to="/properties/"
               className="mt-8 inline-flex rounded-lg bg-[#31C950] px-6 py-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_8px_24px_-8px_rgba(49,201,80,0.55)] transition hover:bg-[#28b048]"
             >
               Back to properties
@@ -664,7 +663,7 @@ function PropertyDetail() {
             <p className="text-lg font-semibold text-[#1a3553]">Listing not found</p>
             <p className="mt-2 text-sm text-slate-600">It may have been removed or unpublished.</p>
             <Link
-              to="/properties"
+              to="/properties/"
               className="mt-8 inline-flex rounded-lg bg-[#31C950] px-6 py-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_8px_24px_-8px_rgba(49,201,80,0.55)] transition hover:bg-[#28b048]"
             >
               Back to properties
@@ -885,7 +884,7 @@ function PropertyDetail() {
           <div className="min-w-0 max-lg:-mx-4 lg:col-span-8">
             <div className="mb-2 flex items-center lg:hidden">
               <Link
-                to="/properties"
+                to="/properties/"
                 className="inline-flex items-center gap-1 py-1 text-[13px] font-semibold text-[#1a3553] transition hover:text-[#00a651]"
               >
                 <IconChevronLeft size="h-5 w-5" />

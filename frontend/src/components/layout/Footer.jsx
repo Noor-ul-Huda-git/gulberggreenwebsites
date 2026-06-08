@@ -182,7 +182,7 @@ function Footer() {
                 </svg>
               </a>
               <Link
-                to="/gulberg-map"
+                to="/gulberg-map/"
                 className="inline-flex items-center justify-center rounded-xl bg-[#1a3553] px-5 py-3.5 text-[13px] font-semibold text-white shadow-[0_10px_40px_-12px_rgba(26,53,83,0.45)] transition hover:bg-[#142a42]"
               >
                 Project map on site
@@ -311,25 +311,25 @@ function Footer() {
               Home
             </Link>
             <Link
-              to="/properties"
+              to="/properties/"
               className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
             >
               Properties
             </Link>
             <Link
-              to="/latest-updates"
+              to="/latest-updates/"
               className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
             >
               News
             </Link>
             <Link
-              to="/gulberg-map"
+              to="/gulberg-map/"
               className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
             >
               Gulberg Map
             </Link>
             <Link
-              to="/contact"
+              to="/contact/"
               className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
             >
               Contact Us

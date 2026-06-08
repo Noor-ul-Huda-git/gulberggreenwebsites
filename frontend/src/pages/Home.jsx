@@ -770,7 +770,7 @@ function Home() {
 
                 <div className="flex items-stretch lg:min-w-[200px] lg:pl-2">
                   <Link
-                    to="/properties"
+                    to="/properties/"
                     className="flex w-full items-center justify-center rounded-xl bg-[#31C950] px-6 py-3.5 text-center text-[12px] font-bold uppercase tracking-[0.12em] text-white shadow-sm transition hover:bg-[#28b048] lg:py-0"
                   >
                     Search Now
@@ -914,7 +914,7 @@ function Home() {
                 </p>
               </div>
               <Link
-                to="/properties"
+                to="/properties/"
                 className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#31C950] transition hover:text-[#28b048]"
               >
                 View all properties

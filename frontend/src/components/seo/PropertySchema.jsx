@@ -1,4 +1,5 @@
 import { propertyDetailPath } from '../../data/propertyListingTypes.js'
+import { canonicalHref } from '../../lib/appPaths.js'
 
 function propertyImage(property) {
   if (property.featured_image_url) return property.featured_image_url
@@ -11,10 +12,8 @@ function PropertySchema({ property }) {
 
   const url =
     typeof window !== 'undefined'
-      ? window.location.pathname === '/'
-        ? window.location.origin
-        : `${window.location.origin}${window.location.pathname}`
-      : property.canonical_url || `https://gulberggreens.com.pk${propertyDetailPath(property)}`
+      ? canonicalHref(window.location.pathname)
+      : property.canonical_url || canonicalHref(propertyDetailPath(property))
   const image = propertyImage(property)
   const schema = {
     '@context': 'https://schema.org',

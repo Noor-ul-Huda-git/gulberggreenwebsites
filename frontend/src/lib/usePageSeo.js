@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { canonicalHref } from './appPaths.js'
 
 function upsertMeta(name, content) {
   let tag = document.head.querySelector(`meta[name="${name}"]`)
@@ -32,19 +33,15 @@ export function usePageSeo(seo) {
     const previousRobots = document.head.querySelector('meta[name="robots"]')?.getAttribute('content') || ''
 
     const selfCanonical =
-      typeof window !== 'undefined'
-        ? window.location.pathname === '/'
-          ? window.location.origin
-          : `${window.location.origin}${window.location.pathname}`
-        : seo.canonical
+      typeof window !== 'undefined' ? canonicalHref(window.location.pathname) : seo.canonical
 
     /** When set (e.g. news under both `/news/` and `/latest-updates/`), forces one preferred URL for search engines. */
-    const canonicalHref = seo.canonicalOverride || selfCanonical || seo.canonical
+    const canonicalHrefValue = seo.canonicalOverride || selfCanonical || seo.canonical
 
     document.title = seo.metaTitle
     upsertMeta('description', seo.metaDescription)
     upsertMeta('robots', 'index, follow')
-    upsertCanonical(canonicalHref)
+    upsertCanonical(canonicalHrefValue)
 
     return () => {
       document.title = previousTitle

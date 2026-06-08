@@ -198,13 +198,13 @@ function NewsArticle() {
         metaTitle: 'Article not found | Gulberg Greens Islamabad',
         metaDescription:
           'This update may have been removed or the link is incorrect. Browse all latest news from Gulberg Greens Islamabad.',
-        canonicalOverride: `${SITE_ORIGIN}/latest-updates`,
+        canonicalOverride: `${SITE_ORIGIN}/latest-updates/`,
       }
     }
     return {
       metaTitle: post.title,
       metaDescription: newsBodyMetaDescription(post.description, 130),
-      canonicalOverride: `${SITE_ORIGIN}/latest-updates/${post.slug}`,
+      canonicalOverride: `${SITE_ORIGIN}/latest-updates/${post.slug}/`,
     }
   }, [loading, post])
 
@@ -246,7 +246,7 @@ function NewsArticle() {
             </h1>
             <p className="mt-3 max-w-md text-white/85">This update may have been removed or the link is incorrect.</p>
             <Link
-              to="/latest-updates"
+              to="/latest-updates/"
               className="mt-8 inline-flex font-semibold text-[#31C950] [text-shadow:0_1px_8px_rgba(0,0,0,0.6)] hover:underline"
             >
               ← Back to news
@@ -289,7 +289,7 @@ function NewsArticle() {
 
           <div className="mx-auto mt-16 max-w-[42rem] border-t border-slate-200 pt-10">
             <Link
-              to="/latest-updates"
+              to="/latest-updates/"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-[14px] font-semibold text-[#1a3553] shadow-sm transition hover:border-[#31C950]/50 hover:bg-[#31C950]/[0.06] hover:text-[#31C950]"
             >
               <span aria-hidden className="text-lg leading-none">

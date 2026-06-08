@@ -1,8 +1,6 @@
 import secrets
 import uuid
-from urllib.parse import quote
 
-from django.core.files.storage import default_storage
 from django.db import models
 from django_ckeditor_5.fields import CKEditor5Field
 from django.utils.text import slugify
@@ -152,8 +150,11 @@ class Property(models.Model):
 
     @property
     def canonical_url(self):
-        block_segment = quote((self.block or '').strip(), safe='')
-        return f'{SITE_ORIGIN}/properties/{self.category_slug}/{block_segment}/{self.slug}'
+        if self.block_slug and self.slug:
+            return f'{SITE_ORIGIN}/properties/{self.category_slug}/{self.block_slug}/{self.slug}/'
+        if self.slug:
+            return f'{SITE_ORIGIN}/properties/{self.slug}/'
+        return f'{SITE_ORIGIN}/properties/'
 
     def _area_label(self):
         if self.area_marlas in (None, ''):
