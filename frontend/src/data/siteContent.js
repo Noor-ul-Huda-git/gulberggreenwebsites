@@ -58,88 +58,82 @@ export const heroStats = [
   { value: '01', label: 'Unified platform for project discovery' },
 ]
 
-/** Homepage FAQ — question + one or more answer paragraphs. */
+/** Homepage FAQ — 11 questions (June 2026 SEO brief). */
 export const homeFaqItems = [
+  {
+    id: 'cda-approved',
+    question: 'Is Gulberg Greens Islamabad CDA approved?',
+    paragraphs: [
+      'Yes. Gulberg Greens is fully approved by the Capital Development Authority (CDA) and holds NOC from RDA, FGEHF, and NAB — making it one of the most legally secure housing societies in Islamabad.',
+    ],
+  },
   {
     id: 'investment-or-living',
     question: 'Is this project suitable for investment or living?',
     paragraphs: [
-      'Yes, it is ideal for both investment and residential living due to its prime location, infrastructure, and facilities.',
+      'Gulberg Greens is ideal for both living and investment. With possession-ready plots, move-in-ready houses, and consistent property appreciation — it serves end-users and investors equally.',
+    ],
+  },
+  {
+    id: 'property-types',
+    question: 'What types of properties are available in Gulberg Greens?',
+    paragraphs: [
+      'The community offers farmhouse plots, residential plots, houses, apartments, and commercial properties, catering to different lifestyle and investment needs.',
+    ],
+  },
+  {
+    id: 'investor-popularity',
+    question: 'Why is Gulberg Greens popular among investors?',
+    paragraphs: [
+      'Investors are attracted to Gulberg Greens because of its prime location, strong development standards, growing demand, and long-term potential for property value appreciation.',
     ],
   },
   {
     id: 'transfer-plot-2026',
-    question: 'How to transfer a plot in 2026?',
+    question: 'How to transfer a plot in Gulberg Greens 2026?',
     paragraphs: [
-      'Required documents: Allotment Letter, NDC, CNIC, Possession Letter (if issued), Sale Agreement, Paid Slips, Transfer Fee Slip, Taxes.',
-      'Transfer fee: 5 Marla (30k), 10 Marla (48k), 1 Kanal (70k), etc.',
-      'Tax: Filer 3%, Non-filer 6%.',
+      'Transfer procedures are conducted through the official IBECHS transfer office. For complete documentation requirements and current transfer fee schedule, contact our sales team.',
     ],
   },
   {
-    id: 'reliable-agent',
-    question: 'How to find a reliable real estate agent?',
-    paragraphs: ['FTN Marketing (Find The Nest) is a trusted partner for Gulberg Greens.'],
-  },
-  {
-    id: 'possession-plot-2026',
-    question: 'How to get possession of a plot in 2026?',
+    id: 'residential-plot-sizes',
+    question: 'What residential plot sizes are available in Gulberg Greens?',
     paragraphs: [
-      'Clear dues, submit allotment letter, CNIC, photos, and possession fee. Once verified, management issues possession letter.',
-      'Possession fee: 5 Marla (18k), 1 Kanal (48k), 10 Kanal (400k), etc.',
+      'Residential plots: 5 Marla, 7 Marla, 10 Marla, 1 Kanal and 2 kanal.',
     ],
   },
   {
-    id: 'transfer-farmhouse-2026',
-    question: 'How to transfer a farmhouse in 2026?',
-    paragraphs: [
-      'Documents: Allotment Letter, NDC, CNIC, Paid Slips, Possession Letter, Taxes.',
-      'Transfer fee: 4 Kanal (250k), 5 Kanal (300k), 10 Kanal (700k).',
-      'Tax: Filer 3%, Non-filer 6%.',
-    ],
-  },
-  {
-    id: 'transfer-shops-apartments',
-    question: 'How to transfer shops/apartments in 2026?',
-    paragraphs: [
-      'Currently, Gulberg Green administration does not allow transfer of shops, apartments, or offices.',
-    ],
-  },
-  {
-    id: 'ibechs-full-form',
-    question: 'What is the full form of IBECHS?',
-    paragraphs: ['IBECHS stands for Intelligence Bureau Employees Cooperative Housing Scheme.'],
-  },
-  {
-    id: 'noc-status',
-    question: 'What is the NOC status?',
-    paragraphs: [
-      'The project has received the required approvals, including CDA-issued NOC, ensuring legal compliance. Ref# CDA/PLW-HS (127)/2009/257. MOUs with IESCO and SNGPL were also signed.',
-    ],
-  },
-  {
-    id: 'visit-site',
-    question: 'How can I visit the site?',
-    paragraphs: [
-      'The location is easily accessible via Islamabad Expressway and is within a short drive from major areas of the city.',
-    ],
-  },
-  {
-    id: 'developer',
-    question: 'Who is the developer?',
-    paragraphs: ['The project is developed and managed by IBECHS.'],
-  },
-  {
-    id: 'sectors-sizes',
-    question: 'What are the sectors and sizes of Gulberg Green?',
-    paragraphs: [
-      'Gulberg Greens has six blocks: A-Executive, A, B, C, D, E with luxurious farmhouses of 4, 5, and 10 Kanal.',
-    ],
+    id: 'farmhouse-sizes',
+    question: 'What farmhouse sizes are available in Gulberg Greens?',
+    paragraphs: ['Farmhouse plots: 4 Kanal, 5 Kanal, 10 Kanal.'],
   },
   {
     id: 'buy-installment',
-    question: 'How to buy residential plots, apartments, or shops on installment?',
-    paragraphs: ['Fill out the provided form, and the sales department will contact you.'],
+    question: 'How to buy plots on installment in Gulberg Greens?',
+    paragraphs: [
+      'IBECHS currently offers installment plans in Block A Executive Premium with 30% down payment and 3-year payment schedule.',
+    ],
+  },
+  {
+    id: 'who-can-buy',
+    question: 'Who can buy property in Gulberg Greens?',
+    paragraphs: [
+      'Both government employees and general public including overseas Pakistanis can purchase and sell property in Gulberg Greens Islamabad.',
+    ],
+  },
+  {
+    id: 'education',
+    question: 'Are educational institutions available near Gulberg Greens?',
+    paragraphs: [
+      'Yes, several schools, colleges, and educational facilities are located within or near the community, making it convenient for families with children.',
+    ],
+  },
+  {
+    id: 'parks-green',
+    question: 'Are there parks and green spaces in Gulberg Greens?',
+    paragraphs: [
+      'Yes, one of the key attractions of Gulberg Greens is its abundance of parks, green belts, and open spaces that promote a healthy and relaxing lifestyle.',
+    ],
   },
 ]
 

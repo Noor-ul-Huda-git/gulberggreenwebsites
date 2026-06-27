@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { Navigate } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 
 const ContactUs = lazy(() => import('./pages/ContactUs.jsx'))
@@ -36,6 +37,7 @@ export const appRouteObjects = [
   { path: '/news/:slug/', element: withSuspense(<NewsArticle />) },
   { path: '/gulberg-map/', element: withSuspense(<GulbergMap />) },
   { path: '/contact/', element: withSuspense(<ContactUs />) },
+  { path: '/faq/', element: <Navigate to="/#home-faq-heading" replace /> },
   { path: '/properties/', element: withSuspense(<Properties />) },
   { path: '/properties/all/', element: withSuspense(<Properties />) },
   { path: '/properties/plots/', element: withSuspense(<Properties />) },
