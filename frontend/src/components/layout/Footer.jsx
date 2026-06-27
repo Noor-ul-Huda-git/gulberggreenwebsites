@@ -126,8 +126,10 @@ function IconClock() {
 
 function Footer() {
   const location = useLocation()
+  const isHomePage = location.pathname === '/' || location.pathname === ''
   /** News, contact, map & properties pages carry their own layout — hide the large map block; keep contact columns + bottom bar. */
   const showLocationMap =
+    !isHomePage &&
     !location.pathname.startsWith('/news') &&
     !location.pathname.startsWith('/latest-updates') &&
     !location.pathname.startsWith('/contact') &&
@@ -135,7 +137,8 @@ function Footer() {
     !location.pathname.startsWith('/gulberg-map') &&
     !location.pathname.startsWith('/properties')
   /** Contact page already has full contact content — hide the duplicate about + get-in-touch block. */
-  const showAboutContactBlock = !location.pathname.startsWith('/contact') && !location.pathname.startsWith('/contact-us')
+  const showAboutContactBlock =
+    !isHomePage && !location.pathname.startsWith('/contact') && !location.pathname.startsWith('/contact-us')
 
   return (
     <footer className="border-t border-slate-200/80">
