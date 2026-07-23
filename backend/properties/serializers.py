@@ -1,6 +1,25 @@
+from pathlib import Path
+
 from rest_framework import serializers
 
 from .models import Agent, Property, PropertyImage
+
+
+def _card_image_uri(request, file_field):
+    """Return .card.webp URL if a listing-card thumbnail exists beside the upload."""
+    if not file_field:
+        return None
+    try:
+        source = Path(file_field.path)
+        card = source.with_name(f'{source.stem}.card{source.suffix}')
+        if not card.is_file():
+            return None
+        rel = file_field.url.rsplit('/', 1)[0] + '/' + card.name
+        if request:
+            return request.build_absolute_uri(rel)
+        return rel
+    except (ValueError, OSError):
+        return None
 
 
 class AgentBriefSerializer(serializers.ModelSerializer):
@@ -27,6 +46,7 @@ class PropertyImageSerializer(serializers.ModelSerializer):
 
 class PropertySerializer(serializers.ModelSerializer):
     featured_image_url = serializers.SerializerMethodField()
+    card_image_url = serializers.SerializerMethodField()
     listing_type_display = serializers.CharField(source='get_listing_type_display', read_only=True)
     area_unit_display = serializers.CharField(source='get_area_unit_display', read_only=True)
     category_slug = serializers.CharField(read_only=True)
@@ -75,6 +95,7 @@ class PropertySerializer(serializers.ModelSerializer):
             'baths',
             'featured_image',
             'featured_image_url',
+            'card_image_url',
             'images',
             'is_featured',
             'is_published',
@@ -101,6 +122,16 @@ class PropertySerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(obj.featured_image.url)
         return obj.featured_image.url
+
+    def get_card_image_url(self, obj):
+        request = self.context.get('request')
+        card = _card_image_uri(request, obj.featured_image)
+        if card:
+            return card
+        first = obj.images.order_by('sort_order', 'id').first()
+        if first:
+            return _card_image_uri(request, first.image)
+        return self.get_featured_image_url(obj)
 
 
 class ListingEmailCreateSerializer(serializers.Serializer):

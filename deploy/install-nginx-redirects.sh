@@ -26,11 +26,15 @@ if [[ "${1:-}" == "--install" ]]; then
     install -m 644 "${REPO_ROOT}/deploy/${src_name}" "/etc/nginx/snippets/${dest_name}"
     echo "Installed: /etc/nginx/snippets/${dest_name}"
   done
+  sed "s|__REPO_ROOT__|${REPO_ROOT}|g" "${REPO_ROOT}/deploy/nginx-static-cache.conf" \
+    > /etc/nginx/snippets/gulberg-static-cache.conf
+  echo "Installed: /etc/nginx/snippets/gulberg-static-cache.conf"
   echo
   echo "Inside the server { } block for gulberggreens.com.pk, ABOVE 'location /', add (in this order):"
   echo "  include snippets/gulberg-legacy-301.conf;"
   echo "  include snippets/gulberg-legacy-block-redirects.conf;"
   echo "  include snippets/gulberg-trailing-slash.conf;"
+  echo "  include /etc/nginx/snippets/gulberg-static-cache.conf;"
   echo
   echo "Then: nginx -t && systemctl reload nginx"
   exit 0

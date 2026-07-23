@@ -123,18 +123,39 @@ function parsePropertyListResponse(data) {
 }
 
 function homeFeaturedImageUrl(p) {
+  if (p.card_image_url) return p.card_image_url
   if (p.featured_image_url) return p.featured_image_url
   if (Array.isArray(p.images) && p.images.length > 0 && p.images[0].url) return p.images[0].url
   return null
 }
 
-function SeoImage({ image, priority = false, className = '' }) {
+function publicImageSrcSet(src) {
+  const sized = src?.match(/^(\/images\/.+?)-(\d+)w\.webp$/i)
+  if (sized) {
+    const base = sized[1]
+    const maxW = Number(sized[2])
+    const widths = [640, 960, 1280, 1920].filter((w) => w <= maxW)
+    if (widths.length === 0) return undefined
+    return widths.map((w) => `${base}-${w}w.webp ${w}w`).join(', ')
+  }
+  const plain = src?.match(/^(\/images\/.+?)\.webp$/i)
+  if (!plain) return undefined
+  const base = plain[1]
+  return [640, 960, 1280].map((w) => `${base}-${w}w.webp ${w}w`).join(', ')
+}
+
+function SeoImage({ image, priority = false, className = '', sizes = '100vw' }) {
+  const srcset = image.srcset ?? publicImageSrcSet(image.src)
   return (
     <img
       src={image.src}
+      srcSet={srcset}
+      sizes={srcset ? sizes : undefined}
       alt={image.alt}
       title={image.title}
       className={className}
+      width={image.width}
+      height={image.height}
       loading={priority ? 'eager' : 'lazy'}
       fetchPriority={priority ? 'high' : 'auto'}
       decoding="async"
@@ -165,7 +186,7 @@ function SplitImageSection({ image, imageFirst = false, children, className = ''
       <div className="grid gap-0 md:grid-cols-2 md:items-stretch">
         <div className={`flex flex-col justify-center p-8 md:p-10 lg:p-12 ${imageFirst ? 'md:order-2' : ''}`}>{children}</div>
         <div className={`relative min-h-[240px] overflow-hidden bg-slate-100 md:min-h-[360px] ${imageFirst ? 'md:order-1' : ''}`}>
-          <SeoImage image={image} className="h-full w-full object-cover" />
+          <SeoImage image={image} sizes="(max-width: 768px) 100vw, 50vw" className="h-full w-full object-cover" />
         </div>
       </div>
     </article>
@@ -267,9 +288,20 @@ function Home() {
         if (!cancelled) setHomeFeaturedListings([])
       }
     }
-    void load()
+    const run = () => {
+      if (!cancelled) void load()
+    }
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(run, { timeout: 2500 })
+      return () => {
+        cancelled = true
+        window.cancelIdleCallback(id)
+      }
+    }
+    const timer = window.setTimeout(run, 800)
     return () => {
       cancelled = true
+      window.clearTimeout(timer)
     }
   }, [])
 
@@ -462,7 +494,15 @@ function Home() {
                   >
                     <div className="relative aspect-[4/3] bg-slate-100">
                       {img ? (
-                        <img src={img} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                        <img
+                          src={img}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                          width={640}
+                          height={480}
+                        />
                       ) : (
                         <div className="flex h-full items-center justify-center text-xs text-slate-400">No photo</div>
                       )}
