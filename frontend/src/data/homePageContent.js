@@ -5,7 +5,7 @@ export const HOME_HERO = {
   body:
     "Gulberg Greens Islamabad is Pakistan's most trusted CDA-approved gated community, developed by Intelligence Bureau Employees Cooperative Housing Society (IBECHS) since 2005. Spanning over 9,000 acres on Gulberg Expressway, it is home to Islamabad's first residential waterfront lake, Pakistan's first public heliport, and a signal-free expressway underpass — making it the capital's most distinctive address.",
   image: {
-    src: '/images/gulberg-greens-islamabad-official-ibechs-gated-community-1280w.webp',
+    src: '/images/gulberg-greens-islamabad-official-ibechs-gated-community.webp',
     alt: 'Gulberg Greens Islamabad — Aerial view of IBECHS official gated community showing Gulberg Mall, red arch bridge and main boulevard',
     title: 'Gulberg Greens Islamabad — Official IBECHS Gated Community',
   },
@@ -47,7 +47,7 @@ export const HOME_PLATFORM_HUB = {
   body:
     'This is the sales and marketing digital platform of Gulberg Greens Islamabad, operated and maintained directly by FTN management. All property listings, block-wise development updates, transfer procedures, possession announcements, and investment information published on this website are verified, accurate, and sourced from society management. Whether you are a first-time buyer, seasoned investor, or overseas Pakistani — this platform gives you direct access to authentic Gulberg Greens information.',
   image: {
-    src: '/images/gulberg-greens-islamabad-ftn-marketing-official-platform-960w.webp',
+    src: '/images/gulberg-greens-islamabad-ftn-marketing-official-platform.webp',
     alt: 'FTN Marketing team — Official sales and marketing platform of Gulberg Greens Islamabad providing verified property information',
     title: 'Gulberg Greens Islamabad — Official Information Platform by FTN Marketing',
   },
@@ -71,7 +71,7 @@ export const HOME_LAKE = {
   body:
     "At the heart of Gulberg Greens Islamabad sits a 1,500-kanal man-made lake — Pakistan's largest residential waterfront. This signature lake is surrounded by walking trails, leisure areas, wellness spaces, and lake-facing residences, creating a calm and refined living environment unlike any other housing society in twin cities. Properties adjacent to the lake in Block A, Block B, and Executive Block command the highest premiums in the entire society.",
   image: {
-    src: '/images/gulberg-greens-islamabad-man-made-lake-aerial-view-960w.webp',
+    src: '/images/gulberg-greens-islamabad-man-made-lake-aerial-view.webp',
     alt: "Aerial view of Gulberg Greens Islamabad man-made lake — residential blocks and curved roads surrounding Pakistan's largest residential waterfront",
     title: "Pakistan's Largest Man-Made Residential Lake — Gulberg Greens Islamabad",
   },
@@ -89,7 +89,7 @@ export const HOME_DEVELOPMENT = {
   },
   cta: { label: 'Read All Development Updates', to: '/latest-updates/' },
   image: {
-    src: '/images/gulberg-greens-islamabad-development-status-2026-aerial-960w.webp',
+    src: '/images/gulberg-greens-islamabad-development-status-2026-aerial.webp',
     alt: 'Gulberg Greens Islamabad 2026 development status — aerial view showing Gulberg Expressway, man-made lake, residential blocks and infrastructure development',
     title: 'Gulberg Greens Islamabad — Development Status 2026',
   },
@@ -133,7 +133,7 @@ export const HOME_INVESTMENT = {
   },
   cta: { label: 'Contact Our Investment Team', to: '/contact/' },
   image: {
-    src: '/images/gulberg-greens-islamabad-investment-gulberg-mall-night-view-960w.webp',
+    src: '/images/gulberg-greens-islamabad-investment-gulberg-mall-night-view.webp',
     alt: 'Gulberg Greens Islamabad night aerial view — Gulberg Mall illuminated with red arch bridge and lake reflection showing prime real estate investment destination',
     title: 'Gulberg Greens Islamabad — Prime Real Estate Investment Destination 2026',
   },

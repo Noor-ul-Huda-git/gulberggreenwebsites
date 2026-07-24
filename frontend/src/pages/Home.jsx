@@ -122,44 +122,47 @@ function parsePropertyListResponse(data) {
   return Array.isArray(data) ? data : data.results ?? []
 }
 
-function homeFeaturedImageUrl(p) {
-  if (p.card_image_url) return p.card_image_url
+const MOBILE_IMAGE_MEDIA = '(max-width: 768px)'
+
+function publicImageBase(src) {
+  if (!src?.startsWith('/images/') || !src.endsWith('.webp')) return null
+  return src.replace(/(-\d+w)?\.webp$/i, '')
+}
+
+/** Mobile-only variants (480w + 640w) — desktop `<img src>` stays full quality. */
+function publicMobileSrcSet(src) {
+  const base = publicImageBase(src)
+  if (!base) return undefined
+  return `${base}-480w.webp 480w, ${base}-640w.webp 640w`
+}
+
+function homeFeaturedFullImageUrl(p) {
   if (p.featured_image_url) return p.featured_image_url
   if (Array.isArray(p.images) && p.images.length > 0 && p.images[0].url) return p.images[0].url
   return null
 }
 
-function publicImageSrcSet(src) {
-  const sized = src?.match(/^(\/images\/.+?)-(\d+)w\.webp$/i)
-  if (sized) {
-    const base = sized[1]
-    const maxW = Number(sized[2])
-    const widths = [640, 960, 1280, 1920].filter((w) => w <= maxW)
-    if (widths.length === 0) return undefined
-    return widths.map((w) => `${base}-${w}w.webp ${w}w`).join(', ')
+function SeoImage({ image, priority = false, className = '', mobileSizes = '100vw' }) {
+  const mobileSrcSet = publicMobileSrcSet(image.src)
+  const imgProps = {
+    src: image.src,
+    alt: image.alt,
+    title: image.title,
+    className,
+    loading: priority ? 'eager' : 'lazy',
+    fetchPriority: priority ? 'high' : 'auto',
+    decoding: 'async',
   }
-  const plain = src?.match(/^(\/images\/.+?)\.webp$/i)
-  if (!plain) return undefined
-  const base = plain[1]
-  return [640, 960, 1280].map((w) => `${base}-${w}w.webp ${w}w`).join(', ')
-}
 
-function SeoImage({ image, priority = false, className = '', sizes = '100vw' }) {
-  const srcset = image.srcset ?? publicImageSrcSet(image.src)
+  if (!mobileSrcSet) {
+    return <img {...imgProps} />
+  }
+
   return (
-    <img
-      src={image.src}
-      srcSet={srcset}
-      sizes={srcset ? sizes : undefined}
-      alt={image.alt}
-      title={image.title}
-      className={className}
-      width={image.width}
-      height={image.height}
-      loading={priority ? 'eager' : 'lazy'}
-      fetchPriority={priority ? 'high' : 'auto'}
-      decoding="async"
-    />
+    <picture>
+      <source media={MOBILE_IMAGE_MEDIA} srcSet={mobileSrcSet} sizes={mobileSizes} type="image/webp" />
+      <img {...imgProps} />
+    </picture>
   )
 }
 
@@ -186,7 +189,7 @@ function SplitImageSection({ image, imageFirst = false, children, className = ''
       <div className="grid gap-0 md:grid-cols-2 md:items-stretch">
         <div className={`flex flex-col justify-center p-8 md:p-10 lg:p-12 ${imageFirst ? 'md:order-2' : ''}`}>{children}</div>
         <div className={`relative min-h-[240px] overflow-hidden bg-slate-100 md:min-h-[360px] ${imageFirst ? 'md:order-1' : ''}`}>
-          <SeoImage image={image} sizes="(max-width: 768px) 100vw, 50vw" className="h-full w-full object-cover" />
+          <SeoImage image={image} mobileSizes="(max-width: 768px) 100vw, 50vw" className="h-full w-full object-cover" />
         </div>
       </div>
     </article>
@@ -485,7 +488,8 @@ function Home() {
             <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-slate-600">{HOME_LISTINGS.body}</p>
             <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
               {homeFeaturedListings.map((p) => {
-                const img = homeFeaturedImageUrl(p)
+                const fullImg = homeFeaturedFullImageUrl(p)
+                const mobileImg = p.card_image_url
                 return (
                   <Link
                     key={p.id}
@@ -493,16 +497,36 @@ function Home() {
                     className="group flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm transition hover:border-[#31C950]/35 hover:shadow-md"
                   >
                     <div className="relative aspect-[4/3] bg-slate-100">
-                      {img ? (
-                        <img
-                          src={img}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                          decoding="async"
-                          width={640}
-                          height={480}
-                        />
+                      {fullImg ? (
+                        mobileImg ? (
+                          <picture>
+                            <source
+                              media={MOBILE_IMAGE_MEDIA}
+                              srcSet={mobileImg}
+                              sizes="(max-width: 768px) 50vw"
+                              type="image/webp"
+                            />
+                            <img
+                              src={fullImg}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
+                              width={320}
+                              height={240}
+                            />
+                          </picture>
+                        ) : (
+                          <img
+                            src={fullImg}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                            width={320}
+                            height={240}
+                          />
+                        )
                       ) : (
                         <div className="flex h-full items-center justify-center text-xs text-slate-400">No photo</div>
                       )}

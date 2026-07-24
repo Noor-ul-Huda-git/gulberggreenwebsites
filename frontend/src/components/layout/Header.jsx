@@ -83,13 +83,18 @@ function Header() {
     <header className="absolute inset-x-0 top-0 z-[80] bg-transparent">
       <div className="container-shell flex items-center justify-between gap-4 py-5 md:py-6">
         <NavLink to="/" className="flex shrink-0 items-center" onClick={() => setMobileOpen(false)}>
-          <img
-            src={logoGulbergGreens}
-            alt="Gulberg Greens Islamabad"
-            className={`h-11 w-auto max-w-[min(100%,260px)] object-contain object-left md:h-14 ${
-              isDarkHeroNav ? 'drop-shadow-[0_2px_14px_rgba(0,0,0,0.75)]' : ''
-            }`}
-          />
+          <picture>
+            <source media="(max-width: 768px)" srcSet="/logo-gulberg-greens-mobile.webp" type="image/webp" />
+            <img
+              src={logoGulbergGreens}
+              alt="Gulberg Greens Islamabad"
+              className={`h-11 w-auto max-w-[min(100%,260px)] object-contain object-left md:h-14 ${
+                isDarkHeroNav ? 'drop-shadow-[0_2px_14px_rgba(0,0,0,0.75)]' : ''
+              }`}
+              width={560}
+              height={154}
+            />
+          </picture>
         </NavLink>
 
         <nav className="hidden items-center gap-8 xl:gap-10 lg:flex" aria-label="Primary">

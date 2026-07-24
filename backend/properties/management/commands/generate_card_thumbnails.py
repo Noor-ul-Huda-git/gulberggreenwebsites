@@ -1,4 +1,4 @@
-"""Generate small .card.webp thumbnails for property listing cards (~640px max edge)."""
+"""Generate .card.webp thumbnails (~320px) for mobile property listing cards."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from PIL import Image, ImageOps
 
 from properties.models import Property, PropertyImage
 
-CARD_MAX_EDGE = 640
-CARD_QUALITY = 75
+CARD_MAX_EDGE = 320
+CARD_QUALITY = 68
 
 
 def _card_path(image_path: Path) -> Path:
@@ -36,21 +36,17 @@ def _write_card(source: Path, dest: Path) -> bool:
         img = img.convert('RGB')
 
     w, h = img.size
-    if max(w, h) <= CARD_MAX_EDGE:
-        # Already small enough — skip duplicate.
-        return False
+    if max(w, h) > CARD_MAX_EDGE:
+        if w >= h:
+            nw, nh = CARD_MAX_EDGE, max(1, int(round(h * CARD_MAX_EDGE / w)))
+        else:
+            nh, nw = CARD_MAX_EDGE, max(1, int(round(w * CARD_MAX_EDGE / h)))
+        try:
+            resample = Image.Resampling.LANCZOS
+        except AttributeError:
+            resample = Image.LANCZOS
+        img = img.resize((nw, nh), resample)
 
-    if w >= h:
-        nw, nh = CARD_MAX_EDGE, max(1, int(round(h * CARD_MAX_EDGE / w)))
-    else:
-        nh, nw = CARD_MAX_EDGE, max(1, int(round(w * CARD_MAX_EDGE / h)))
-
-    try:
-        resample = Image.Resampling.LANCZOS
-    except AttributeError:
-        resample = Image.LANCZOS
-
-    img = img.resize((nw, nh), resample)
     dest.parent.mkdir(parents=True, exist_ok=True)
     img.save(dest, format='WEBP', quality=CARD_QUALITY, method=6)
     return True
