@@ -1,0 +1,6 @@
+# One developer public IP per line (IPv4). Copy to whitelist-ips.txt and edit.
+# Get your IP: curl -4 ifconfig.me
+#
+# Example:
+# 203.0.113.50
+# 198.51.100.22

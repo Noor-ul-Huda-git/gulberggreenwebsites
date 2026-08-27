@@ -47,3 +47,4 @@ lerna-debug.log*
 
 
 **/db.sqlite3
+**/db.*.bak
