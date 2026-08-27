@@ -8,6 +8,17 @@ import {
   propertyBlockSeo,
 } from '../src/data/propertyListingTypes.js'
 import { STATIC_PAGE_SEO } from '../src/data/staticPageSeo.js'
+import {
+  buildHomeSchemas,
+  buildNewsArticleSchema,
+  buildOrganizationSchema,
+  buildPropertySchema,
+  fetchAllFromApi,
+  injectSeo,
+  newsPageSeo,
+  propertyPageSeo,
+  routeDir,
+} from './seo-build-utils.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -15,48 +26,20 @@ const frontendRoot = path.resolve(__dirname, '..')
 const distRoot = path.join(frontendRoot, 'dist')
 const distIndexPath = path.join(distRoot, 'index.html')
 
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-}
-
-function injectSeo(html, seo) {
-  const title = `<title>${escapeHtml(seo.metaTitle)}</title>`
-  const description = `<meta name="description" content="${escapeHtml(seo.metaDescription)}" />`
-  const canonical = `<link rel="canonical" href="${escapeHtml(seo.canonical)}" />`
-  const robots = '<meta name="robots" content="index, follow" />'
-
-  let next = html
-    .replace(/<title>[\s\S]*?<\/title>/i, title)
-    .replace(/\s*<meta\s+name=["']description["'][^>]*>\s*/gi, '\n')
-    .replace(/\s*<meta\s+name=["']robots["'][^>]*>\s*/gi, '\n')
-    .replace(/\s*<link\s+rel=["']canonical["'][^>]*>\s*/gi, '\n')
-
-  next = next.replace(
-    /(<meta\s+name=["']viewport["'][^>]*>\s*)/i,
-    `$1\n    ${description}\n    ${canonical}\n    ${robots}\n    `,
-  )
-
-  return next
-}
-
 const html = await readFile(distIndexPath, 'utf8')
+const defaultJsonLd = [buildOrganizationSchema()]
 
-function routeDir(route) {
-  const clean = route.replace(/^\/|\/$/g, '')
-  return clean ? path.join(distRoot, clean) : distRoot
+async function writeSeoPage(routePath, seo, jsonLd = defaultJsonLd) {
+  const dir = routeDir(distRoot, routePath)
+  await mkdir(dir, { recursive: true })
+  await writeFile(path.join(dir, 'index.html'), injectSeo(html, seo, { jsonLd }))
 }
 
-await writeFile(distIndexPath, injectSeo(html, STATIC_PAGE_SEO.home))
+await writeSeoPage('/', STATIC_PAGE_SEO.home, buildHomeSchemas())
 
 await Promise.all(
   Object.entries(PROPERTY_CATEGORY_SEO).map(async ([slug, seo]) => {
-    const routeDir = path.join(distRoot, 'properties', slug)
-    await mkdir(routeDir, { recursive: true })
-    await writeFile(path.join(routeDir, 'index.html'), injectSeo(html, seo))
+    await writeSeoPage(`/properties/${slug}/`, seo)
   }),
 )
 
@@ -67,13 +50,7 @@ const staticSeoPages = [
   STATIC_PAGE_SEO.contact,
 ]
 
-await Promise.all(
-  staticSeoPages.map(async (seo) => {
-    const dir = routeDir(seo.route)
-    await mkdir(dir, { recursive: true })
-    await writeFile(path.join(dir, 'index.html'), injectSeo(html, seo))
-  }),
-)
+await Promise.all(staticSeoPages.map((seo) => writeSeoPage(seo.route, seo)))
 
 const blockSeoPages = Object.keys(PROPERTY_CATEGORY_SEO).flatMap((categorySlug) =>
   PROPERTY_BLOCK_OPTIONS.map((block) => propertyBlockSeo(categorySlug, block)).filter(Boolean),
@@ -81,12 +58,43 @@ const blockSeoPages = Object.keys(PROPERTY_CATEGORY_SEO).flatMap((categorySlug) 
 
 await Promise.all(
   blockSeoPages.map(async (seo) => {
-    const dir = routeDir(new URL(seo.canonical).pathname)
-    await mkdir(dir, { recursive: true })
-    await writeFile(path.join(dir, 'index.html'), injectSeo(html, seo))
+    await writeSeoPage(new URL(seo.canonical).pathname, seo)
   }),
 )
 
+let propertyCount = 0
+let newsCount = 0
+
+try {
+  const properties = await fetchAllFromApi('/properties/')
+  await Promise.all(
+    properties.map(async (property) => {
+      if (!property.canonical_url) return
+      const seo = propertyPageSeo(property)
+      const jsonLd = [buildOrganizationSchema(), buildPropertySchema(property, seo.canonical)]
+      await writeSeoPage(new URL(seo.canonical).pathname, seo, jsonLd)
+      propertyCount += 1
+    }),
+  )
+} catch (error) {
+  console.warn('Property SEO prerender skipped:', error.message)
+}
+
+try {
+  const newsPosts = await fetchAllFromApi('/news/')
+  await Promise.all(
+    newsPosts.map(async (post) => {
+      if (!post.slug) return
+      const seo = newsPageSeo(post)
+      const jsonLd = [buildOrganizationSchema(), buildNewsArticleSchema(post, seo.canonical)]
+      await writeSeoPage(new URL(seo.canonical).pathname, seo, jsonLd)
+      newsCount += 1
+    }),
+  )
+} catch (error) {
+  console.warn('News SEO prerender skipped:', error.message)
+}
+
 console.log(
-  `Generated ${Object.keys(PROPERTY_CATEGORY_SEO).length} property SEO HTML pages, ${blockSeoPages.length} block SEO HTML pages, and ${staticSeoPages.length + 1} static SEO HTML pages.`,
+  `Generated SEO HTML: home + ${Object.keys(PROPERTY_CATEGORY_SEO).length} category pages, ${blockSeoPages.length} block pages, ${staticSeoPages.length} static pages, ${propertyCount} property pages, ${newsCount} news pages.`,
 )

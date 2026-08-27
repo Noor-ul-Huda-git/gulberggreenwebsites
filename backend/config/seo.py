@@ -3,6 +3,7 @@ from html import escape
 from django.http import HttpResponse
 from django.utils import timezone
 
+from news.models import NewsPost
 from properties.models import Property
 
 
@@ -83,6 +84,18 @@ def sitemap_xml(request):
                 prop.updated_at.date().isoformat() if prop.updated_at else today,
                 'weekly',
                 '0.8',
+            )
+        )
+
+    news_posts = NewsPost.objects.filter(is_published=True).only('slug', 'updated_at', 'published_at')
+    for post in news_posts.iterator():
+        lastmod = post.updated_at or post.published_at
+        entries.append(
+            _sitemap_entry(
+                f'{SITE_ORIGIN}/latest-updates/{post.slug}/',
+                lastmod.date().isoformat() if lastmod else today,
+                'weekly',
+                '0.7',
             )
         )
 
