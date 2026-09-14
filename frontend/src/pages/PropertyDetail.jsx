@@ -109,18 +109,28 @@ function hasPhoneDigits(value) {
   return normalizeDigits(value).length >= 7
 }
 
-function whatsappHref(title, phoneNumber) {
+function whatsappHref(property, phoneNumber) {
   const phone = normalizeDigits(phoneNumber || contactInfo.phone)
-  const text = encodeURIComponent(`Assalam o Alaikum, I am interested in: ${title}`)
+  const propertyUrl = typeof window !== 'undefined' ? window.location.href : ''
+  const imageUrl = galleryUrls(property)[0] || ''
+  const text = encodeURIComponent(
+    [
+      'Assalam o Alaikum, I am interested in this property:',
+      `Property: ${property.title}`,
+      `Property link: ${propertyUrl}`,
+      ...(imageUrl ? [`Image link: ${imageUrl}`] : []),
+    ].join('\n'),
+  )
   return `https://wa.me/${phone}?text=${text}`
 }
 
 /** Sidebar — twin solid #00a651 CTAs, square corners, CALL (left) then WhatsApp (right). */
 const DETAIL_CTA_H = 'min-h-[52px] py-3'
 const detailCtaRowClass = 'flex w-full min-w-0 items-stretch gap-2'
-const detailCtaSolidBase = `property-listing-call-cta flex min-h-0 flex-1 flex-row items-center justify-center gap-2 rounded-none bg-[#00a651] px-4 !text-white shadow-none transition hover:bg-[#008f47] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 active:scale-[0.98] ${DETAIL_CTA_H}`
-const detailCtaCallBtnClass = `${detailCtaSolidBase} cursor-pointer text-[13px] uppercase tracking-[0.07em]`
-const detailCtaWhatsAppLinkClass = `${detailCtaSolidBase} min-w-0 text-[14px] font-semibold`
+const detailCtaSolidBase = `property-listing-call-cta flex min-h-[52px] min-w-0 flex-1 flex-row items-center justify-center gap-2 rounded-lg border border-[#00a651] bg-[#00a651] px-3 !text-white shadow-[0_6px_16px_rgba(0,166,81,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#008f47] hover:bg-[#008f47] hover:shadow-[0_10px_22px_rgba(0,166,81,0.28)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00a651] active:translate-y-0 active:scale-[0.97] ${DETAIL_CTA_H}`
+const detailCtaCallBtnClass = `${detailCtaSolidBase} cursor-pointer text-[11px] font-bold uppercase tracking-[0.06em] sm:text-[13px]`
+const detailCtaWhatsAppLinkClass = `${detailCtaSolidBase} text-[11px] font-bold tracking-[0.02em] sm:text-[13px]`
+const detailCtaActiveClass = 'shadow-[inset_0_0_0_2px_rgba(255,255,255,0.9),0_8px_18px_rgba(0,166,81,0.25)]'
 
 function formatReference(property) {
   if (property.slug) return property.slug.toUpperCase()
@@ -188,6 +198,38 @@ function IconUser({ className = '', size = 'h-4 w-4' }) {
       <path d="M12 12a4 4 0 100-8 4 4 0 000 8z" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M5 20a7 7 0 0114 0" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  )
+}
+
+function CustomerInquiryForm({ property, inquiryForm, inquiryFormLocked, inquiryStatus, inquiryMessage, onChange, onPhoneChange, onSubmit }) {
+  return (
+    <div className="px-4 py-4 sm:px-5 sm:py-5">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Customer inquiry</p>
+      <form onSubmit={(event) => void onSubmit(event)} className="mt-4 min-w-0 space-y-3">
+        <div className="flex min-w-0 items-center rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 transition focus-within:border-[#31C950]/55 focus-within:bg-white">
+          <span className="mr-2 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-slate-200 bg-white text-slate-500 sm:mr-3"><IconUser size="h-4 w-4" /></span>
+          <input type="text" value={inquiryForm.name} onChange={onChange('name')} placeholder="Your name" required disabled={inquiryFormLocked} className="min-w-0 flex-1 bg-transparent py-1 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60" />
+        </div>
+        <div className="flex min-w-0 items-center rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 transition focus-within:border-[#31C950]/55 focus-within:bg-white">
+          <span className="mr-2 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-slate-200 bg-white text-slate-500 sm:mr-3"><IconMail size="h-4 w-4" /></span>
+          <input type="email" value={inquiryForm.email} onChange={onChange('email')} placeholder="Your email" required disabled={inquiryFormLocked} className="min-w-0 flex-1 bg-transparent py-1 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60" />
+        </div>
+        <div className="flex min-w-0 items-center rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 transition focus-within:border-[#31C950]/55 focus-within:bg-white">
+          <span className="mr-2 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-[#31C950]/20 bg-[#31C950]/10 text-[#31C950] sm:mr-3"><IconPhone size="h-4 w-4" /></span>
+          <span className="mr-1.5 shrink-0 text-base font-medium text-slate-900 sm:mr-2">+92</span>
+          <input type="tel" inputMode="numeric" value={inquiryForm.phone} onChange={onPhoneChange} maxLength={10} placeholder="3001234567" disabled={inquiryFormLocked} className="min-w-0 flex-1 bg-transparent py-1 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60" />
+        </div>
+        <textarea rows={4} value={inquiryForm.message} onChange={onChange('message')} placeholder={`I would like to inquire about ${property.title}`} disabled={inquiryFormLocked} className="w-full resize-y rounded-md border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-[#31C950]/55 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60" />
+        <button type="submit" disabled={inquiryFormLocked || inquiryStatus === 'sending'} className={`${detailCtaWhatsAppLinkClass} w-full min-h-[52px] px-4 py-3 text-[13px] uppercase tracking-[0.07em] ${inquiryStatus === 'sending' ? 'cursor-wait' : ''}`}>
+          <IconMail className="!text-white" size="h-5 w-5" />
+          {inquiryStatus === 'sending' ? 'Sending…' : 'Send Email'}
+        </button>
+      </form>
+      <div className="mt-5 border-t border-slate-100 pt-4 text-sm text-slate-600">
+        {inquiryStatus === 'duplicate' ? <p className="mt-3 text-[13px] leading-relaxed text-amber-800">{inquiryMessage}</p> : null}
+        {inquiryStatus === 'error' ? <p className="mt-3 text-[13px] leading-relaxed text-rose-700">{inquiryMessage}</p> : null}
+      </div>
+    </div>
   )
 }
 
@@ -403,6 +445,7 @@ function PropertyDetail() {
   const [similarAround, setSimilarAround] = useState([])
   const [similarByAgent, setSimilarByAgent] = useState([])
   const [mobileFavorite, setMobileFavorite] = useState(false)
+  const [activeCta, setActiveCta] = useState('')
 
   const handleMobileShare = useCallback(async () => {
     if (!property) return
@@ -739,7 +782,7 @@ function PropertyDetail() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_55%)] font-[Poppins,Manrope,system-ui,sans-serif] text-slate-900">
+    <div className="min-h-screen overflow-x-hidden pb-20 bg-[linear-gradient(180deg,#fafbfc_0%,#ffffff_55%)] font-[Poppins,Manrope,system-ui,sans-serif] text-slate-900">
       <PropertySchema property={property} />
       {showCallModal ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="property-call-modal-title">
@@ -879,7 +922,7 @@ function PropertyDetail() {
         </div>
       </div>
 
-      <div className="container-shell max-w-7xl px-4 py-3 sm:px-6 lg:px-8 lg:py-4">
+      <div className="container-shell max-w-7xl px-4 pb-24 py-3 sm:px-6 lg:px-8 lg:pb-0 lg:py-4">
         <div className="grid min-w-0 gap-5 lg:grid-cols-12 lg:items-start lg:gap-6">
           <div className="min-w-0 max-lg:-mx-4 lg:col-span-8">
             <div className="mb-2 flex items-center lg:hidden">
@@ -993,24 +1036,25 @@ function PropertyDetail() {
                   {formatArea(property)}
                 </p>
               ) : null}
-              <div className="mx-auto flex w-[90%] max-w-full items-stretch justify-center gap-2 pt-1">
+              <div className="fixed inset-x-0 bottom-0 z-[80] box-border grid w-auto max-w-none grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-stretch gap-2 overflow-hidden border-t border-slate-200 bg-white/95 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(15,23,42,0.14)] backdrop-blur-md sm:inset-x-2 sm:bottom-2 sm:rounded-2xl sm:border sm:p-2 sm:pb-2 lg:static lg:w-full lg:max-w-full lg:grid-cols-2 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:pb-0 lg:shadow-none">
                 <button
                   type="button"
-                  onClick={() => setShowCallModal(true)}
-                  className={`${detailCtaCallBtnClass} min-w-0 flex-1`}
+                  onClick={() => { setActiveCta('call'); setShowCallModal(true) }}
+                  className={`${detailCtaCallBtnClass} ${activeCta === 'call' ? detailCtaActiveClass : ''} min-w-0 w-full overflow-hidden whitespace-nowrap px-1 text-[10px] sm:px-3 sm:text-[13px]`}
                   aria-label="View phone numbers to call"
                 >
-                  <IconPhone className="shrink-0 !text-white" size="h-7 w-7" strokeWidth={2.1} />
+                  <IconPhone className="shrink-0 !text-white" size="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2.1} />
                   CALL
                 </button>
                 <a
-                  href={whatsappHref(property.title, primaryContactPhone)}
+                  href={whatsappHref(property, primaryContactPhone)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`${detailCtaWhatsAppLinkClass} min-w-0 flex-1`}
+                  onClick={() => setActiveCta('whatsapp')}
+                  className={`${detailCtaWhatsAppLinkClass} ${activeCta === 'whatsapp' ? detailCtaActiveClass : ''} min-w-0 w-full overflow-hidden whitespace-nowrap px-1 text-[10px] sm:px-3 sm:text-[13px]`}
                   aria-label={`WhatsApp about ${property.title}`}
                 >
-                  <IconWhatsAppBrand className="shrink-0 text-white" size="h-7 w-7" />
+                  <IconWhatsAppBrand className="shrink-0 text-white" size="h-5 w-5 sm:h-6 sm:w-6" />
                   WhatsApp
                 </a>
               </div>
@@ -1045,17 +1089,17 @@ function PropertyDetail() {
               ) : null}
             </div>
 
-            <div className="mt-3 w-full max-w-full overflow-x-auto overscroll-x-contain max-lg:-mx-4 max-lg:px-0">
-              <div className="flex w-full min-w-0 items-stretch border-b border-slate-200 bg-white max-lg:gap-0 lg:w-max lg:max-w-none lg:gap-1 lg:rounded-lg lg:border lg:border-slate-200 lg:bg-slate-100 lg:p-1">
+            <div className="mt-5 w-full max-w-full overflow-x-auto overscroll-x-contain max-lg:-mx-4 max-lg:px-0">
+              <div className="flex w-full min-w-0 items-stretch gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_8px_24px_rgba(26,53,83,0.08)] max-lg:gap-1 lg:w-max lg:max-w-none">
                 {detailTabs.map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => handleTabClick(tab.id)}
-                    className={`min-w-0 flex-1 shrink-0 px-2 py-2.5 text-[12px] font-medium transition sm:px-4 sm:py-3 sm:text-[13px] max-lg:border-b-2 max-lg:border-transparent max-lg:text-center lg:rounded-full lg:px-5 ${
+                    className={`min-w-0 flex-1 shrink-0 rounded-lg border px-3 py-2.5 text-[12px] font-semibold transition duration-200 sm:px-5 sm:py-3 sm:text-[13px] ${
                       activeTab === tab.id
-                        ? 'max-lg:border-[#00a651] max-lg:text-[#00a651] lg:bg-white lg:text-[#1a3553] lg:shadow-sm'
-                        : 'max-lg:text-slate-600 lg:hover:bg-white/8'
+                        ? 'border-[#31C950]/45 bg-[#31C950]/10 text-[#008f47] shadow-[0_3px_10px_rgba(49,201,80,0.12)]'
+                        : 'border-transparent text-slate-600 hover:border-[#31C950]/40 hover:bg-white hover:text-[#00a651] hover:shadow-sm'
                     }`}
                   >
                     {tab.label}
@@ -1065,7 +1109,7 @@ function PropertyDetail() {
             </div>
           </div>
 
-          <aside className="min-w-0 lg:col-span-4">
+          <aside className="hidden min-w-0 lg:col-span-4 lg:block">
             <div className="lg:sticky lg:top-28">
               <Motion.div
                 initial={{ opacity: 0, y: 8 }}
@@ -1081,21 +1125,22 @@ function PropertyDetail() {
                   <div className={`mt-4 min-w-0 ${detailCtaRowClass}`}>
                     <button
                       type="button"
-                      onClick={() => setShowCallModal(true)}
-                      className={detailCtaCallBtnClass}
+                      onClick={() => { setActiveCta('call'); setShowCallModal(true) }}
+                      className={`${detailCtaCallBtnClass} ${activeCta === 'call' ? detailCtaActiveClass : ''} min-w-0 w-full overflow-hidden whitespace-nowrap px-1 text-[10px] sm:px-3 sm:text-[13px]`}
                       aria-label="View phone numbers to call"
                     >
-                      <IconPhone className="shrink-0 !text-white" size="h-7 w-7" strokeWidth={2.1} />
+                      <IconPhone className="shrink-0 !text-white" size="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2.1} />
                       CALL
                     </button>
                     <a
-                      href={whatsappHref(property.title, primaryContactPhone)}
+                      href={whatsappHref(property, primaryContactPhone)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={detailCtaWhatsAppLinkClass}
+                      onClick={() => setActiveCta('whatsapp')}
+                      className={`${detailCtaWhatsAppLinkClass} ${activeCta === 'whatsapp' ? detailCtaActiveClass : ''} min-w-0 w-full overflow-hidden whitespace-nowrap px-1 text-[10px] sm:px-3 sm:text-[13px]`}
                       aria-label={`WhatsApp about ${property.title}`}
                     >
-                      <IconWhatsAppBrand className="shrink-0 text-white" size="h-7 w-7" />
+                      <IconWhatsAppBrand className="shrink-0 text-white" size="h-5 w-5 sm:h-6 sm:w-6" />
                       WhatsApp
                     </a>
                   </div>
@@ -1159,7 +1204,7 @@ function PropertyDetail() {
                     <button
                       type="submit"
                       disabled={inquiryFormLocked || inquiryStatus === 'sending'}
-                      className="property-listing-call-cta inline-flex w-full min-h-[52px] items-center justify-center gap-2 rounded-none bg-[#00a651] px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.07em] !text-white shadow-none transition hover:bg-[#008f47] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 enabled:active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                      className={`${detailCtaWhatsAppLinkClass} w-full min-h-[52px] px-4 py-3 text-[13px] uppercase tracking-[0.07em] ${inquiryStatus === 'sending' ? 'cursor-wait' : ''}`}
                     >
                       <IconMail className="!text-white" size="h-5 w-5" />
                       {inquiryStatus === 'sending' ? 'Sending…' : 'Send Email'}
@@ -1194,12 +1239,12 @@ function PropertyDetail() {
               </section> */}
 
               <div className="mt-4" id="overview">
-                <h3 className="text-[1.35rem] font-semibold tracking-tight text-[#1a3553]">Details</h3>
+                <h3 className="border-l-4 border-[#00a651] pl-3 text-[1.35rem] font-bold tracking-tight text-[#1a3553]">Details</h3>
                 <div className="mt-4 max-lg:divide-y max-lg:divide-slate-200 max-lg:overflow-hidden max-lg:rounded-none max-lg:border max-lg:border-slate-200 max-lg:bg-white grid gap-x-6 gap-y-3 md:grid-cols-2">
                   {propertyFacts.map((item) => (
                     <div
                       key={item.key}
-                      className="max-lg:flex max-lg:items-center max-lg:justify-between max-lg:gap-3 max-lg:bg-white max-lg:px-3 max-lg:py-3 grid grid-cols-1 gap-1 bg-slate-50/70 px-4 py-3 sm:grid-cols-[minmax(0,9.5rem)_minmax(0,1fr)] sm:items-center sm:gap-x-4 md:grid-cols-[10rem_minmax(0,1fr)] lg:bg-slate-50/70"
+                      className="group max-lg:flex max-lg:items-center max-lg:justify-between max-lg:gap-3 max-lg:bg-white max-lg:px-3 max-lg:py-3 grid grid-cols-1 gap-1 rounded-lg border border-transparent bg-slate-50/70 px-4 py-3 transition duration-200 hover:border-[#31C950]/35 hover:bg-[#31C950]/5 hover:shadow-sm sm:grid-cols-[minmax(0,9.5rem)_minmax(0,1fr)] sm:items-center sm:gap-x-4 md:grid-cols-[10rem_minmax(0,1fr)] lg:bg-slate-50/70"
                     >
                       <span className="text-[12px] font-medium text-slate-500 max-lg:shrink-0 sm:text-[13px] md:text-[15px] lg:font-normal lg:text-slate-700">
                         {item.label}
@@ -1220,8 +1265,8 @@ function PropertyDetail() {
 
               {property.description ? (
                 <div id="description" className="mt-6 scroll-mt-28">
-                  <h3 className="text-xl font-semibold tracking-tight text-[#1a3553] md:text-2xl">Description</h3>
-                  <div className="mt-4 min-w-0 overflow-x-auto rounded-lg border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+                  <h3 className="border-l-4 border-[#00a651] pl-3 text-xl font-bold tracking-tight text-[#1a3553] md:text-2xl">Description</h3>
+                  <div className="mt-4 min-w-0 overflow-x-auto rounded-xl border border-slate-200 bg-white p-6 shadow-[0_8px_28px_rgba(15,23,42,0.06)] transition duration-200 hover:border-[#31C950]/35 hover:shadow-[0_12px_35px_rgba(49,201,80,0.10)] md:p-8">
                     <div className={descriptionExpanded ? 'min-w-0' : 'relative max-h-[220px] min-w-0 overflow-hidden'}>
                       <PropertyDescriptionBody html={property.description} />
                       {!descriptionExpanded ? (
@@ -1256,11 +1301,26 @@ function PropertyDetail() {
       </div>
 
       {similarAround.length > 0 || similarByAgent.length > 0 ? (
-        <div className="container-shell max-w-7xl min-w-0 px-4 pb-10 sm:px-6 lg:px-8 lg:pb-14">
+        <div className="container-shell max-w-7xl min-w-0 px-4 pb-24 sm:px-6 lg:px-8 lg:pb-14">
           <SimilarListingsCarousel title={similarAroundTitle} items={similarAround} />
           <SimilarListingsCarousel title={similarAgentTitle} items={similarByAgent} />
         </div>
       ) : null}
+
+      <div className="container-shell px-4 pb-24 lg:hidden">
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_16px_48px_-24px_rgba(26,53,83,0.45)]">
+          <CustomerInquiryForm
+            property={property}
+            inquiryForm={inquiryForm}
+            inquiryFormLocked={inquiryFormLocked}
+            inquiryStatus={inquiryStatus}
+            inquiryMessage={inquiryMessage}
+            onChange={handleInquiryChange}
+            onPhoneChange={handlePhoneChange}
+            onSubmit={handleInquirySubmit}
+          />
+        </div>
+      </div>
     </div>
   )
 }

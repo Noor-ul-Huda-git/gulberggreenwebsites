@@ -58,6 +58,9 @@ def _decimal_param(raw):
 
 class PropertyListAPIView(generics.ListAPIView):
     serializer_class = PropertySerializer
+    # The public explorer is a continuous list; it renders all filtered
+    # published listings in one response instead of a short paginated page.
+    pagination_class = None
 
     def get_queryset(self):
         queryset = (
@@ -188,7 +191,17 @@ class PropertyListingEmailCreateAPIView(APIView):
         data = ser.validated_data
         phone_digits = data.get('phone') or ''
         phone_display = f'+92 {phone_digits}' if phone_digits else ''
-        body = (data.get('message') or '').strip() or f'I would like to inquire about {prop.title}.'
+        message = (data.get('message') or '').strip() or f'I would like to inquire about {prop.title}.'
+        property_url = prop.canonical_url
+        image_url = request.build_absolute_uri(prop.featured_image.url) if prop.featured_image else ''
+        context_lines = [
+            '',
+            f'Property: {prop.title}',
+            f'Property link: {property_url}',
+        ]
+        if image_url:
+            context_lines.append(f'Image link: {image_url}')
+        body = '\n'.join([message, *context_lines])
         if ListingEmail.objects.filter(property_listing=prop, sender_email=data['email']).exists():
             return Response(
                 {

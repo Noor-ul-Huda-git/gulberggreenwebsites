@@ -142,3 +142,52 @@ export function IconCalendar({ className, size = 'h-[18px] w-[18px]' }) {
     </svg>
   )
 }
+export function IconFlame({ className, size = 'h-4 w-4' }) {
+  return (
+    <svg className={svgIconClass(className, size)} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 23c4.97 0 9-4.03 9-9 0-4.92-3.15-8.35-5.5-10.5-.66-.6-1.5-.18-1.5.7 0 2.22-.88 3.5-2.5 4.5-1.12.69-2.5 1.77-2.5 3.3 0 .44.09.85.25 1.23-.42-.08-.85-.13-1.25-.13-3.87 0-7 3.13-7 7 0 1.66.57 3.18 1.53 4.41C4.42 22.18 7.97 23 12 23z" />
+    </svg>
+  )
+}
+
+export function IconShieldCheck({ className, size = 'h-4 w-4' }) {
+  return (
+    <svg className={svgIconClass(className, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function IconExpandArea({ className, size = 'h-4 w-4' }) {
+  return (
+    <svg className={svgIconClass(className, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function IconCamera({ className, size = 'h-3.5 w-3.5' }) {
+  return (
+    <svg className={svgIconClass(className, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
+  )
+}
+
+export function IconShare({ className, size = 'h-3.5 w-3.5' }) {
+  return (
+    <svg className={svgIconClass(className, size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function IconHeart({ className, size = 'h-3.5 w-3.5', filled = false }) {
+  return (
+    <svg className={svgIconClass(className, size)} viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}

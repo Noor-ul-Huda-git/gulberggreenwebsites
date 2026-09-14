@@ -43,7 +43,7 @@ export const HOME_TRUST_FEATURES = {
 
 /** Section 3 — property-type hub links only (latest-updates lives in section 6 per link map). */
 export const HOME_PLATFORM_HUB = {
-  h2: 'Gulberg Greens Islamabad — Official Information Platform',
+  h2: 'Gulberg Greens Islamabad — Information Platform',
   body:
     'This is the sales and marketing digital platform of Gulberg Greens Islamabad, operated and maintained directly by FTN management. All property listings, block-wise development updates, transfer procedures, possession announcements, and investment information published on this website are verified, accurate, and sourced from society management. Whether you are a first-time buyer, seasoned investor, or overseas Pakistani — this platform gives you direct access to authentic Gulberg Greens information.',
   image: {
@@ -171,5 +171,5 @@ export const HOME_LOCATION = {
 
 export const HOME_FOOTER_BLURB = {
   h3: 'Gulberg Greens Islamabad — IBECHS Sales & Marketing Platform',
-  body: 'Gulberg Greens Islamabad is developed by IBECHS — Intelligence Bureau Employees Cooperative Housing Society. This official website provides verified property listings, block maps, transfer guidance, possession updates, and investment information for all residential, farmhouse, and commercial properties within Gulberg Greens Islamabad.',
+  body: 'Gulberg Greens Islamabad is developed by IBECHS — Intelligence Bureau Employees Cooperative Housing Society. This website provides verified property listings, block maps, transfer guidance, possession updates, and investment information for all residential, farmhouse, and commercial properties within Gulberg Greens Islamabad.',
 }

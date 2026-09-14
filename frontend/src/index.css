@@ -14,6 +14,9 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -21,6 +24,16 @@ body {
   min-width: 320px;
   background: #ffffff;
   color: #334155;
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Let narrow mobile viewports use their real width so fixed CTAs cannot overflow sideways. */
+@media (max-width: 359px) {
+  body {
+    min-width: 0;
+  }
 }
 
 a {
@@ -36,14 +49,17 @@ textarea {
 
 #root {
   min-height: 100vh;
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
 }
 
 .page-shell {
-  @apply min-h-screen bg-transparent text-slate-800;
+  @apply min-h-screen w-full max-w-full overflow-hidden bg-transparent text-slate-800;
 }
 
 .container-shell {
-  @apply mx-auto w-full max-w-7xl px-6 lg:px-8;
+  @apply mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8;
 }
 
 .section-kicker {
@@ -104,4 +120,381 @@ textarea {
 .property-listing-call-cta {
   font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
+}
+@media (max-width: 768px) {
+  /* mobile styles */
+}
+
+@media (max-width: 480px) {
+  /* small mobile styles */
+}
+
+/* =========================================================
+   MOBILE RESPONSIVE FIX — HOME PAGE
+   Desktop layout remains unchanged
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  /* Prevent horizontal overflow on mobile */
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ---------------- HERO ---------------- */
+
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\] {
+    min-height: 100svh;
+    height: auto;
+  }
+
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
+    > div.relative.z-10 {
+    min-height: 100svh;
+    justify-content: center;
+    padding-top: 5rem;
+    padding-bottom: 4rem;
+  }
+
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
+    .container-shell {
+    width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
+    .max-w-3xl {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Hero heading */
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\] h1 {
+    max-width: 100%;
+    font-size: 1.75rem;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  /* Hero paragraph */
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\] p {
+    max-width: 100%;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    overflow-wrap: break-word;
+  }
+
+  /* WhatsApp button */
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
+    a {
+    max-width: 100%;
+    padding: 0.75rem 1.5rem;
+  }
+
+  /* ---------------- TRUST CARDS ---------------- */
+
+  section[aria-labelledby="trust-features-heading"] {
+    margin-top: -1.5rem;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+  }
+
+  section[aria-labelledby="trust-features-heading"]
+    .container-shell {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  section[aria-labelledby="trust-features-heading"]
+    h2 {
+    margin-top: 1.5rem;
+    margin-bottom: 1.25rem;
+    font-size: 1.4rem;
+    line-height: 1.3;
+  }
+
+  section[aria-labelledby="trust-features-heading"]
+    article > div {
+    min-height: 220px;
+    padding: 1.25rem;
+  }
+
+  section[aria-labelledby="trust-features-heading"]
+    article h3 {
+    margin-top: 1rem;
+    font-size: 1rem;
+  }
+
+  section[aria-labelledby="trust-features-heading"]
+    article p {
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  /* Carousel arrows */
+  section[aria-labelledby="trust-features-heading"]
+    button {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  /* ---------------- ALL HOME SECTIONS ---------------- */
+
+  .container-shell {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  /* Split image + content sections */
+  .group\/card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* ---------------- LISTINGS ---------------- */
+
+  section[aria-labelledby="home-listings-heading"] {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  section[aria-labelledby="home-listings-heading"]
+    h2 {
+    font-size: 1.4rem;
+    line-height: 1.3;
+  }
+
+  section[aria-labelledby="home-listings-heading"]
+    > .container-shell > p {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  section[aria-labelledby="home-listings-heading"]
+    a.group {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Property image */
+  section[aria-labelledby="home-listings-heading"]
+    a.group > div:first-child {
+    height: 200px;
+    min-height: 200px;
+  }
+
+  /* Property content */
+  section[aria-labelledby="home-listings-heading"]
+    a.group > div:last-child {
+    padding: 1rem;
+  }
+
+  /* ---------------- LAKE ---------------- */
+
+  section[aria-labelledby="lake-heading"] {
+    min-height: 75svh;
+  }
+
+  section[aria-labelledby="lake-heading"]
+    .container-shell {
+    min-height: 75svh;
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+
+  section[aria-labelledby="lake-heading"] h2 {
+    font-size: 1.8rem;
+    line-height: 1.2;
+  }
+
+  section[aria-labelledby="lake-heading"] p {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  /* ---------------- BLOCKS ---------------- */
+
+  section[aria-labelledby="blocks-heading"] {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  section[aria-labelledby="blocks-heading"] h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  section[aria-labelledby="blocks-heading"]
+    .grid {
+    gap: 1.25rem;
+  }
+
+  section[aria-labelledby="blocks-heading"]
+    .rounded-2xl {
+    padding: 1.25rem;
+  }
+
+  /* Block links */
+  section[aria-labelledby="blocks-heading"]
+    nav {
+    gap: 0.5rem;
+  }
+
+  section[aria-labelledby="blocks-heading"]
+    nav a {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.7rem;
+  }
+
+  /* ---------------- FAQ ---------------- */
+
+  section[aria-labelledby="faq-section-heading"] {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  section[aria-labelledby="faq-section-heading"]
+    .container-shell {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  section[aria-labelledby="faq-section-heading"]
+    h2 {
+    font-size: 1.5rem;
+  }
+
+  section[aria-labelledby="faq-section-heading"]
+    button {
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  section[aria-labelledby="faq-section-heading"]
+    button span:first-child {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  section[aria-labelledby="faq-section-heading"]
+    [role="region"] {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  section[aria-labelledby="faq-section-heading"]
+    [role="region"] > div {
+    padding-left: 2.75rem;
+  }
+
+  /* ---------------- LOCATION / MAP ---------------- */
+
+  section[aria-labelledby="location-heading"] {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  section[aria-labelledby="location-heading"] h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  section[aria-labelledby="location-heading"]
+    iframe {
+    min-height: 260px;
+  }
+
+  /* ---------------- FOOTER BLURB ---------------- */
+
+  section[aria-labelledby="home-footer-blurb"] {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  section[aria-labelledby="home-footer-blurb"] h3 {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  section[aria-labelledby="home-footer-blurb"] p {
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+}
+
+
+/* =========================================================
+   EXTRA SMALL MOBILE — 480px
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .container-shell {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Hero */
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
+    > div.relative.z-10 {
+    padding-top: 4.5rem;
+    padding-bottom: 3rem;
+  }
+
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\] h1 {
+    font-size: 1.55rem;
+    line-height: 1.18;
+  }
+
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\] p {
+    font-size: 0.86rem;
+    line-height: 1.7;
+  }
+
+  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
+    a {
+    font-size: 0.85rem;
+    padding: 0.7rem 1.25rem;
+  }
+
+  /* Trust cards */
+  section[aria-labelledby="trust-features-heading"]
+    article > div {
+    min-height: 210px;
+  }
+
+  /* Listings image */
+  section[aria-labelledby="home-listings-heading"]
+    a.group > div:first-child {
+    height: 185px;
+    min-height: 185px;
+  }
+
+  /* Lake */
+  section[aria-labelledby="lake-heading"] h2 {
+    font-size: 1.65rem;
+  }
+
+  /* FAQ */
+  section[aria-labelledby="faq-section-heading"]
+    button {
+    font-size: 0.85rem;
+  }
 }
