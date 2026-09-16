@@ -1,6 +1,7 @@
 # Environment files
 **/.env
 **/.env.*
+!**/.env.example
 **/.venv
 
 # Frontend (Vite/Node)

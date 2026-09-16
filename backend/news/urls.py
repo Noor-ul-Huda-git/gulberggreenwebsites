@@ -1,21 +1,9 @@
-﻿from django.urls import include, path
+﻿from django.urls import path
 
-from config.ckeditor_upload import upload_file as ckeditor5_upload_file
-from news.views import YouTubeVideosAPIView
-
+from .views import NewsPostDetailAPIView, NewsPostListAPIView, YouTubeVideosAPIView
 
 urlpatterns = [
-    path(
-        'ckeditor5/image_upload/',
-        ckeditor5_upload_file,
-        name='ck_editor_5_upload_file',
-    ),
-
-    path(
-        'youtube/videos/',
-        YouTubeVideosAPIView.as_view(),
-        name='youtube-videos',
-    ),
-
-    path('', include('properties.urls')),
+    path('news/', NewsPostListAPIView.as_view(), name='news-list'),
+    path('news/<slug:slug>/', NewsPostDetailAPIView.as_view(), name='news-detail'),
+    path('youtube/videos/', YouTubeVideosAPIView.as_view(), name='youtube-videos'),
 ]
