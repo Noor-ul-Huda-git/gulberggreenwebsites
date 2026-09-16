@@ -1,12 +1,34 @@
 # MySQL setup for Gulberg Greens (production server)
 
-Replace SQLite with **local MySQL** on the server. Django uses MySQL on `127.0.0.1`. Other developers connect remotely with **IP whitelisting** (MySQL user per IP + firewall).
+Replace SQLite with **local MySQL** on the server. Django uses MySQL on `127.0.0.1`.
 
-Server IP: **161.97.109.149** (update if changed)
+**Remote developers:** use **Tailscale** (no IP whitelist, no SSH). See [TAILSCALE-DEV.md](./TAILSCALE-DEV.md).
+
+Server IP: **161.97.109.149** (public site only — not for MySQL)
 
 ---
 
-## Quick start (on the server)
+## Developer database access (Tailscale — recommended)
+
+```bash
+sudo ./deploy/mysql/setup-tailscale-mysql.sh
+```
+
+1. Open the Tailscale login URL in your browser when prompted.
+2. Invite devs at https://login.tailscale.com/admin/machines
+3. Share `TAILSCALE-DEV.md` + `MYSQL_EDITOR_PASSWORD` from `credentials.env`.
+
+MySQL is **not** exposed on the public internet. Devs use user **`gulberg_editor`** (read all; insert/update properties & news only — no delete, no DDL).
+
+---
+
+## Legacy: IP whitelist (deprecated)
+
+Previously used `add-dev-ip.sh` + `gulberg_dev`. Removed in favour of Tailscale. Do not re-open port 3306 publicly.
+
+---
+
+## Quick start (on the server — first-time MySQL)
 
 ```bash
 cd /root/gulbergGreenWebsite
@@ -38,9 +60,8 @@ Credentials for you and devs are written to:
 | Item | Purpose |
 |------|---------|
 | Database `gulberg` | utf8mb4, all Django tables |
+| User `gulberg_editor@100.%` | Remote devs via Tailscale (limited) |
 | User `gulberg_app@localhost` | Django/Gunicorn on this server only |
-| User `gulberg_dev@<each IP>` | Remote developers (GUI / migrations / debugging) |
-| UFW rules | TCP **3306** allowed **only** from whitelisted IPs |
 | `backend/.env` | `DJANGO_DB_ENGINE=mysql` + app credentials |
 
 ---

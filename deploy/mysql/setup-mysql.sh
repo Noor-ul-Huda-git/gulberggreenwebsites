@@ -62,7 +62,7 @@ fi
 mysql -e "FLUSH PRIVILEGES;"
 
 echo "==> Allowing remote connections (firewall still restricts by IP)..."
-CONF="/etc/mysql/mysql.conf.d/99-gulberg-bind.cnf"
+CONF="/etc/mysql/mysql.conf.d/zz-gulberg-bind.cnf"
 cat > "${CONF}" <<'EOF'
 [mysqld]
 bind-address = 0.0.0.0
