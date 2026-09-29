@@ -25,8 +25,8 @@ export const contactPageIntro =
 export const mapPlaceLat = 33.6114747
 export const mapPlaceLng = 73.1733127
 
-/** Google Maps iframe — centered on the official place coordinates. */
-export const mapEmbedUrl = `https://maps.google.com/maps?q=${mapPlaceLat},${mapPlaceLng}&hl=en&z=14&output=embed`
+/** Google Maps iframe — centered on the official business listing. */
+export const mapEmbedUrl = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3323.094051399209!2d73.1596398!3d33.6028641!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38dfeda102071a69%3A0x6da42a42e8fed67c!2sGulberg%20Greens%20Islamabad!5e0!3m2!1sen!2s!4v1790421079968!5m2!1sen!2s'
 
 /**
  * Same place page as in Maps (opens listing, not a generic search).

@@ -225,6 +225,21 @@ function homeListingArea(p) {
   return `${displayValue} ${unit}${suffix}`
 }
 
+function homeListingWhatsAppHref(property, propertyHref, imageUrl) {
+  const propertyUrl =
+    typeof window !== 'undefined'
+      ? new URL(propertyHref, window.location.origin).href
+      : propertyHref
+  const message = [
+    'Assalam o Alaikum, I am interested in this property:',
+    `Property: ${property.title || 'Gulberg Greens property'}`,
+    `Property link: ${propertyUrl}`,
+    ...(imageUrl ? [`Image link: ${imageUrl}`] : []),
+  ].join('\n')
+
+  return whatsAppContactHref(message)
+}
+
 function SeoImage({
   image,
   priority = false,
@@ -488,6 +503,7 @@ function Home() {
   const [trustItemsVisible, setTrustItemsVisible] = useState(4)
   const [trustTx, setTrustTx] = useState(0)
   const [trustCardWidth, setTrustCardWidth] = useState(0)
+  const [isTrustMobile, setIsTrustMobile] = useState(false)
   const [homeFeaturedListings, setHomeFeaturedListings] = useState([])
   const [showDeferredSections, setShowDeferredSections] = useState(false)
   const [homeNewsPosts, setHomeNewsPosts] = useState([])
@@ -571,6 +587,7 @@ function Home() {
       const next =
         w >= 1024 ? 4 : w >= 640 ? 2 : 1
 
+      setIsTrustMobile(w < 640)
       setTrustItemsVisible(next)
 
       const max = Math.max(
@@ -790,7 +807,7 @@ function Home() {
 
       {/* SECTION 1 — HERO */}
 
-      <section className="relative flex min-h-[min(92vh,920px)] flex-col overflow-hidden">
+      <section className="relative flex min-h-0 flex-col overflow-hidden md:min-h-[min(92vh,920px)]">
         <SeoImage
           image={HOME_HERO.image}
           priority
@@ -804,10 +821,10 @@ function Home() {
           aria-hidden
         />
 
-        <div className="relative z-10 flex flex-1 flex-col justify-center px-4 py-20 sm:px-6 md:py-24">
+        <div className="relative z-10 flex flex-none flex-col justify-start px-4 pb-10 pt-16 sm:px-6 sm:pb-12 sm:pt-20 md:flex-1 md:justify-center md:py-24">
           <div className="container-shell w-full text-left">
             <div className="max-w-3xl">
-              <h1 className="font-[Poppins,Manrope,system-ui,sans-serif] text-[1.85rem] font-bold leading-[1.15] tracking-[-0.035em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45)] md:text-[2.35rem] lg:text-[2.85rem]">
+              <h1 className="mt-6 font-[Poppins,Manrope,system-ui,sans-serif] text-[1.85rem] font-bold leading-[1.15] tracking-[-0.035em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45)] md:mt-0 md:text-[2.35rem] lg:text-[2.85rem]">
                 {HOME_HERO.h1}
               </h1>
 
@@ -832,122 +849,6 @@ function Home() {
                 </a>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 2 — TRUST FEATURE CARDS */}
-
-      <section
-        className="relative z-10 -mt-10 pb-8 pt-5 md:-mt-12 md:pb-10"
-        aria-labelledby="trust-features-heading"
-      >
-        <div className="container-shell">
-          <h2
-            id="trust-features-heading"
-            className="mt-10 mb-8 text-center text-2xl font-bold tracking-[-0.03em] text-[#1a2332] md:text-3xl"
-          >
-            {HOME_TRUST_FEATURES.h2}
-          </h2>
-
-          <div className="flex items-center gap-3 sm:gap-4 md:gap-5">
-            <button
-              type="button"
-              onClick={() =>
-                setTrustSlide((s) =>
-                  Math.max(0, s - 1)
-                )
-              }
-              disabled={trustSlide <= 0}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-600 shadow-sm disabled:opacity-35"
-              aria-label="Previous trust features"
-            >
-              <CarouselChevron
-                direction="left"
-                className="h-5 w-5"
-              />
-            </button>
-
-            <div
-              ref={trustCarouselRef}
-              className="min-w-0 flex-1 overflow-hidden"
-            >
-              <div
-                className={
-                  prefersReducedMotion
-                    ? 'flex'
-                    : 'flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]'
-                }
-                style={{
-                  gap: `${AMENITY_CAROUSEL_GAP_PX}px`,
-                  transform: `translate3d(-${trustTx}px, 0, 0)`,
-                }}
-              >
-                {trustCards.map((card) => {
-                  const palette =
-                    TRUST_CARD_ACCENTS[card.icon] ||
-                    TRUST_CARD_ACCENTS.shield
-
-                  return (
-                    <article
-                      key={card.id}
-                      className="shrink-0"
-                      style={{
-                        width:
-                          trustCardWidth > 0
-                            ? `${trustCardWidth}px`
-                            : undefined,
-                      }}
-                    >
-                      <div
-                        className={`min-h-[260px] rounded-2xl p-6 ${palette.surface}`}
-                      >
-                        <div
-                          className={`flex h-14 w-14 items-center justify-center rounded-full ${palette.iconBg}`}
-                        >
-                          <CategoryIcon
-                            name={card.icon}
-                            iconClassName={
-                              palette.icon
-                            }
-                          />
-                        </div>
-
-                        <h3 className="mt-5 text-lg font-semibold text-[#1a2332]">
-                          {card.title}
-                        </h3>
-
-                        <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                          {card.body}
-                        </p>
-                      </div>
-                    </article>
-                  )
-                })}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() =>
-                setTrustSlide((s) =>
-                  Math.min(
-                    trustMaxSlide,
-                    s + 1
-                  )
-                )
-              }
-              disabled={
-                trustSlide >= trustMaxSlide
-              }
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-600 shadow-sm disabled:opacity-35"
-              aria-label="Next trust features"
-            >
-              <CarouselChevron
-                direction="right"
-                className="h-5 w-5"
-              />
-            </button>
           </div>
         </div>
       </section>
@@ -988,12 +889,12 @@ function Home() {
                     key={p.id}
                     className="group w-full overflow-hidden rounded-xl border border-slate-200/90 bg-white transition-all duration-300 hover:border-slate-300 hover:shadow-[0_10px_25px_rgba(15,23,42,0.08)]"
                   >
-                    <div className="grid min-h-[148px] w-full grid-cols-[112px_minmax(0,1fr)] overflow-hidden sm:min-h-[185px] sm:grid-cols-[220px_minmax(0,1fr)] md:grid-cols-[268px_minmax(0,1fr)]">
+                    <div className="grid h-[140px] w-full grid-cols-[112px_minmax(0,1fr)] overflow-hidden sm:h-[185px] sm:grid-cols-[220px_minmax(0,1fr)] md:h-[188px] md:grid-cols-[240px_minmax(0,1fr)]">
                       <div className="relative h-full w-full overflow-hidden bg-slate-100">
                         <Link to={propertyHref} className="block h-full w-full" aria-label={`View ${p.title}`}>
                           {fullImg ? (
                             mobileImg ? (
-                              <picture>
+                              <picture className="block h-full w-full">
                                 <source media={MOBILE_IMAGE_MEDIA} srcSet={mobileImg} sizes="112px" type="image/webp" />
                                 <img src={fullImg} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" decoding="async" width={320} height={240} />
                               </picture>
@@ -1019,7 +920,7 @@ function Home() {
                         ) : null}
                       </div>
 
-                      <div className="flex min-w-0 flex-1 flex-col justify-between overflow-hidden p-2 sm:p-3 md:p-4">
+                      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden p-2 pb-10 sm:p-3 sm:pb-12 md:p-4 md:pb-14">
                         <div className="min-w-0">
                           <h3 className="truncate text-[11px] font-bold leading-snug text-slate-900 transition group-hover:text-[#0d8272] sm:text-[14px] md:text-[15px]">
                             <Link to={propertyHref} className="block truncate">{p.title}</Link>
@@ -1036,14 +937,14 @@ function Home() {
                             {area ? <span className="inline-flex shrink-0 items-center gap-0.5 text-[9px] font-semibold text-slate-700 sm:text-[11px]"><IconExpandArea className="h-2.5 w-2.5 text-slate-500 sm:h-3 sm:w-3" />{area}</span> : null}
                           </div>
 
-                          {description ? <p className="mt-1 hidden text-xs font-normal leading-relaxed text-slate-500 sm:line-clamp-1 md:line-clamp-2">{description}</p> : null}
+                          {description ? <p className="mt-1 hidden text-xs font-normal leading-relaxed text-slate-500 sm:line-clamp-1">{description}</p> : null}
                         </div>
 
-                        <div className="mt-auto flex min-w-0 items-center justify-between border-t border-slate-100 pt-1 sm:pt-2">
+                        <div className="absolute bottom-2 left-2 right-2 flex min-w-0 items-center justify-between border-t border-slate-100 pt-1 sm:bottom-3 sm:left-3 sm:right-3 sm:pt-2 md:left-4 md:right-4">
                           <div className="flex min-w-0 items-center gap-1 sm:gap-2">
-                            <a href={whatsAppContactHref(`Assalam o Alaikum, I am interested in ${p.title}.`)} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-0.5 rounded-md border border-[#25D366] bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-800 transition hover:bg-[#25D366] hover:text-white sm:gap-1 sm:px-3 sm:py-1 sm:text-xs" aria-label={`WhatsApp about ${p.title}`}>
+                            <a href={homeListingWhatsAppHref(p, propertyHref, fullImg)} target="_blank" rel="noopener noreferrer" className="inline-flex w-[36px] shrink-0 items-center justify-center rounded-md border border-[#25D366] bg-white px-0 py-0.5 text-[10px] font-semibold text-slate-800 transition hover:bg-[#25D366] hover:text-white sm:w-auto sm:gap-1 sm:px-3 sm:py-1 sm:text-xs" aria-label={`WhatsApp about ${p.title}`}>
                               <IconWhatsAppBrand className="h-3 w-3 shrink-0 text-[#25D366] sm:h-3.5 sm:w-3.5" />
-                              <span>WhatsApp</span>
+                              <span className="hidden sm:inline">WhatsApp</span>
                             </a>
                             <a href={telHref} className="inline-flex shrink-0 items-center gap-0.5 rounded-md bg-[#22c55e] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm transition hover:bg-[#16a34a] sm:gap-1 sm:px-3.5 sm:py-1 sm:text-xs" aria-label={`Call about ${p.title}`}>
                               <IconPhone className="h-3 w-3 shrink-0 text-white sm:h-3.5 sm:w-3.5" strokeWidth={2} />
@@ -1068,6 +969,135 @@ function Home() {
           </div>
         </section>
       ) : null}
+
+      {/* SECTION 2 — TRUST FEATURE CARDS */}
+
+      <section
+        className="relative z-10 -mt-10 pb-8 pt-5 md:-mt-12 md:pb-10"
+        aria-labelledby="trust-features-heading"
+      >
+        <div className="container-shell">
+          <h2
+            id="trust-features-heading"
+            className="mt-10 mb-8 text-center text-2xl font-bold tracking-[-0.03em] text-[#1a2332] md:text-3xl"
+          >
+            {HOME_TRUST_FEATURES.h2}
+          </h2>
+
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-5">
+            <button
+              type="button"
+              onClick={() =>
+                setTrustSlide((s) =>
+                  Math.max(0, s - 1)
+                )
+              }
+              disabled={trustSlide <= 0}
+              className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-600 shadow-sm disabled:opacity-35 md:flex"
+              aria-label="Previous trust features"
+            >
+              <CarouselChevron
+                direction="left"
+                className="h-5 w-5"
+              />
+            </button>
+
+            <div
+              ref={trustCarouselRef}
+              className="min-w-0 w-full flex-1 overflow-hidden md:w-auto"
+            >
+              <div
+                className={
+                  isTrustMobile
+                    ? 'flex flex-col gap-3'
+                    : prefersReducedMotion
+                      ? 'flex'
+                      : 'flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]'
+                }
+                style={{
+                  gap: isTrustMobile
+                    ? '12px'
+                    : `${AMENITY_CAROUSEL_GAP_PX}px`,
+                  transform: isTrustMobile
+                    ? 'none'
+                    : `translate3d(-${trustTx}px, 0, 0)`,
+                }}
+              >
+                {trustCards.map((card) => {
+                  const palette =
+                    TRUST_CARD_ACCENTS[card.icon] ||
+                    TRUST_CARD_ACCENTS.shield
+
+                  return (
+                    <article
+                      key={card.id}
+                      className={
+                        isTrustMobile
+                          ? 'w-full'
+                          : 'shrink-0'
+                      }
+                      style={{
+                        width: isTrustMobile
+                          ? '100%'
+                          : trustCardWidth > 0
+                            ? `${trustCardWidth}px`
+                            : undefined,
+                      }}
+                    >
+                      <div
+                        className={`flex h-[118px] items-center gap-4 overflow-hidden rounded-2xl p-4 md:block md:h-auto md:min-h-[260px] md:p-6 ${palette.surface}`}
+                      >
+                        <div
+                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full md:h-14 md:w-14 ${palette.iconBg}`}
+                        >
+                          <CategoryIcon
+                            name={card.icon}
+                            iconClassName={
+                              palette.icon
+                            }
+                          />
+                        </div>
+
+                        <div className="min-w-0 md:min-w-0">
+                          <h3 className="text-base font-semibold leading-snug text-[#1a2332] md:mt-5 md:text-lg">
+                            {card.title}
+                          </h3>
+
+                          <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-slate-600 md:mt-2 md:line-clamp-none">
+                            {card.body}
+                          </p>
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                setTrustSlide((s) =>
+                  Math.min(
+                    trustMaxSlide,
+                    s + 1
+                  )
+                )
+              }
+              disabled={
+                trustSlide >= trustMaxSlide
+              }
+              className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-600 shadow-sm disabled:opacity-35 md:flex"
+              aria-label="Next trust features"
+            >
+              <CarouselChevron
+                direction="right"
+                className="h-5 w-5"
+              />
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* SECTION 3 — OFFICIAL PLATFORM */}
 
@@ -1416,12 +1446,11 @@ function Home() {
 
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3" aria-label="Social media links">
                   {[
-                    { label: 'Facebook', href: 'https://www.facebook.com/' },
-                    { label: 'Instagram', href: 'https://www.instagram.com/' },
-                    { label: 'TikTok', href: 'https://www.tiktok.com/' },
-                    { label: 'Pinterest', href: 'https://www.pinterest.com/' },
-                    { label: 'X', href: 'https://x.com/' },
-                    { label: 'Threads', href: 'https://www.threads.net/' },
+                    { label: 'Facebook', href: 'https://www.facebook.com/share/18n263NYvD/' },
+                    { label: 'Instagram', href: 'https://www.instagram.com/gulberggreens.ibechs?stkn=MWlwcGQ1aXhlYW10NA==' },
+                    { label: 'TikTok', href: 'https://www.tiktok.com/@gulberggreensibechs?is_from_webapp=1&sender_device=pc' },
+                    { label: 'X', href: 'https://x.com/gulberg_ibechs?s=20' },
+                  
                   ].map((social) => (
                     <a
                       key={social.label}

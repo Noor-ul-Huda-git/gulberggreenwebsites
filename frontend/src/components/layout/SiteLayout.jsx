@@ -58,7 +58,9 @@ function SiteLayout() {
   const showFloatingContact = !isPropertyRoute && !isContactPage
   /** Header is overlay. Full-bleed heroes (home, news, map) start at the top; others need main offset so content clears the bar. */
   const mainTopPad =
-    pathname !== '/' &&
+    pathname === '/'
+      ? 'pt-[4.75rem] md:pt-0'
+      : pathname !== '/' &&
     !pathname.startsWith('/news') &&
     !pathname.startsWith('/latest-updates') &&
     !pathname.startsWith('/gulberg-map') &&

@@ -1230,7 +1230,8 @@ function Properties() {
             {/* FILTER CARD */}
 
             <div className="rounded-[1.25rem] border border-slate-200 bg-white px-5 py-5 shadow-[0_15px_40px_rgba(15,23,42,0.07)] md:px-6 md:py-6">
-              {/* BUY / RENT */}
+              {false ? (
+                <>
 
               <div className="border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
@@ -1272,9 +1273,12 @@ function Properties() {
                 </div>
               </div>
 
+                </>
+              ) : null}
+
               {/* MAIN THREE FILTERS */}
 
-              <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-[1.35fr_1.05fr_1fr_auto] lg:items-end">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1.35fr_1.05fr_1fr_auto] lg:items-end">
                 {/* LOCATION / BLOCK */}
 
                 <label className="flex flex-col gap-1.5 text-left">
@@ -1671,7 +1675,7 @@ function Properties() {
                       /* =================================================
                          LIST VIEW (Side-by-side Mobile & Desktop Responsive)
                          ================================================= */
-                      <div className="grid w-full max-w-full grid-cols-[100px_minmax(0,1fr)] sm:grid-cols-[160px_minmax(0,1fr)] md:grid-cols-[270px_minmax(0,1fr)] lg:grid-cols-[300px_minmax(0,1fr)] h-[128px] sm:h-[165px] md:h-[215px] overflow-hidden">
+                      <div className="grid h-[140px] w-full max-w-full grid-cols-[112px_minmax(0,1fr)] overflow-hidden sm:h-[165px] sm:grid-cols-[160px_minmax(0,1fr)] md:h-[215px] md:grid-cols-[270px_minmax(0,1fr)] lg:grid-cols-[300px_minmax(0,1fr)]">
                         {/* LEFT: IMAGE SECTION */}
                         <div className="relative h-full w-full overflow-hidden bg-slate-100">
                           <Link to={propertyHref} className="block h-full w-full">
@@ -1704,7 +1708,7 @@ function Properties() {
                         </div>
 
                         {/* RIGHT: CONTENT SECTION */}
-                        <div className="flex min-w-0 flex-1 flex-col justify-between p-1.5 sm:p-3 md:p-4 overflow-hidden">
+                        <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden p-1.5 pb-10 sm:justify-between sm:p-3 md:p-4">
                           <div className="min-w-0">
                             {/* 1. TITLE AT THE TOP */}
                             <h2 className="text-[11px] sm:text-[14px] md:text-[15px] font-bold text-slate-900 leading-snug transition group-hover:text-[#0d8272] truncate">
@@ -1771,18 +1775,18 @@ function Properties() {
                           </div>
 
                           {/* 6. BOTTOM ACTION BAR */}
-                          <div className="mt-auto flex w-full min-w-0 items-center justify-between border-t border-slate-100 pt-1 sm:pt-2">
+                          <div className="absolute bottom-2 left-1.5 right-1.5 flex min-w-0 items-center justify-between border-t border-slate-100 pt-1 sm:static sm:mt-auto sm:w-full sm:pt-2">
                             <div className="flex items-center gap-1 sm:gap-2 min-w-0">
                               {/* WHATSAPP */}
                               <a
                                 href={whatsappHref(p, propertyHref, img)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-0.5 sm:gap-1 rounded-md border border-[#25D366] bg-white px-1.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-semibold text-slate-800 transition hover:bg-[#25D366] hover:text-white active:scale-95 shrink-0"
+                                className="inline-flex w-[36px] items-center justify-center rounded-md border border-[#25D366] bg-white px-0 py-0.5 text-[10px] font-semibold text-slate-800 transition hover:bg-[#25D366] hover:text-white active:scale-95 shrink-0 sm:w-auto sm:gap-1 sm:px-3 sm:py-1 sm:text-xs"
                                 aria-label={`WhatsApp about ${p.title}`}
                               >
                                 <IconWhatsAppBrand className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-[#25D366]" />
-                                <span>WhatsApp</span>
+                                <span className="hidden sm:inline">WhatsApp</span>
                               </a>
 
                               {/* CALL */}

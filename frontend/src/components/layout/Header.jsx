@@ -6,7 +6,7 @@ const homeNavItems = [
   { label: 'Home', to: '/', end: true, hasDropdown: true },
   { label: 'Latest updates', to: '/latest-updates/', end: false, hasDropdown: true },
   { label: 'Gulberg Map', to: '/gulberg-map/', end: false, hasDropdown: true },
-  { label: 'FAQ', to: '/#home-faq-heading', end: false, hasDropdown: true },
+  
   { label: 'Contact Us', to: '/contact/', end: false, hasDropdown: true },
 ]
 
@@ -77,6 +77,124 @@ function CloseIcon() {
   )
 }
 
+function LocationIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <path
+        d="M20 10.5C20 15.5 12 21 12 21S4 15.5 4 10.5a8 8 0 1 1 16 0Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle
+        cx="12"
+        cy="10"
+        r="2.5"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+    </svg>
+  )
+}
+
+function PhoneIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <path
+        d="M6.6 3.5 4.5 5.6c-.7.7-.8 1.8-.3 2.7 2.4 4.5 6 8.1 10.5 10.5.9.5 2 .4 2.7-.3l2.1-2.1c.6-.6.6-1.6 0-2.2l-2.3-2.3c-.5-.5-1.3-.6-1.9-.2l-1.6 1c-1.8-.9-3.3-2.4-4.2-4.2l1-1.6c.4-.6.3-1.4-.2-1.9L8.8 3.5c-.6-.6-1.6-.6-2.2 0Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function MailIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <rect
+        x="3"
+        y="5"
+        width="18"
+        height="14"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="m4 7 8 6 8-6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function FacebookIcon() {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d="M13.5 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.6 1.7-1.6h1.7V3.8c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3V10H7.5v3h2.7v8h3.3Z" />
+    </svg>
+  )
+}
+
+function YouTubeIcon() {
+  return (
+    <svg
+      width="19"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.6V8.4l6.3 3.6-6.3 3.6Z" />
+    </svg>
+  )
+}
+
+function TikTokIcon() {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d="M19.6 7.1a5.9 5.9 0 0 1-3.5-1.2v7.3a5.8 5.8 0 1 1-5-5.7v3a2.8 2.8 0 1 0 2.1 2.7V2.5h2.9a5.8 5.8 0 0 0 3.5 2.7v1.9Z" />
+    </svg>
+  )
+}
+
 function Header() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -136,7 +254,86 @@ function Header() {
   }
 
   return (
-    <header className={`${isHomePage ? 'fixed inset-x-0 top-0' : 'sticky top-0'} z-[80] w-full border-b border-slate-200/80 bg-white shadow-[0_2px_14px_rgba(15,23,42,0.08)]`}>
+    <header
+      className={`${
+        isHomePage ? 'fixed inset-x-0 top-0' : 'sticky top-0'
+      } z-[80] w-full border-b border-slate-200/80 bg-white shadow-[0_2px_14px_rgba(15,23,42,0.08)]`}
+    >
+      {/* Top Contact & Social Bar */}
+      <div className="w-full bg-gradient-to-r from-[#102a43] via-[#1a4262] to-[#17605d] text-white sm:bg-none sm:bg-[#0b2d4b]">
+        <div className="container-shell relative flex min-h-[76px] items-start justify-between gap-4 px-4 py-2 sm:min-h-[38px] sm:items-center sm:px-6 lg:px-8">
+          <div className="flex min-w-0 flex-col items-start gap-y-1 pr-24 text-[11px] font-medium leading-tight sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-1 sm:pr-0 sm:text-[12px] sm:leading-normal">
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Office%20%23402%2C%20HM%20Tower%2C%20Gulberg%20Greens%2C%20Islamabad%2C%20Pakistan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap transition-colors hover:text-[#31C950]"
+              aria-label="Office address"
+            >
+              <span className="text-[#f2c230]">
+                <LocationIcon />
+              </span>
+              <span>Office #402, HM Tower Gulberg Greens Islamabad, Pakistan</span>
+            </a>
+
+            <a
+              href="tel:+923375098243"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap transition-colors hover:text-[#31C950]"
+              aria-label="Call Gulberg Greens"
+            >
+              <span className="text-[#f2c230]">
+                <PhoneIcon />
+              </span>
+              <span>+92 3310000060</span>
+            </a>
+
+            <a
+              href="mailto:Info@gacadvisors.com"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap transition-colors hover:text-[#31C950]"
+              aria-label="Email Gulberg Greens"
+            >
+              <span className="text-[#f2c230]">
+                <MailIcon />
+              </span>
+              <span>info@gulberggreens.com.pk</span>
+            </a>
+          </div>
+
+          <div className="absolute bottom-2 right-4 flex shrink-0 items-center gap-4 sm:static">
+            <a
+              href="https://www.facebook.com/gulberggreens.ibechs"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Gulberg Greens Facebook"
+              className="inline-flex items-center justify-center text-white transition-all duration-200 hover:-translate-y-0.5 hover:text-[#31C950]"
+            >
+              <FacebookIcon />
+            </a>
+
+            <a
+              href="https://www.youtube.com/@gulberggreens_ibechs"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Gulberg Greens YouTube"
+              className="inline-flex items-center justify-center text-white transition-all duration-200 hover:-translate-y-0.5 hover:text-[#31C950]"
+            >
+              <YouTubeIcon />
+            </a>
+
+            <a
+              href="https://www.tiktok.com/@gulberggreensibechs"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Gulberg Greens TikTok"
+              className="inline-flex items-center justify-center text-white transition-all duration-200 hover:-translate-y-0.5 hover:text-[#31C950]"
+            >
+              <TikTokIcon />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navbar */}
       <div className="container-shell flex items-center justify-between gap-4 py-4 md:py-5">
         <NavLink
           to="/"
