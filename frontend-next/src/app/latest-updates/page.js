@@ -4,7 +4,7 @@ import { STATIC_PAGE_SEO } from '../../data/staticPageSeo.js'
 import { fetchNewsPosts } from '../../lib/api.js'
 
 export const metadata = {
-  title: STATIC_PAGE_SEO.latestUpdates.title,
+  title: STATIC_PAGE_SEO.latestUpdates.metaTitle,
   description: STATIC_PAGE_SEO.latestUpdates.metaDescription,
 }
 

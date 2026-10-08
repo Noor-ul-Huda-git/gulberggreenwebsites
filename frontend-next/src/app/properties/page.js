@@ -4,7 +4,7 @@ import { STATIC_PAGE_SEO } from '../../data/staticPageSeo.js'
 import { fetchProperties } from '../../lib/api.js'
 
 export const metadata = {
-  title: STATIC_PAGE_SEO.properties.title,
+  title: STATIC_PAGE_SEO.properties.metaTitle,
   description: STATIC_PAGE_SEO.properties.metaDescription,
 }
 

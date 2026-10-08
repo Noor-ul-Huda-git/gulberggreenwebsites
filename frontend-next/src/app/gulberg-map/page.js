@@ -4,8 +4,8 @@ import GulbergMapPdfViewerClient from '../../components/gulbergMap/GulbergMapPdf
 import { STATIC_PAGE_SEO } from '../../data/staticPageSeo'
 
 export const metadata = {
-title: STATIC_PAGE_SEO.gulbergMap.title,
-description: STATIC_PAGE_SEO.gulbergMap.metaDescription,
+  title: STATIC_PAGE_SEO.gulbergMap.metaTitle,
+  description: STATIC_PAGE_SEO.gulbergMap.metaDescription,
 }
 
 export default function GulbergMapPage() {
