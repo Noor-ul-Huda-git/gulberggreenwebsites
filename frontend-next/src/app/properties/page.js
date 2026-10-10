@@ -6,6 +6,9 @@ import { fetchProperties } from '../../lib/api.js'
 export const metadata = {
   title: STATIC_PAGE_SEO.properties.metaTitle,
   description: STATIC_PAGE_SEO.properties.metaDescription,
+  alternates: {
+    canonical: 'https://gulberggreens.com.pk/properties/',
+  },
 }
 
 function parsePropertyListResponse(data) {

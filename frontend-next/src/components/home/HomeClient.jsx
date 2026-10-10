@@ -738,7 +738,7 @@ function Home({
 
   return (
     <div className="bg-white font-[Poppins,Manrope,system-ui,sans-serif]">
-      <HomePageSchema />
+         <HomePageSchema listings={homeFeaturedListings} />
 
       {/* SECTION 1 — HERO */}
       <section className="relative flex min-h-0 flex-col overflow-hidden md:min-h-[min(92vh,920px)]">

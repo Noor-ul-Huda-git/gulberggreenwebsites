@@ -11,7 +11,7 @@ export const contactInfo = {
     { label: 'Mon – Sat', value: '9:00 AM to 6:00 PM' },
     { label: 'Sun', value: 'Closed (by appointment only)' },
   ],
-  address: 'HM Tower, 5th Floor, Office no 402, Gulberg Greens, Islamabad — Sales & Marketing Office',
+  address: 'Gulberg Expy, Gulberg Greens Gulberg Greens Block B Islamabad, 44000, Pakistan',
 }
 
 /** Contact page — hero copy (single paragraph; do not duplicate on the page). */

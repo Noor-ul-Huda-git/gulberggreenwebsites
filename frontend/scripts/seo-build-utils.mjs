@@ -218,7 +218,7 @@ export function buildHomeSchemas() {
     foundingDate: '2005',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'HM Tower, 5th Floor, Office No. 402, Gulberg Greens',
+      streetAddress: 'Gulberg Expy, Gulberg Greens Gulberg Greens Block B Islamabad, 44000, Pakistan',
       addressLocality: 'Islamabad',
       addressCountry: 'PK',
     },
@@ -248,7 +248,7 @@ export function buildHomeSchemas() {
       'Official sales platform of Gulberg Greens Islamabad. CDA approved gated community by IBECHS. Residential plots, farmhouses, houses, flats and commercial properties.',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'HM Tower, 5th Floor, Office No. 402',
+      streetAddress: 'Gulberg Expy, Gulberg Greens Gulberg Greens Block B Islamabad, 44000, Pakistan',
       addressLocality: 'Islamabad',
       addressCountry: 'PK',
     },

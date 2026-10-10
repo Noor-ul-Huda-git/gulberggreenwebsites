@@ -1,6 +1,6 @@
 import HomeClient from '../components/home/HomeClient.jsx'
 import { fetchNewsPosts, fetchProperties } from '../lib/api.js'
-
+export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'Gulberg Greens Islamabad — Official IBECHS Gated Community',
   description:

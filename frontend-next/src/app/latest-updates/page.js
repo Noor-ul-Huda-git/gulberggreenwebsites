@@ -6,6 +6,9 @@ import { fetchNewsPosts } from '../../lib/api.js'
 export const metadata = {
   title: STATIC_PAGE_SEO.latestUpdates.metaTitle,
   description: STATIC_PAGE_SEO.latestUpdates.metaDescription,
+  alternates: {
+    canonical: 'https://gulberggreens.com.pk/latest-updates/',
+  },
 }
 
 function parseNewsListResponse(data) {

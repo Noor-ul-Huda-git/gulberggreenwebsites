@@ -255,7 +255,7 @@ function Header() {
               <span className="text-[#f2c230]">
                 <LocationIcon />
               </span>
-              <span>Office #402, HM Tower Gulberg Greens Islamabad, Pakistan</span>
+              <span>Gulberg Expy, Gulberg Greens Gulberg Greens Block B Islamabad, 44000, Pakistan</span>
             </a>
 
             <a

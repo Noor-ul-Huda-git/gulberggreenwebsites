@@ -11,7 +11,7 @@ export const contactInfo = {
     { label: 'Mon – Sat', value: '9:00 AM to 6:00 PM' },
     { label: 'Sun', value: 'Closed (by appointment only)' },
   ],
-  address: 'HM Tower, 5th Floor, Office no 402, Gulberg Greens, Islamabad — Sales & Marketing Office',
+  address: 'Gulberg Expy, Gulberg Greens Gulberg Greens Block B Islamabad, 44000, Pakistan',
 }
 
 /** Contact page — hero copy (single paragraph; do not duplicate on the page). */
@@ -59,6 +59,7 @@ export const heroStats = [
 ]
 
 /** Homepage FAQ — 11 questions (June 2026 SEO brief). */
+/** Homepage FAQ — 26 questions. */
 export const homeFaqItems = [
   {
     id: 'cda-approved',
@@ -135,8 +136,114 @@ export const homeFaqItems = [
       'Yes, one of the key attractions of Gulberg Greens is its abundance of parks, green belts, and open spaces that promote a healthy and relaxing lifestyle.',
     ],
   },
-]
 
+  // New FAQs
+  {
+    id: 'islamabad-or-rawalpindi',
+    question: 'Is Gulberg Greens in Islamabad or Rawalpindi?',
+    paragraphs: [
+      'Gulberg Greens Islamabad Zone IV mein, Gulberg Expressway (pehle Lehtrar Road) par waqe hai. Yeh Islamabad Expressway se signal-free underpass ke zariye juda hai, aur Rawalpindi ki taraf se bhi asani se pohanch sakte hain.',
+    ],
+  },
+  {
+    id: 'location-airport-distance',
+    question: 'Where is Gulberg Greens located and how far is it from the airport?',
+    paragraphs: [
+      'Society Gulberg Expressway par hai. Islamabad city center takreban 15 minute aur New Islamabad International Airport takreban 20 minute ki doori par hai.',
+    ],
+  },
+  {
+    id: 'developer-owner',
+    question: 'Who developed and owns Gulberg Greens Islamabad?',
+    paragraphs: [
+      'Gulberg Greens ko Intelligence Bureau Employees Cooperative Housing Society (IBECHS) develop kar rahi hai, jo 2005 se is project par kaam kar rahi hai.',
+    ],
+  },
+  {
+    id: 'same-as-gulberg-residencia',
+    question: 'Is Gulberg Greens the same as Gulberg Residencia?',
+    paragraphs: [
+      'Nahi, yeh alag projects hain. Is website par sirf Gulberg Greens Islamabad (IBECHS) ki information di gayi hai.',
+    ],
+  },
+  {
+    id: 'public-transport',
+    question: 'Is there public transport in Gulberg Greens?',
+    paragraphs: [
+      'Public transport ki current availability aur specific shuttle ya bus routes ke liye latest service details ko official source se confirm karein. Ride-hailing coverage bhi service availability aur waqt ke hisaab se vary kar sakti hai.',
+    ],
+  },
+  {
+    id: 'verify-plot-before-buying',
+    question: 'How can I verify a plot before buying in Gulberg Greens?',
+    paragraphs: [
+      'Kharidne se pehle allotment letter, society ki official file aur transfer record check karwayen. Plot number aur block society office se confirm karwayen, aur payment hamesha documented tareeke se karein.',
+    ],
+  },
+  {
+    id: 'possession-vs-non-developed',
+    question: 'What is the difference between a possession plot and a non-developed plot?',
+    paragraphs: [
+      'Possession plot par kabza mil chuka hota hai aur wahan construction ki ijazat hoti hai. Non-developed plot ki development abhi mukammal nahi hoti, is liye usay kharidne se pehle block ka development status zaroor pooch lein.',
+    ],
+  },
+  {
+    id: 'possession-blocks-2026',
+    question: 'Which blocks have possession in 2026?',
+    paragraphs: [
+      'Society ke announcement ke mutabiq Block A Executive II aur P Block mein possession ka amal shuru hai. Taaza status ke liye sales office se confirm karein.',
+    ],
+  },
+  {
+    id: 'overseas-pakistanis',
+    question: 'Can overseas Pakistanis buy property in Gulberg Greens?',
+    paragraphs: [
+      'Ji haan. Pakistani resident aur overseas Pakistani dono apply kar sakte hain.',
+    ],
+  },
+  {
+    id: 'better-plot-size-returns',
+    question: 'Which plot size gives better returns in Gulberg Greens?',
+    paragraphs: [
+      'Chhote plots (5 aur 7 Marla) mein resale aur kharidaar zyada milte hain, jabke bare plots (1 aur 2 Kanal) zyada capital maangte hain. Behtar faisla aapke budget aur muddat par depend karta hai, isliye kisi ek size ko sab ke liye behtar kehna theek nahi.',
+    ],
+  },
+  {
+    id: 'lake-heliport',
+    question: 'Does Gulberg Greens have a lake and a heliport?',
+    paragraphs: [
+      'Society mein 1,500 kanal ki man-made residential lake hai. Pakistan ka pehla public heliport bhi is society mein under development hai.',
+    ],
+  },
+  {
+    id: 'utilities',
+    question: 'What utilities are available in Gulberg Greens?',
+    paragraphs: [
+      'Developed blocks mein underground electricity (IESCO), Sui Gas, fiber optic internet aur water supply ka infrastructure operational hai.',
+    ],
+  },
+  {
+    id: 'security',
+    question: 'How secure is Gulberg Greens?',
+    paragraphs: [
+      'Society ki boundary wall hai, CCTV aur drone monitoring hai, aur E-tag gates, biometric access points aur security staff tainaat hain.',
+    ],
+  },
+  {
+    id: 'sales-office-timings',
+    question: 'Where is the Gulberg Greens sales office and what are the timings?',
+    paragraphs: [
+      'Gulberg Expy, Gulberg Greens Gulberg Greens Block B Islamabad, 44000, Pakistan. Timing Monday se Saturday subah 9 baje se shaam 6 baje tak hai, aur Sunday ko appointment par.',
+    ],
+  },
+  {
+    id: 'gulberg-map-layout',
+    question: 'Where can I see the Gulberg Greens map and block layout?',
+    paragraphs: [
+      'Poora master plan aur block layout hamari Gulberg Map page par dekha ja sakta hai.',
+    ],
+  },
+]
 export const amenityCards = [
   {
     title: 'Living',
