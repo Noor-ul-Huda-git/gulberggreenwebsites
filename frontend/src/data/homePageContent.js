@@ -160,7 +160,7 @@ export const HOME_LOCATION = {
   visit: {
     h3: 'How to Visit Gulberg Greens Sales Office',
     lines: [
-      'Sales Office: HM Tower, 5th Floor, Office No. 402, Gulberg Greens Islamabad',
+      'Sales Office: Gulberg Expy, Gulberg Greens Gulberg Greens Block B Islamabad, 44000, Pakistan',
       'Mon–Sat: 9:00 AM – 6:00 PM  |  Sunday by appointment',
       'Phone: +92 331 000 0060',
       'Email: info@gulberggreens.com.pk',
