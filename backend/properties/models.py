@@ -1,6 +1,7 @@
 import secrets
 import uuid
 
+from django.core.files.storage import default_storage
 from django.db import models
 from django_ckeditor_5.fields import CKEditor5Field
 from django.utils.text import slugify
@@ -113,7 +114,12 @@ class Property(models.Model):
     )
     bedrooms = models.PositiveSmallIntegerField(null=True, blank=True)
     baths = models.PositiveSmallIntegerField(null=True, blank=True)
-    featured_image = models.ImageField(upload_to='properties/featured/', blank=True, null=True)
+    featured_image = models.ImageField(
+        upload_to='properties/featured/',
+        max_length=255,
+        blank=True,
+        null=True,
+    )
     is_featured = models.BooleanField(default=False)
     is_published = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -285,7 +291,7 @@ class PropertyImage(models.Model):
         related_name='images',
         on_delete=models.CASCADE,
     )
-    image = models.ImageField(upload_to='properties/gallery/')
+    image = models.ImageField(upload_to='properties/gallery/', max_length=255)
     sort_order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
