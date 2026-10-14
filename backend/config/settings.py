@@ -212,6 +212,86 @@ REST_FRAMEWORK = {
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ---------------------------------------------------------------------------
+# Admin panel fix — 431 "Request Header Fields Too Large"
+# Har save par "added successfully" message pehle cookie mein jata tha; kuch listings
+# ke baad cookie itni bari ho jati thi ke server request reject kar deta tha.
+# Ab messages aur session database mein rehte hain, cookie choti rehti hai.
+# ---------------------------------------------------------------------------
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# Bare admin forms (listing + bohat si images / long descriptions) reject na hon
+DATA_UPLOAD_MAX_NUMBER_FIELDS = int(os.getenv('DATA_UPLOAD_MAX_NUMBER_FIELDS', '5000'))
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('DATA_UPLOAD_MAX_MEMORY_SIZE', str(10 * 1024 * 1024)))  # 10 MB text data
+
+# ---------------------------------------------------------------------------
+# Email — listing inquiries ki emails ke liye
+# Asal values server ki .env file mein likhein (password yahan code mein nahi).
+# Agar .env mein kuch na ho to Django ka purana default chalta rahega.
+# ---------------------------------------------------------------------------
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '25'))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'false').lower() == 'true'
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'false').lower() == 'true'
+# Email server jawab na de to request atki na rahe (warna page timeout / 502)
+EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '20'))
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Gulberg Greens <info@gulberggreens.com.pk>')
+SERVER_EMAIL = os.getenv('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
+
+# ---------------------------------------------------------------------------
+# Error log — 500 errors ki asal wajah logs/django_errors.log mein likhi jayegi
+# ---------------------------------------------------------------------------
+LOG_DIR = BASE_DIR / 'logs'
+_log_handlers = {
+    'console': {
+        'class': 'logging.StreamHandler',
+        'formatter': 'verbose',
+    },
+}
+_active_handlers = ['console']
+try:
+    LOG_DIR.mkdir(exist_ok=True)
+    _log_handlers['error_file'] = {
+        'class': 'logging.handlers.RotatingFileHandler',
+        'filename': str(LOG_DIR / 'django_errors.log'),
+        'maxBytes': 5 * 1024 * 1024,  # 5 MB
+        'backupCount': 3,
+        'level': 'ERROR',
+        'formatter': 'verbose',
+    }
+    _active_handlers.append('error_file')
+except OSError:
+    # Folder banane ki permission na ho to site band na ho — sirf console log chalega
+    pass
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': _log_handlers,
+    'loggers': {
+        'django': {
+            'handlers': _active_handlers,
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': _active_handlers,
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
+# ---------------------------------------------------------------------------
 # Production security — cookies, HTTPS, framing (when DEBUG is off)
 # ---------------------------------------------------------------------------
 if not DEBUG:
