@@ -4,8 +4,11 @@ import GulbergMapPdfViewerClient from '../../components/gulbergMap/GulbergMapPdf
 import { STATIC_PAGE_SEO } from '../../data/staticPageSeo'
 
 export const metadata = {
-title: STATIC_PAGE_SEO.gulbergMap.title,
-description: STATIC_PAGE_SEO.gulbergMap.metaDescription,
+  title: 'Gulberg Greens Islamabad Map | Blocks & Layout Plan',
+  description:
+    'View the complete Gulberg Greens Islamabad map. Explore all blocks, residential ' +
+    'zones, commercial areas and LOP layout. Find your plot location easily.',
+  alternates: { canonical: '/gulberg-map/' },
 }
 
 export default function GulbergMapPage() {

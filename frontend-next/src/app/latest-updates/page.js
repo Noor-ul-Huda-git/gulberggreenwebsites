@@ -4,10 +4,12 @@ import { STATIC_PAGE_SEO } from '../../data/staticPageSeo.js'
 import { fetchNewsPosts } from '../../lib/api.js'
 
 export const metadata = {
-  title: STATIC_PAGE_SEO.latestUpdates.title,
-  description: STATIC_PAGE_SEO.latestUpdates.metaDescription,
+  title: 'Gulberg Greens Latest Updates & News | Islamabad 2025',
+  description:
+    'Stay updated with the latest news, announcements and developments from Gulberg ' +
+    'Greens Islamabad. Block updates, society news and investment insights.',
+  alternates: { canonical: '/latest-updates/' },
 }
-
 function parseNewsListResponse(data) {
   if (Array.isArray(data)) return data
   if (Array.isArray(data?.results)) return data.results

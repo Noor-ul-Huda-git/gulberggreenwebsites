@@ -3,9 +3,13 @@ import Header from "../components/layout/Header.jsx";
 import Footer from "../components/layout/Footer.jsx";
 
 export const metadata = {
-  title: "Properties for Sale & Rent in Gulberg Greens Islamabad",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://gulberggreens.com.pk",
+  ),
+  // Sirf aakhri sahara: jis page ka apna title/description na ho, us par ye aayega.
+  title: "Gulberg Greens Islamabad",
   description:
-    "Find properties for sale and rent in Gulberg Greens Islamabad including plots, houses, farmhouses, flats, shops, and offices.",
+    "Gulberg Greens Islamabad, a CDA-approved gated community by IBECHS on Gulberg Expressway.",
 };
 
 export const viewport = {

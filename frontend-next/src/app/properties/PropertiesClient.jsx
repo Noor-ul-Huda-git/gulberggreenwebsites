@@ -49,13 +49,93 @@ const SIZE_OPTIONS = [
   { value: '5', label: '5 Marla' },
   { value: '7', label: '7 Marla' },
   { value: '10', label: '10 Marla' },
+  { value: '12', label: '12 Marla' },
   { value: '20', label: '1 Kanal' },
-  { value: '30', label: '2 Kanal' },
-  { value: '40', label: ' 4 Kanal' },
-  { value: '50', label: '5 Kanal' },
-  { value: '60', label: '9 Kanal' },
-  { value: '70', label: '10 Kanal' },
+  { value: '40', label: '2 Kanal' },
+  { value: '80', label: '4 Kanal' },
+  { value: '100', label: '5 Kanal' },
+  { value: '180', label: '9 Kanal' },
+  { value: '200', label: '10 Kanal' },
 ]
+
+/*
+ * Size URL mein path ke aakhir mein aata hai:
+ *   /properties/plots/block-h/7-marla/
+ *   /properties/farm-house/block-a/5-kanal/
+ * Dropdown ki value Marla mein hai (5 Kanal = 100).
+ */
+const SIZE_SLUG_RE = /^(\d+(?:\.\d+)?)-(marla|kanal)s?$/
+
+function sizeSlugToValue(slug) {
+  const m = SIZE_SLUG_RE.exec(String(slug || '').trim().toLowerCase())
+
+  if (!m) return ''
+
+  const n = Number(m[1])
+
+  if (!Number.isFinite(n) || n <= 0) return ''
+
+  const marlas = m[2] === 'kanal' ? n * 20 : n
+
+  return String(Number(marlas.toFixed(2)))
+}
+
+function isSizeSlug(slug) {
+  return sizeSlugToValue(slug) !== ''
+}
+
+function sizeValueToSlug(value) {
+  const v = String(value || '').trim()
+
+  if (!v) return ''
+
+  const opt = SIZE_OPTIONS.find((o) => o.value === v)
+
+  if (opt) return opt.label.toLowerCase().replace(/\s+/g, '-')
+
+  const n = Number(v)
+
+  if (!Number.isFinite(n) || n <= 0) return ''
+
+  return n % 20 === 0 ? `${n / 20}-kanal` : `${n}-marla`
+}
+
+/*
+ * Size filter sirf in categories ke liye hai.
+ * Flat, Shop aur Office par size dropdown, URL aur heading mein size nahi aata.
+ */
+const SIZE_ENABLED_LISTING_TYPES = new Set([
+  'plots',
+  'commercialplots',
+  'farmhouse',
+  'house',
+])
+
+function listingTypeAllowsSize(listingType) {
+  const key = String(listingType || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+
+  return !key || SIZE_ENABLED_LISTING_TYPES.has(key)
+}
+
+function sizeLabelFromValue(value) {
+  const v = String(value || '').trim()
+
+  if (!v) return ''
+
+  const opt = SIZE_OPTIONS.find((o) => o.value === v)
+
+  if (opt) return opt.label
+
+  const slug = sizeValueToSlug(v)
+
+  if (!slug) return ''
+
+  const [num, unit] = slug.split('-')
+
+  return `${num} ${unit === 'kanal' ? 'Kanal' : 'Marla'}`
+}
 
 const ROOM_COUNT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8]
 
@@ -92,9 +172,211 @@ const EXTRA_FILTER_KEYS = [
   'max_marlas',
   'min_marla',
   'max_marla',
+  'size',
   'bedrooms',
   'baths',
 ]
+
+/* =========================================================
+ * INVENTORY MATCHING (search box ↔ listings)
+ *
+ * Admin mein size apni unit mein save hota hai
+ * (jaise 5 + Kanal), jab ke Size dropdown ki value
+ * Marla mein hai (5 Kanal = 100). Isliye har listing
+ * ka area pehle Marla mein convert kar ke match hota hai.
+ * Block aur property type bhi naam ke farq (Block A / A)
+ * ke baghair match hote hain.
+ * ========================================================= */
+
+const MARLAS_PER_UNIT = {
+  marla: 1,
+  kanal: 20,
+  square_feet: 1 / 272.25,
+  square_yards: 1 / 30.25,
+}
+
+const SIZE_MATCH_TOLERANCE = 0.05
+
+function propertyAreaUnitKey(p) {
+  const raw = String(
+    p?.area_unit || p?.area_unit_display || 'marla',
+  )
+    .toLowerCase()
+    .replace(/[^a-z]/g, '')
+
+  if (raw.startsWith('kanal')) return 'kanal'
+  if (raw.includes('feet') || raw.includes('sqft')) return 'square_feet'
+  if (raw.includes('yard')) return 'square_yards'
+
+  return 'marla'
+}
+
+function propertyAreaInMarlas(p) {
+  if (p?.area_marlas == null || p.area_marlas === '') return null
+
+  const n = Number(p.area_marlas)
+
+  if (!Number.isFinite(n)) return null
+
+  return n * MARLAS_PER_UNIT[propertyAreaUnitKey(p)]
+}
+
+function normalizeMatchKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+}
+
+function normalizeBlockKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[()]/g, ' ')
+    .replace(/\bblock\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, '')
+}
+
+function propertyMatchesFilters(p, f) {
+  if (f.listingType) {
+    const wanted = normalizeMatchKey(f.listingType)
+
+    if (
+      normalizeMatchKey(p.listing_type) !== wanted &&
+      normalizeMatchKey(p.listing_type_display) !== wanted
+    ) {
+      return false
+    }
+  }
+
+  if (f.block) {
+    const wantedKey = normalizeBlockKey(f.block)
+    const wantedSlug = slugifyPropertyBlock(f.block)
+
+    const sameKey =
+      wantedKey && normalizeBlockKey(p.block) === wantedKey
+
+    const sameSlug =
+      wantedSlug && slugifyPropertyBlock(String(p.block || '')) === wantedSlug
+
+    if (!sameKey && !sameSlug) return false
+  }
+
+  const minM = f.minMarlas !== '' && f.minMarlas != null ? Number(f.minMarlas) : null
+  const maxM = f.maxMarlas !== '' && f.maxMarlas != null ? Number(f.maxMarlas) : null
+
+  if (
+    (minM != null && Number.isFinite(minM)) ||
+    (maxM != null && Number.isFinite(maxM))
+  ) {
+    const area = propertyAreaInMarlas(p)
+
+    if (area == null) return false
+    if (minM != null && Number.isFinite(minM) && area < minM - SIZE_MATCH_TOLERANCE) return false
+    if (maxM != null && Number.isFinite(maxM) && area > maxM + SIZE_MATCH_TOLERANCE) return false
+  }
+
+  const minP = f.minPrice ? Number(f.minPrice) : null
+  const maxP = f.maxPrice ? Number(f.maxPrice) : null
+
+  if (
+    (minP != null && Number.isFinite(minP)) ||
+    (maxP != null && Number.isFinite(maxP))
+  ) {
+    const price = Number(p.price)
+
+    if (p.price == null || p.price === '' || !Number.isFinite(price)) return false
+    if (minP != null && Number.isFinite(minP) && price < minP) return false
+    if (maxP != null && Number.isFinite(maxP) && price > maxP) return false
+  }
+
+  if (f.bedrooms && Number(p.bedrooms) !== Number(f.bedrooms)) return false
+  if (f.baths && Number(p.baths) !== Number(f.baths)) return false
+
+  const q = String(f.search || '').trim().toLowerCase()
+
+  if (q) {
+    const haystack = [
+      p.title,
+      p.location,
+      p.block ? `block ${p.block}` : '',
+      p.listing_type_display,
+      p.purpose,
+      p.category,
+      p.short_description,
+      String(p.description || '').replace(/<[^>]*>/g, ' '),
+    ]
+      .join(' ')
+      .toLowerCase()
+
+    const words = q.split(/\s+/).filter(Boolean)
+
+    if (!words.every((w) => haystack.includes(w))) return false
+  }
+
+  return true
+}
+
+function parseInventoryResponse(data) {
+  if (Array.isArray(data)) return data
+  if (Array.isArray(data?.results)) return data.results
+  if (Array.isArray(data?.data)) return data.data
+  return []
+}
+
+/*
+ * Poori inventory ek dafa load hoti hai (sab pages),
+ * taake neeche dikhne wali har listing search mein bhi mile.
+ */
+let fullInventoryPromise = null
+
+function loadFullInventory() {
+  if (fullInventoryPromise) return fullInventoryPromise
+
+  fullInventoryPromise = (async () => {
+    const first = await fetchProperties({ page: '1' })
+
+    if (Array.isArray(first)) return first
+
+    const firstList = parseInventoryResponse(first)
+    const total = Number(first?.count || 0)
+    const pageSize = firstList.length || 12
+    const totalPages =
+      total > firstList.length ? Math.ceil(total / pageSize) : 1
+
+    const all = [...firstList]
+    const BATCH = 6
+
+    for (let start = 2; start <= totalPages; start += BATCH) {
+      const pages = []
+
+      for (let pg = start; pg < start + BATCH && pg <= totalPages; pg += 1) {
+        pages.push(
+          fetchProperties({ page: String(pg) })
+            .then(parseInventoryResponse)
+            .catch(() => []),
+        )
+      }
+
+      const results = await Promise.all(pages)
+      results.forEach((list) => all.push(...list))
+    }
+
+    const seen = new Set()
+
+    return all.filter((p) => {
+      const key = p?.id ?? p?.slug
+      if (key == null) return true
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  })()
+
+  fullInventoryPromise.catch(() => {
+    fullInventoryPromise = null
+  })
+
+  return fullInventoryPromise
+}
 
 const LISTING_TYPE_QUERY_KEY = 'listing_type'
 
@@ -116,7 +398,16 @@ function normalizeListingPath(pathname) {
  * /properties/{category}/
  * /properties/{category}/{blockSlug}/
  */
-function desiredPropertiesListingPath(listingType, blockLabel) {
+function desiredPropertiesListingPath(listingType, blockLabel, sizeValue = '') {
+  const base = desiredPropertiesBasePath(listingType, blockLabel)
+  const sizeSeg = sizeValueToSlug(sizeValue)
+
+  if (!sizeSeg) return base
+
+  return base.endsWith('/') ? `${base}${sizeSeg}/` : `${base}/${sizeSeg}`
+}
+
+function desiredPropertiesBasePath(listingType, blockLabel) {
   const blockSeg = slugifyPropertyBlock(String(blockLabel || '').trim())
 
   if (!listingType) {
@@ -145,11 +436,13 @@ function isBarePropertiesListingPath(pathname) {
  *
  * Path always wins when category/block exists.
  */
-function readExtraFiltersFromSearchParams(sp) {
+function readExtraFiltersFromSearchParams(sp, pathSizeValue = '') {
   const get = (k) => sp.get(k)?.trim() ?? ''
 
-  const minMarlas = get('min_marlas') || get('min_marla')
-  const maxMarlas = get('max_marlas') || get('max_marla')
+  const sizeValue = pathSizeValue || sizeSlugToValue(get('size'))
+
+  const minMarlas = sizeValue || get('min_marlas') || get('min_marla')
+  const maxMarlas = sizeValue || get('max_marlas') || get('max_marla')
 
   return {
     search: get('search') || '',
@@ -189,12 +482,13 @@ function createInitialFilterSnapshot(
   search,
   forcedListingType,
   forcedBlock,
+  pathSizeValue = '',
 ) {
   const qp = new URLSearchParams(
     String(search || '').replace(/^\?/, ''),
   )
 
-  const extras = readExtraFiltersFromSearchParams(qp)
+  const extras = readExtraFiltersFromSearchParams(qp, pathSizeValue)
 
   const brNum = Number(extras.bedrooms)
   const baNum = Number(extras.baths)
@@ -256,7 +550,7 @@ function createInitialFilterSnapshot(
  *
  * Existing URL structure remains unchanged.
  */
-function buildExtraFilterSearchParams(extras, baseParams) {
+function buildExtraFilterSearchParams(extras, baseParams, sizeInPath = false) {
   const p = new URLSearchParams(
     typeof baseParams === 'string'
       ? baseParams
@@ -279,12 +573,20 @@ function buildExtraFilterSearchParams(extras, baseParams) {
     p.set('max_price', String(extras.maxPrice).trim())
   }
 
-  if (extras.minMarlas) {
-    p.set('min_marlas', String(extras.minMarlas).trim())
-  }
+  const minM = String(extras.minMarlas || '').trim()
+  const maxM = String(extras.maxMarlas || '').trim()
 
-  if (extras.maxMarlas) {
-    p.set('max_marlas', String(extras.maxMarlas).trim())
+  if (minM && minM === maxM && sizeValueToSlug(minM)) {
+    /*
+     * Ek size chuna hai: category wale page par size path mein
+     * jata hai (/7-marla/), warna ?size=7-marla
+     */
+    if (!sizeInPath) {
+      p.set('size', sizeValueToSlug(minM))
+    }
+  } else {
+    if (minM) p.set('min_marlas', minM)
+    if (maxM) p.set('max_marlas', maxM)
   }
 
   if (extras.bedrooms) {
@@ -672,8 +974,23 @@ function Properties({ initialItems = [] }) {
       : []
   }, [pathname])
 
-  const categorySlug = pathParts[0] || ''
-  const blockSlug = pathParts[1] || ''
+  /*
+   * /properties/5-marla/ — pehla hissa size ho to wo category nahi.
+   */
+  const firstPathIsSize = isSizeSlug(pathParts[0] || '')
+
+  const categorySlug = firstPathIsSize ? '' : pathParts[0] || ''
+  const restPathParts = firstPathIsSize
+    ? pathParts
+    : pathParts.slice(1)
+
+  const sizePathSlug =
+    restPathParts.find((part) => isSizeSlug(part)) || ''
+
+  const blockSlug =
+    restPathParts.find((part) => !isSizeSlug(part)) || ''
+
+  const pathSizeValue = sizeSlugToValue(sizePathSlug)
 
   const forcedBlock = useMemo(
     () => propertyBlockFromSlug(blockSlug),
@@ -709,12 +1026,14 @@ function Properties({ initialItems = [] }) {
         urlSearch,
         forcedListingType,
         forcedBlock,
+        pathSizeValue,
       ),
     [
       pathname,
       urlSearch,
       forcedListingType,
       forcedBlock,
+      pathSizeValue,
     ],
   )
 
@@ -789,11 +1108,46 @@ function Properties({ initialItems = [] }) {
 
   const [size, setSize] = useState(initialSize)
 
- const [items, setItems] = useState(
-  Array.isArray(initialItems) ? initialItems : [],
-)
-const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  /*
+   * Size chuna ho to heading aur description mein size bhi aata hai:
+   *   "5 Kanal Farmhouses for Sale in Block A, Gulberg Greens Islamabad"
+   * Size na ho to heading pehle jaisi rehti hai.
+   */
+  const sizeAllowedForType = listingTypeAllowsSize(
+    listingTypeChosenByUser
+      ? listingType.trim()
+      : listingType.trim() || forcedListingType,
+  )
+
+  const selectedSizeLabel = sizeAllowedForType
+    ? sizeLabelFromValue(size)
+    : ''
+
+  const displaySeo = useMemo(() => {
+    if (!selectedSizeLabel) return pageSeo
+
+    const typeLabel = categorySeo?.breadcrumb || 'Properties'
+    const where = forcedBlock
+      ? `${forcedBlock}, Gulberg Greens Islamabad`
+      : 'Gulberg Greens Islamabad'
+
+    return {
+      ...pageSeo,
+      h1: `${selectedSizeLabel} ${typeLabel} for Sale in ${where}`,
+      metaDescription: `Explore ${selectedSizeLabel} ${typeLabel.toLowerCase()} for sale in ${where}. Secure gated community by IBECHS. Browse available listings and contact us today.`,
+    }
+  }, [selectedSizeLabel, pageSeo, categorySeo, forcedBlock])
+
+  const [serverItems] = useState(
+    Array.isArray(initialItems) ? initialItems : [],
+  )
+
+  /*
+   * null = abhi load ho rahi hai, array = poori inventory,
+   * false = load nahi hui (server wali listings dikhengi).
+   */
+  const [inventory, setInventory] = useState(null)
+  const [error] = useState(null)
   const [viewMode, setViewMode] = useState('list')
 
   const effectiveListingType =
@@ -813,7 +1167,7 @@ const [loading, setLoading] = useState(false)
       urlSearch.replace(/^\?/, ''),
     )
 
-    const extras = readExtraFiltersFromSearchParams(qp)
+    const extras = readExtraFiltersFromSearchParams(qp, pathSizeValue)
 
     setSearch(extras.search)
     setSearchInput(extras.search)
@@ -888,7 +1242,21 @@ const [loading, setLoading] = useState(false)
     urlSearch,
     forcedListingType,
     forcedBlock,
+    pathSizeValue,
   ])
+
+  /*
+   * Flat / Shop / Office chunne par size khud hat jata hai.
+   */
+  useEffect(() => {
+    if (sizeAllowedForType) return
+
+    if (size || minMarlas || maxMarlas) {
+      setSize('')
+      setMinMarlas('')
+      setMaxMarlas('')
+    }
+  }, [sizeAllowedForType, size, minMarlas, maxMarlas])
 
   useEffect(() => {
     const t = window.setTimeout(
@@ -906,10 +1274,22 @@ const [loading, setLoading] = useState(false)
    * Existing SEO pathname structure is unchanged.
    */
   useEffect(() => {
+    const sizeValueForPath =
+      minMarlas && minMarlas === maxMarlas ? minMarlas : ''
+
+    /*
+     * Size hamesha path ke aakhir mein:
+     *   /properties/5-marla/
+     *   /properties/plots/block-h/7-marla/
+     *   /properties/all/block-f-executive-4/2-kanal/
+     */
+    const sizeInPath = Boolean(sizeValueToSlug(sizeValueForPath))
+
     const desiredPath =
       desiredPropertiesListingPath(
         effectiveListingType,
         effectiveBlock,
+        sizeInPath ? sizeValueForPath : '',
       )
 
     const baseQs = new URLSearchParams(
@@ -928,6 +1308,7 @@ const [loading, setLoading] = useState(false)
           baths,
         },
         baseQs,
+        sizeInPath,
       )
 
     const targetKey =
@@ -1016,6 +1397,70 @@ const [loading, setLoading] = useState(false)
     () => JSON.stringify(filterParams),
     [filterParams],
   )
+
+  useEffect(() => {
+    let cancelled = false
+
+    loadFullInventory()
+      .then((list) => {
+        if (!cancelled) setInventory(Array.isArray(list) ? list : false)
+      })
+      .catch(() => {
+        if (!cancelled) setInventory(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const loading = inventory === null
+
+  const items = useMemo(() => {
+    /*
+     * Browser wali inventory aur server wali listings dono
+     * jor kar (duplicate hata kar) filter hoti hain. Agar
+     * browser se load fail ho jaye to bhi server wali
+     * saari listings search mein milengi.
+     */
+    const seen = new Set()
+    const source = [
+      ...(Array.isArray(inventory) ? inventory : []),
+      ...serverItems,
+    ].filter((p) => {
+      const key = p?.id ?? p?.slug
+      if (key == null) return true
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+
+    return source.filter((p) =>
+      propertyMatchesFilters(p, {
+        search,
+        listingType: effectiveListingType,
+        block: effectiveBlock.trim(),
+        minPrice,
+        maxPrice,
+        minMarlas,
+        maxMarlas,
+        bedrooms,
+        baths,
+      }),
+    )
+  }, [
+    inventory,
+    serverItems,
+    search,
+    effectiveListingType,
+    effectiveBlock,
+    minPrice,
+    maxPrice,
+    minMarlas,
+    maxMarlas,
+    bedrooms,
+    baths,
+  ])
  /*
    * New Size filter handler.
    *
@@ -1119,11 +1564,11 @@ const [loading, setLoading] = useState(false)
               </p>
 
               <h1 className="mt-3 text-3xl font-bold leading-tight tracking-[-0.03em] text-[#1a3553] md:text-4xl">
-                {pageSeo.h1}
+                {displaySeo.h1}
               </h1>
 
               <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-[15px]">
-                {pageSeo.metaDescription}
+                {displaySeo.metaDescription}
               </p>
             </div>
 
@@ -1176,7 +1621,13 @@ const [loading, setLoading] = useState(false)
 
               {/* MAIN THREE FILTERS */}
 
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1.35fr_1.05fr_1fr_auto] lg:items-end">
+              <div
+                className={`grid gap-4 md:grid-cols-2 lg:items-end ${
+                  sizeAllowedForType
+                    ? 'lg:grid-cols-[1.35fr_1.05fr_1fr_auto]'
+                    : 'lg:grid-cols-[1.35fr_1.05fr_auto]'
+                }`}
+              >
                 {/* LOCATION / BLOCK */}
 
                 <label className="flex flex-col gap-1.5 text-left">
@@ -1285,8 +1736,9 @@ const [loading, setLoading] = useState(false)
                   </div>
                 </label>
 
-                {/* SIZE */}
+                {/* SIZE (sirf Plots, Commercial Plots, Farmhouse, House) */}
 
+                {sizeAllowedForType ? (
                 <label className="flex flex-col gap-1.5 text-left">
                   <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#355477]">
                     Size
@@ -1319,6 +1771,7 @@ const [loading, setLoading] = useState(false)
                     </select>
                   </div>
                 </label>
+                ) : null}
 
                 {/* FIND PROPERTIES */}
 
@@ -1386,9 +1839,10 @@ const [loading, setLoading] = useState(false)
                 ...(categorySeo
                   ? [
                       {
-                        to: blockSeo
-                          ? `/properties/${categorySlug}`
-                          : undefined,
+                        to:
+                          blockSeo || selectedSizeLabel
+                            ? `/properties/${categorySlug}`
+                            : undefined,
                         label:
                           categorySeo.breadcrumb,
                       },
@@ -1398,8 +1852,19 @@ const [loading, setLoading] = useState(false)
                 ...(blockSeo
                   ? [
                       {
+                        to: selectedSizeLabel
+                          ? `/properties/${categorySlug}/${blockSlug}`
+                          : undefined,
                         label:
                           blockSeo.breadcrumb,
+                      },
+                    ]
+                  : []),
+
+                ...(selectedSizeLabel && categorySeo
+                  ? [
+                      {
+                        label: selectedSizeLabel,
                       },
                     ]
                   : []),
@@ -1970,4 +2435,3 @@ const [loading, setLoading] = useState(false)
 }
 
 export default Properties
-
