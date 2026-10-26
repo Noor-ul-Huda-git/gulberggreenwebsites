@@ -1,14 +1,13 @@
 import HomeClient from '../components/home/HomeClient.jsx'
 import { fetchNewsPosts, fetchProperties } from '../lib/api.js'
-export const dynamic = 'force-dynamic'
 export const metadata = {
-  title: 'Gulberg Greens Islamabad — Official IBECHS Gated Community',
+  title: 'Gulberg Greens Islamabad  Official IBECHS Gated Community',
   description:
-    'Gulberg Greens Islamabad is a CDA-approved gated community by IBECHS offering residential plots, farmhouses, houses, apartments, and commercial properties.',
-  alternates: {
-    canonical: 'https://gulberggreens.com.pk/',
-  },
+    'Gulberg Greens Islamabad is a CDA-approved gated community by IBECHS offering ' +
+    'residential plots, farmhouses, houses, apartments, and commercial properties.',
+  alternates: { canonical: '/' },
 }
+
 
 function parsePropertyListResponse(data) {
   if (Array.isArray(data)) return data

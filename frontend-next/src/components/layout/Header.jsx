@@ -249,10 +249,10 @@ function Header() {
               href="https://www.google.com/maps/search/?api=1&query=Office%20%23402%2C%20HM%20Tower%2C%20Gulberg%20Greens%2C%20Islamabad%2C%20Pakistan"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 whitespace-nowrap transition-colors hover:text-[#31C950]"
+              className="inline-flex min-w-0 items-start gap-1.5 whitespace-normal break-words transition-colors hover:text-[#31C950] sm:items-center sm:whitespace-nowrap"
               aria-label="Office address"
             >
-              <span className="text-[#f2c230]">
+              <span className=" shrink-0 text-[#f2c230]">
                 <LocationIcon />
               </span>
               <span>Gulberg Expy, Gulberg Greens Gulberg Greens Block B Islamabad, 44000, Pakistan</span>
@@ -270,7 +270,7 @@ function Header() {
             </a>
 
             <a
-              href="info@gulberggreens.com.pk"
+              href="mailto:info@gulberggreens.com.pk"
               className="inline-flex items-center gap-1.5 whitespace-nowrap transition-colors hover:text-[#31C950]"
               aria-label="Email Gulberg Greens"
             >

@@ -14,9 +14,13 @@
 
 html {
   scroll-behavior: smooth;
+  /* clip (hidden nahi) — side scroll rokta hai lekin sticky header aur iPhone scrolling kharab nahi karta */
   overflow-x: clip;
   width: 100%;
   max-width: 100%;
+  /* iPhone / Chrome ko font khud se bara karne se rokta hai */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -47,6 +51,12 @@ textarea {
   font: inherit;
 }
 
+img,
+picture,
+video,
+iframe {
+  max-width: 100%;
+}
 
 .page-shell {
   @apply min-h-screen w-full max-w-full overflow-hidden bg-transparent text-slate-800;
@@ -115,86 +125,14 @@ textarea {
   font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
 }
-@media (max-width: 768px) {
-  /* mobile styles */
-}
-
-@media (max-width: 480px) {
-  /* small mobile styles */
-}
 
 /* =========================================================
    MOBILE RESPONSIVE FIX — HOME PAGE
    Desktop layout remains unchanged
+   (Hero ki mobile styling ab HomeClient.jsx mein hai)
    ========================================================= */
 
-@media (max-width: 768px) {
-
-  /* Prevent horizontal overflow on mobile */
-  html,
-  body
- {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-
-  /* ---------------- HERO ---------------- */
-
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\] {
-    min-height: 100svh;
-    height: auto;
-  }
-
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
-    > div.relative.z-10 {
-    min-height: 100svh;
-    justify-content: center;
-    padding-top: 5rem;
-    padding-bottom: 4rem;
-  }
-
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
-    .container-shell {
-    width: 100%;
-    max-width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
-  }
-
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
-    .max-w-3xl {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  /* Hero heading */
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\] h1 {
-    max-width: 100%;
-    font-size: 1.75rem;
-    line-height: 1.15;
-    letter-spacing: -0.025em;
-    word-break: normal;
-    overflow-wrap: break-word;
-  }
-
-  /* Hero paragraph */
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\] p {
-    max-width: 100%;
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    line-height: 1.7;
-    overflow-wrap: break-word;
-  }
-
-  /* WhatsApp button */
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
-    a {
-    max-width: 100%;
-    padding: 0.75rem 1.5rem;
-  }
+@media (max-width: 767.98px) {
 
   /* ---------------- TRUST CARDS ---------------- */
 
@@ -277,25 +215,6 @@ textarea {
     > .container-shell > p {
     font-size: 0.9rem;
     line-height: 1.65;
-  }
-
-  section[aria-labelledby="home-listings-heading"]
-    a.group {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  /* Property image */
-  section[aria-labelledby="home-listings-heading"]
-    a.group > div:first-child {
-    height: 200px;
-    min-height: 200px;
-  }
-
-  /* Property content */
-  section[aria-labelledby="home-listings-heading"]
-    a.group > div:last-child {
-    padding: 1rem;
   }
 
   /* ---------------- LAKE ---------------- */
@@ -445,40 +364,10 @@ textarea {
     padding-right: 1rem;
   }
 
-  /* Hero */
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
-    > div.relative.z-10 {
-    padding-top: 4.5rem;
-    padding-bottom: 3rem;
-  }
-
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\] h1 {
-    font-size: 1.55rem;
-    line-height: 1.18;
-  }
-
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\] p {
-    font-size: 0.86rem;
-    line-height: 1.7;
-  }
-
-  section.relative.flex.min-h-\[min\(92vh\,920px\)\]
-    a {
-    font-size: 0.85rem;
-    padding: 0.7rem 1.25rem;
-  }
-
   /* Trust cards */
   section[aria-labelledby="trust-features-heading"]
     article > div {
     min-height: 210px;
-  }
-
-  /* Listings image */
-  section[aria-labelledby="home-listings-heading"]
-    a.group > div:first-child {
-    height: 185px;
-    min-height: 185px;
   }
 
   /* Lake */

@@ -1,6 +1,5 @@
 
 'use client'
-
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import LogoMarquee from './LogoMarquee.jsx'
@@ -13,7 +12,6 @@ import {
   IconShieldCheck,
   IconWhatsAppBrand,
 } from '../properties/PropertyIcons.jsx'
-
 import {
   HOME_APPROVALS,
   HOME_BLOCKS,
@@ -29,9 +27,7 @@ import {
   HOME_PLATFORM_HUB,
   HOME_TRUST_FEATURES,
 } from '../../data/homePageContent.js'
-
 import { propertyDetailPath } from '../../data/propertyListingTypes.js'
-
 import { STATIC_PAGE_SEO } from '../../data/staticPageSeo.js'
 
 import {
@@ -65,13 +61,6 @@ import regAuth4 from '../../assets/Authorities/4-150x150-1.webp'
 import regAuth1 from '../../assets/Authorities/1-150x150-1.webp'
 import regAuthCopyUntitled3 from '../../assets/Authorities/Copy-of-Untitled-3-150x150-1.webp'
 import regAuthCopyUntitled2 from '../../assets/Authorities/Copy-of-Untitled-2-150x150-1.webp'
-
-const YOUTUBE_CHANNEL_ID = 'UCyHnLIXIJyBPCoU4jZpXcew'
-
-const YOUTUBE_FEED_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`
-
-const YOUTUBE_RSS_PROXY_URL =
-  'https://api.rss2json.com/v1/api.json?rss_url='
 
 const DEFAULT_WA_MESSAGE =
   'Assalam o Alaikum, I would like more information about Gulberg Greens Islamabad.'
@@ -524,67 +513,61 @@ function Home({
   Array.isArray(initialNewsPosts) ? initialNewsPosts : [],
 )
   const [homeYoutubeVideos, setHomeYoutubeVideos] = useState([])
-    useEffect(() => {
+
+  useEffect(() => {
     let cancelled = false
 
     const loadYoutubeVideos = async () => {
       try {
-        const response = await fetch(
-          `${YOUTUBE_RSS_PROXY_URL}${encodeURIComponent(
-            YOUTUBE_FEED_URL
-          )}`
-        )
+        const response = await fetch('/api/youtube/videos/')
 
         if (!response.ok) {
-          throw new Error('Failed to load YouTube feed')
+          throw new Error('Unable to load YouTube videos')
         }
 
         const data = await response.json()
 
-        const videos = Array.isArray(data?.items)
-          ? data.items
-              .filter(
-                (item) =>
-                  item?.guid ||
-                  item?.link
-              )
-              .slice(0, 6)
-              .map((item) => {
-                let id = ''
-
-                if (item?.guid) {
-                  id = String(item.guid)
-                    .split(':')
-                    .pop()
+       const items = Array.isArray(data)
+  ? data
+  : Array.isArray(data?.items)
+    ? data.items
+    : Array.isArray(data?.results)
+      ? data.results
+      : Array.isArray(data?.videos)
+        ? data.videos
+        : []
+        const videos = items
+          .map((item) => {
+            const videoUrl = item?.link || item?.url || ''
+            const id =
+              item?.id?.videoId ||
+              item?.video_id ||
+              item?.videoId ||
+              item?.id ||
+              item?.guid?.split(':').pop() ||
+              (() => {
+                try {
+                  return new URL(videoUrl).searchParams.get('v')
+                } catch {
+                  return null
                 }
+              })()
 
-                if (!id && item?.link) {
-                  try {
-                    id =
-                      new URL(
-                        item.link
-                      ).searchParams.get('v') || ''
-                  } catch {
-                    id = ''
-                  }
-                }
-
-                return {
-                  id,
-                  title:
-                    item?.title ||
-                    'Gulberg Greens Islamabad',
-                  publishedAt:
-                    item?.pubDate || '',
-                }
-              })
-              .filter((video) => video.id)
-          : []
+            return {
+              id: typeof id === 'string' ? id : '',
+              title: item?.title || 'Gulberg Greens Islamabad',
+              publishedAt: item?.publishedAt || item?.published_at || item?.pubDate || '',
+            }
+          })
+          .filter((video) => video.id && !video.id.includes('/'))
+          .slice(0, 6)
 
         if (!cancelled) {
           setHomeYoutubeVideos(videos)
         }
-      } catch {
+      } catch (error) {
+        console.error('YouTube videos load failed:', error)
+
         if (!cancelled) {
           setHomeYoutubeVideos([])
         }
@@ -598,6 +581,7 @@ function Home({
     }
   }, [])
 
+
   const trustCards = HOME_TRUST_FEATURES.items
 
   const trustMaxSlide = Math.max(
@@ -605,12 +589,48 @@ function Home({
     trustCards.length - trustItemsVisible
   )
 
-  const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [heroHeaderOffset, setHeroHeaderOffset] = useState(null)
 
+  useEffect(() => {
+    setPrefersReducedMotion(
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+  }, [])
+
+  // Header ki asal height naapo taake hero ka text us ke peeche na chhupe
+  useLayoutEffect(() => {
+    const header = document.querySelector('header')
+
+    if (!header) {
+      setHeroHeaderOffset(0)
+      return undefined
+    }
+
+       const measure = () => {
+      const pos = window.getComputedStyle(header).position
+      const overlaps = pos === 'fixed' || pos === 'absolute'
+      const menu = header.querySelector('#mobile-nav-home')
+      const menuH = menu ? menu.getBoundingClientRect().height : 0
+
+      setHeroHeaderOffset(
+        overlaps
+          ? Math.ceil(header.getBoundingClientRect().height - menuH)
+          : 0
+      )
+    }
+
+    measure()
+
+    const ro = new ResizeObserver(measure)
+    ro.observe(header)
+    window.addEventListener('resize', measure)
+
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', measure)
+    }
+  }, [])
  
 
   useEffect(() => {
@@ -737,11 +757,11 @@ function Home({
   }, [])
 
   return (
-    <div className="bg-white font-[Poppins,Manrope,system-ui,sans-serif]">
+        <div className="overflow-x-clip bg-white font-[Poppins,Manrope,system-ui,sans-serif]">
          <HomePageSchema listings={homeFeaturedListings} />
 
       {/* SECTION 1 — HERO */}
-      <section className="relative flex min-h-0 flex-col overflow-hidden md:min-h-[min(92vh,920px)]">
+            <section className="relative flex min-h-0 flex-col overflow-hidden md:min-h-[min(92svh,920px)]">
         <SeoImage
           image={HOME_HERO.image}
           priority
@@ -755,10 +775,17 @@ function Home({
           aria-hidden
         />
 
-        <div className="relative z-10 flex flex-none flex-col justify-start px-4 pb-10 pt-16 sm:px-6 sm:pb-12 sm:pt-20 md:flex-1 md:justify-center md:py-24">
+                <div
+          className="relative z-10 flex flex-none flex-col justify-start px-4 pb-10 pt-[calc(var(--hdr,6.5rem)+1.5rem)] sm:px-6 sm:pb-12 md:flex-1 md:justify-center md:py-24"
+          style={
+            heroHeaderOffset != null
+              ? { '--hdr': `${heroHeaderOffset}px` }
+              : undefined
+          }
+        >
           <div className="container-shell w-full text-left">
             <div className="max-w-3xl">
-              <h1 className="mt-6 font-[Poppins,Manrope,system-ui,sans-serif] text-[1.85rem] font-bold leading-[1.15] tracking-[-0.035em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45)] md:mt-0 md:text-[2.35rem] lg:text-[2.85rem]">
+              <h1 className="break-words font-[Poppins,Manrope,system-ui,sans-serif] text-[clamp(1.45rem,6.4vw,1.85rem)] font-bold leading-[1.18] tracking-[-0.02em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.45)] md:text-[2.35rem] md:tracking-[-0.035em] lg:text-[2.85rem]">
                 {HOME_HERO.h1}
               </h1>
 
@@ -1259,7 +1286,7 @@ function Home({
 
       {/* SECTION 5 — LAKE */}
       <section
-        className="relative isolate min-h-[min(72vh,780px)] overflow-hidden"
+        className="relative isolate min-h-[min(72svh,780px)] overflow-hidden"
         aria-labelledby="lake-heading"
       >
         <div className="absolute inset-0">
@@ -1276,7 +1303,7 @@ function Home({
           />
         </div>
 
-        <div className="container-shell relative flex min-h-[min(72vh,780px)] flex-col justify-center py-16 md:py-24">
+        <div className="container-shell relative flex min-h-[min(72svh,780px)] flex-col justify-center py-16 md:py-24">
           <div className="max-w-3xl">
             <h2
               id="lake-heading"

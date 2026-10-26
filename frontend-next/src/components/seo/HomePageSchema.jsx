@@ -27,7 +27,7 @@ const siteConfig = {
   telephone: '+92-331-000-0060', // same as GBP
   email: contactInfo?.email || 'info@gulberggreens.com.pk',
   address: {
-    streetAddress: 'Gulberg Expy, Gulberg Greens Block B', // same as GBP
+    streetAddress:  'Gulberg Expy, Gulberg Greens Gulberg Greens Block B', // same as GBP
     addressLocality: 'Islamabad',
     postalCode: '44000',
     addressCountry: 'PK',
