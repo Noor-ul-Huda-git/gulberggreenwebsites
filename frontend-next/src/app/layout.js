@@ -10,6 +10,12 @@ export const metadata = {
   title: "Gulberg Greens Islamabad",
   description:
     "Gulberg Greens Islamabad, a CDA-approved gated community by IBECHS on Gulberg Expressway.",
+  // Har page par default "index, follow". Property description pages
+  // apni setting (noindex, nofollow) khud lagate hain, jo isko badal deti hai.
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport = {

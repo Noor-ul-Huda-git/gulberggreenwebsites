@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { Suspense } from 'react'
 
 import PropertiesClient from '../../PropertiesClient'
@@ -25,6 +25,12 @@ const SIZE_ENABLED_LISTING_TYPES = new Set([
   'farmhouse',
   'house',
 ])
+
+/*
+ * Individual listing (description) pages: noindex, nofollow.
+ * (Main, type, size aur block pages par yeh nahi lagta.)
+ */
+const LISTING_ROBOTS = { index: false, follow: false }
 
 function categoryAllowsSize(seo) {
   const key = String(seo?.listingType || '')
@@ -244,6 +250,8 @@ export async function generateMetadata({ params }) {
           property.canonical_url ||
           `https://gulberggreens.com.pk/properties/${category}/${segments[0]}/`,
       },
+      // Listing page: noindex, nofollow
+      robots: LISTING_ROBOTS,
     }
   }
 
@@ -298,6 +306,8 @@ export async function generateMetadata({ params }) {
           property.canonical_url ||
           `https://gulberggreens.com.pk/properties/${category}/${blockSlug}/${slug}/`,
       },
+      // Listing page: noindex, nofollow
+      robots: LISTING_ROBOTS,
     }
   }
 
@@ -355,8 +365,9 @@ export default async function PropertyRoutePage({ params }) {
       categorySlug: category,
     })
 
+    // Property delete ho chuki hai: 404 ki jagah category page par bhejo
     if (!property) {
-      notFound()
+      permanentRedirect(`/properties/${category}/`)
     }
 
     const { similarAround, similarByAgent } =
@@ -404,8 +415,9 @@ export default async function PropertyRoutePage({ params }) {
       block: blockSlug,
     })
 
+    // Property delete ho chuki hai: 404 ki jagah usi block ke page par bhejo
     if (!property) {
-      notFound()
+      permanentRedirect(`/properties/${category}/${blockSlug}/`)
     }
 
     const { similarAround, similarByAgent } =

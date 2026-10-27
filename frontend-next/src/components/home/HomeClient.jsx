@@ -1,4 +1,3 @@
-
 'use client'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Link from 'next/link'
@@ -104,6 +103,102 @@ const topBrandsLogos = [
   { alt: 'Transworld', src: brandTransworld.src },
   { alt: 'PTCL', src: brandPtcl.src },
 ]
+
+/* =========================================================
+ * EXPLORE SECTION (footer se upar) — sara content yahan hai.
+ * Koi link badalna, hatana ya add karna ho to sirf
+ * neeche ki lists mein { label, href } edit karein.
+ * ========================================================= */
+
+const HOME_EXPLORE_COLUMNS = [
+  {
+    title: 'Plots for Sale',
+    href: '/properties/plots/',
+    links: [
+      { label: '5 Marla Plot', href: '/properties/plots/5-marla/' },
+      { label: '7 Marla Plot', href: '/properties/plots/7-marla/' },
+      { label: '10 Marla Plot', href: '/properties/plots/10-marla/' },
+      { label: '12 Marla Plot', href: '/properties/plots/12-marla/' },
+      { label: '1 Kanal Plot', href: '/properties/plots/1-kanal/' },
+      { label: '2 Kanal Plot', href: '/properties/plots/2-kanal/' },
+    ],
+  },
+  {
+    title: 'Houses for Sale',
+    href: '/properties/house/',
+    links: [
+      { label: '5 Marla House', href: '/properties/house/5-marla/' },
+      { label: '7 Marla House', href: '/properties/house/7-marla/' },
+      { label: '10 Marla House', href: '/properties/house/10-marla/' },
+      { label: '12 Marla House', href: '/properties/house/12-marla/' },
+      { label: '1 Kanal House', href: '/properties/house/1-kanal/' },
+    ],
+  },
+  {
+    title: 'Farmhouses for Sale',
+    href: '/properties/farm-house/',
+    links: [
+      { label: '4 Kanal Farmhouse', href: '/properties/farm-house/4-kanal/' },
+      { label: '5 Kanal Farmhouse', href: '/properties/farm-house/5-kanal/' },
+      { label: '10 Kanal Farmhouse', href: '/properties/farm-house/10-kanal/' },
+    ],
+  },
+]
+
+/*
+ * SEO notes:
+ * - Saare links page ke HTML mein shuru se hain ("Show more" ke peeche
+ *   chhupe nahi), taake Google har link dekhe aur follow kare.
+ * - Column ka naam heading tag (h3) nahi, sirf link hai. Is tarah
+ *   "Plots for Sale" jaise keywords homepage ki headings nahi bante,
+ *   aur ranking asal pages (/properties/plots/ waghera) ko milti hai.
+ */
+function HomeExploreColumn({ column }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[17px] font-bold text-[#1a3553] md:text-[18px]">
+        {column.href ? (
+          <Link
+            href={column.href}
+            className="relative inline-block pb-1 transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:rounded-full after:bg-[#31C950] after:transition-all after:duration-300 hover:text-[#31C950] hover:after:w-full"
+          >
+            {column.title}
+          </Link>
+        ) : (
+          column.title
+        )}
+      </p>
+
+      <ul className="mt-4 space-y-3">
+        {column.links.map((link) => (
+          <li key={`${link.href}-${link.label}`}>
+            {/* Hover: text green ho kar thora aage khisakta hai aur chhota arrow aata hai */}
+            <Link
+              href={link.href}
+              className="group/link inline-flex items-center gap-1.5 text-[15.5px] leading-snug text-slate-600 transition-all duration-300 hover:translate-x-1 hover:text-[#31C950] md:text-[16px]"
+            >
+              <span>{link.label}</span>
+              <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden
+                className="h-3.5 w-3.5 shrink-0 -translate-x-1 opacity-0 transition-all duration-300 group-hover/link:translate-x-0 group-hover/link:opacity-100"
+              >
+                <path
+                  d="M6 4l4 4-4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 const TRUST_CARD_ACCENTS = {
   shield: {
@@ -513,7 +608,7 @@ function Home({
   Array.isArray(initialNewsPosts) ? initialNewsPosts : [],
 )
   const [homeYoutubeVideos, setHomeYoutubeVideos] = useState([])
-   
+
   useEffect(() => {
     let cancelled = false
 
@@ -631,7 +726,7 @@ function Home({
       window.removeEventListener('resize', measure)
     }
   }, [])
- 
+
 
   useEffect(() => {
     const mq = () => {
@@ -2036,6 +2131,37 @@ function Home({
           aria-hidden
         />
       )}
+
+      {/* SECTION 15 — EXPLORE LINKS (footer se upar alag section) */}
+      <section
+        className="border-t border-slate-200 bg-[#f3f3f3] py-12 md:py-14"
+        aria-labelledby="home-explore-heading"
+      >
+        <div className="container-shell px-4 sm:px-6">
+          <h2
+            id="home-explore-heading"
+            className="border-b border-slate-300/70 pb-4 text-[18px] font-bold uppercase tracking-[0.1em] text-[#1a3553] md:text-[20px]"
+          >
+            Explore Gulberg Greens Islamabad
+          </h2>
+
+          {/*
+           * 3 barabar columns: har column ki chaudai aur
+           * beech ka fasla ek jaisa hai.
+           */}
+          <nav
+            aria-label="Explore properties in Gulberg Greens Islamabad"
+            className="mt-8 grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 lg:gap-x-16"
+          >
+            {HOME_EXPLORE_COLUMNS.map((column) => (
+              <HomeExploreColumn
+                key={column.title}
+                column={column}
+              />
+            ))}
+          </nav>
+        </div>
+      </section>
     </div>
   )
 }
