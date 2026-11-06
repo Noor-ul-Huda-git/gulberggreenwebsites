@@ -1,10 +1,10 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { fontVariables } from '../../lib/fonts.js'
+
 import {
-  brandNavy,
   contactInfo,
   footerAbout,
   mapEmbedUrl,
@@ -25,7 +25,7 @@ function SocialGlyph({ id }) {
     case 'youtube':
       return (
         <svg className={common} viewBox="0 0 24 24" aria-hidden>
-          <path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.3 3.5 12 3.5 12 3.5s-7.3 0-9.4.6A3 3 0 00.5 6.2 40 40 0 000 12a40 40 0 00.6 5.8 3 30 002.1 2.1c2.1.6 9.4.6 9.4.6s7.3 0 9.4-.6a3 3 0 002.1-2.1 40 40 0 00.6-5.8 40 40 0 00-.6-5.8zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" />
+          <path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.3 3.5 12 3.5 12 3.5s-7.3 0-9.4.6A3 3 0 00.5 6.2 40 40 0 000 12a40 40 0 00.6 5.8 3 3 0 002.1 2.1c2.1.6 9.4.6 9.4.6s7.3 0 9.4-.6a3 3 0 002.1-2.1 40 40 0 00.6-5.8 40 40 0 00-.6-5.8zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" />
         </svg>
       )
 
@@ -87,7 +87,7 @@ function ContactRow({ icon, label, children }) {
   return (
     <div className="group flex gap-4">
       <span
-        className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/90 bg-white text-[#1a3553] shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition group-hover:border-[#31C950]/35 group-hover:text-[#31C950]"
+        className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#D3ECE0] bg-white text-[#064E3B] shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition group-hover:border-[#10B981]/35 group-hover:text-[#10B981]"
         aria-hidden
       >
         {icon}
@@ -192,27 +192,29 @@ function Footer() {
     !pathname.startsWith('/contact-us')
 
   return (
-    <footer className="border-t border-slate-200/80">
+    <footer
+      className={`${fontVariables} border-t border-[#D3ECE0] [font-family:var(--font-body),system-ui,sans-serif]`}
+    >
       {showLocationMap ? (
         <section
-          className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_45%,#f9fafb_100%)]"
+          className="relative overflow-hidden bg-[linear-gradient(180deg,#EEF8F3_0%,#ffffff_45%,#EEF8F3_100%)]"
           aria-labelledby="footer-map-heading"
         >
           <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-slate-200/90 to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D3ECE0] to-transparent"
             aria-hidden
           />
 
           <div className="container-shell px-4 py-12 sm:px-6 md:py-16 lg:py-[4.25rem]">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
               <div className="max-w-xl lg:max-w-2xl">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.38em] text-[#31C950] md:text-xs">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.38em] text-[#10B981] md:text-xs">
                   Location
                 </p>
 
                 <h2
                   id="footer-map-heading"
-                  className="mt-3 font-[Poppins,Manrope,system-ui,sans-serif] text-2xl font-semibold tracking-[-0.03em] text-[#1a3553] sm:text-[1.75rem] md:text-[2rem]"
+                  className="mt-3 [font-family:var(--font-display),Georgia,serif] text-2xl font-semibold tracking-[-0.03em] text-[#064E3B] sm:text-[1.75rem] md:text-[2rem]"
                 >
                   Gulberg Greens, Islamabad
                 </h2>
@@ -250,20 +252,20 @@ function Footer() {
 
       {showAboutContactBlock ? (
         <section
-          className="border-t border-slate-100 bg-white"
+          className="border-t border-[#D3ECE0] bg-white"
           aria-labelledby="footer-about-heading"
         >
           <div className="container-shell px-4 py-14 sm:px-6 md:py-16 lg:py-20">
             <div className="grid gap-12 lg:grid-cols-12 lg:gap-10 lg:gap-x-14">
               <div className="lg:col-span-6">
                 <div
-                  className="inline-flex h-1 w-10 rounded-full bg-[#31C950]"
+                  className="inline-flex h-1 w-10 rounded-full bg-[#10B981]"
                   aria-hidden
                 />
 
                 <h2
                   id="footer-about-heading"
-                  className="mt-5 font-[Poppins,Manrope,system-ui,sans-serif] text-xl font-semibold tracking-[-0.02em] text-[#1a3553] md:text-2xl"
+                  className="mt-5 [font-family:var(--font-display),Georgia,serif] text-xl font-semibold tracking-[-0.02em] text-[#064E3B] md:text-2xl"
                 >
                   Official sales &amp; marketing platform
                 </h2>
@@ -272,7 +274,7 @@ function Footer() {
                   {footerAbout}
                 </p>
 
-                <div className="mt-8 border-t border-slate-100 pt-8">
+                <div className="mt-8 border-t border-[#D3ECE0] pt-8">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
                     Connect
                   </p>
@@ -287,7 +289,7 @@ function Footer() {
                           href={item.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/90 bg-white text-[#1a3553] shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:border-[#31C950]/55 hover:bg-[#31C950] hover:text-white hover:shadow-[0_8px_24px_-8px_rgba(49,201,80,0.55)]"
+                          className="flex h-11 w-11 items-center justify-center rounded-full border border-[#D3ECE0] bg-white text-[#064E3B] shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:border-[#10B981]/55 hover:bg-[#10B981] hover:text-white hover:shadow-[0_8px_24px_-8px_rgba(16,185,129,0.55)]"
                           aria-label={item.label}
                         >
                           <SocialGlyph id={item.id} />
@@ -298,12 +300,12 @@ function Footer() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-100 bg-slate-50/40 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] lg:col-span-6 lg:p-10">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.38em] text-[#31C950]">
+              <div className="rounded-2xl border border-[#D3ECE0] bg-[#EEF8F3]/60 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] lg:col-span-6 lg:p-10">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.38em] text-[#10B981]">
                   Get in touch
                 </p>
 
-                <h2 className="mt-3 font-[Poppins,Manrope,system-ui,sans-serif] text-xl font-semibold tracking-[-0.02em] text-[#1a3553] md:text-2xl">
+                <h2 className="mt-3 [font-family:var(--font-display),Georgia,serif] text-xl font-semibold tracking-[-0.02em] text-[#064E3B] md:text-2xl">
                   Sales office
                 </h2>
 
@@ -315,7 +317,7 @@ function Footer() {
                   <ContactRow label="Email" icon={<IconMail />}>
                     <a
                       href={`mailto:${contactInfo.email}`}
-                      className="font-medium text-[#1a3553] underline decoration-slate-300 underline-offset-[5px] transition hover:decoration-[#31C950] hover:text-[#31C950]"
+                      className="font-medium text-[#064E3B] underline decoration-slate-300 underline-offset-[5px] transition hover:decoration-[#10B981] hover:text-[#10B981]"
                     >
                       {contactInfo.email}
                     </a>
@@ -324,7 +326,7 @@ function Footer() {
                   <ContactRow label="Phone" icon={<IconPhone />}>
                     <a
                       href="tel:+923310000060"
-                      className="font-medium text-[#1a3553] underline decoration-slate-300 underline-offset-[5px] transition hover:decoration-[#31C950] hover:text-[#31C950]"
+                      className="font-medium text-[#064E3B] underline decoration-slate-300 underline-offset-[5px] transition hover:decoration-[#10B981] hover:text-[#10B981]"
                     >
                       {contactInfo.phone}
                     </a>
@@ -342,68 +344,24 @@ function Footer() {
         </section>
       ) : null}
 
-      <div
-        className="border-t border-white/[0.1]"
-        style={{ backgroundColor: brandNavy }}
-      >
-        <div className="container-shell flex flex-col gap-6 px-4 py-8 text-white sm:px-6 md:flex-row md:items-center md:justify-between md:gap-8 md:py-7">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-10">
-            <div>
-              <p className="text-[1.35rem] font-semibold leading-[0.9] tracking-[-0.03em] text-white">
-                GULBERG
-              </p>
+      {/* =====================================================
+          MAIN FOOTER — sirf copyright + gulberggreens.com.pk
+          (logo aur contact column nahi — homepage design)
+          ===================================================== */}
 
-              <p className="text-[1.35rem] font-semibold leading-[0.9] tracking-[-0.03em] text-white">
-                GREENS
-              </p>
-            </div>
+      <div className="bg-[#064E3B] text-[#CDEBDD]">
+        <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-4 px-[18px] py-3 text-[13px] md:px-7">
+          <p className="m-0">
+            © {new Date().getFullYear()} Gulberg Greens Islamabad. All rights
+            reserved.
+          </p>
 
-            <p className="max-w-xs text-[11px] leading-relaxed text-white/80">
-              © {new Date().getFullYear()} Gulberg Greens Islamabad. All
-              rights reserved.
-            </p>
-          </div>
-
-          <nav
-            className="flex flex-wrap gap-x-6 gap-y-3 text-[12px] font-medium tracking-wide"
-            aria-label="Footer"
-            style={{ display: 'none' }}
+          <a
+            href="https://gulberggreens.com.pk/"
+            className="font-bold !text-[#A7F3D0] transition-colors hover:!text-white"
           >
-            <Link
-              href="/"
-              className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
-            >
-              Home
-            </Link>
-
-            <Link
-              href="/properties/"
-              className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
-            >
-              Properties
-            </Link>
-
-            <Link
-              href="/latest-updates/"
-              className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
-            >
-              News
-            </Link>
-
-            <Link
-              href="/gulberg-map/"
-              className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
-            >
-              Gulberg Map
-            </Link>
-
-            <Link
-              href="/contact/"
-              className="text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline"
-            >
-              Contact Us
-            </Link>
-          </nav>
+            gulberggreens.com.pk
+          </a>
         </div>
       </div>
     </footer>

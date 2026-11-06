@@ -14,6 +14,15 @@ function getApiBase() {
   return 'http://127.0.0.1:8000/api'
 }
 
+/*
+ * Server par listings ka jawab sirf 60 second tak save (cache) rehta hai.
+ * Is se admin mein delete/add hui listing zyada se zyada 1 minute mein
+ * website par sahi dikhti hai, aur page har visitor ke liye dobara
+ * saari listings load nahi karta (tez khulta hai).
+ * Browser mein ye setting koi asar nahi karti.
+ */
+const PROPERTIES_REVALIDATE_SECONDS = 60
+
 export async function fetchProperties(params = {}) {
   const url = new URL(`${getApiBase()}/properties/`)
 
@@ -23,7 +32,9 @@ export async function fetchProperties(params = {}) {
     }
   })
 
-  const response = await fetch(url)
+  const response = await fetch(url, {
+    next: { revalidate: PROPERTIES_REVALIDATE_SECONDS },
+  })
 
   if (!response.ok) {
     throw new Error('Failed to fetch properties')
@@ -44,7 +55,9 @@ export async function fetchProperty({ slug, categorySlug, block } = {}) {
       ? `${getApiBase()}/properties/${encodedCategory}/${encodedBlock}/${encodedSlug}/`
       : `${getApiBase()}/properties/${encodedSlug}/`
 
-  const response = await fetch(detailPath)
+  const response = await fetch(detailPath, {
+    next: { revalidate: PROPERTIES_REVALIDATE_SECONDS },
+  })
 
   if (response.status === 404) {
     return null

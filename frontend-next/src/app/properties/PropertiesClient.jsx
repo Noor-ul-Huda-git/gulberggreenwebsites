@@ -54,7 +54,6 @@ const SIZE_OPTIONS = [
   { value: '40', label: '2 Kanal' },
   { value: '80', label: '4 Kanal' },
   { value: '100', label: '5 Kanal' },
-  { value: '180', label: '9 Kanal' },
   { value: '200', label: '10 Kanal' },
 ]
 

@@ -527,14 +527,31 @@ const [similarByAgent, setSimilarByAgent] = useState(
 
     document.title = title
     upsertMeta('description', description)
-    upsertMeta('robots', 'index, follow')
+    upsertMeta('robots', 'noindex, nofollow')
     upsertCanonical(canonical)
 
     return () => {
       document.title = previousTitle
-      if (previousDescription) upsertMeta('description', previousDescription)
-      if (previousCanonical) upsertCanonical(previousCanonical)
-      if (previousRobots) upsertMeta('robots', previousRobots)
+
+      // Detail page band ho to apne tags hata do, taake
+      // /properties/ jaise pages par listing ke tags na rahein
+      if (previousDescription) {
+        upsertMeta('description', previousDescription)
+      } else {
+        document.head.querySelector('meta[name="description"]')?.remove()
+      }
+
+      if (previousCanonical) {
+        upsertCanonical(previousCanonical)
+      } else {
+        document.head.querySelector('link[rel="canonical"]')?.remove()
+      }
+
+      if (previousRobots) {
+        upsertMeta('robots', previousRobots)
+      } else {
+        document.head.querySelector('meta[name="robots"]')?.remove()
+      }
     }
   }, [property])
 
@@ -1266,7 +1283,3 @@ const [similarByAgent, setSimilarByAgent] = useState(
 }
 
 export default PropertyDetail
-
-
-
-

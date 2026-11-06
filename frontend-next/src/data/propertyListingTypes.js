@@ -5,7 +5,7 @@ export const LISTING_TYPE_OPTIONS = [
   { value: 'commercial_plots', label: 'Commercial Plots' },
   { value: 'farmhouse', label: 'Farmhouse' },
   { value: 'house', label: 'House' },
-  { value: 'flat', label: 'Flat' },
+  { value: 'flat', label: 'Apartment' },
   { value: 'office', label: 'Office' },
   { value: 'shop', label: 'Shop' },
 ]
@@ -67,14 +67,17 @@ export const PROPERTY_CATEGORY_SEO = {
     h1: 'Plots for Sale in Gulberg Greens Islamabad',
     canonical: 'https://gulberggreens.com.pk/properties/plots/',
   },
-  flat: {
+  /* URL ab '/properties/apartments/' hai. listingType 'flat' hi rehna chahiye —
+     yeh Django ka value hai, isay badla to properties nahi aayengi.
+     Purane '/properties/flat/...' URLs ka 301 redirect next.config.js mein hai. */
+  apartments: {
     listingType: 'flat',
-    breadcrumb: 'Flats',
-    metaTitle: 'Flats for Sale & Rent in Gulberg Greens Islamabad',
+    breadcrumb: 'Apartments',
+    metaTitle: 'Apartments for Sale & Rent in Gulberg Greens Islamabad',
     metaDescription:
-      'Find modern studio, 1 bedroom, 2 bedroom and 3 bedroom flats for sale and rent in Gulberg Greens Islamabad. Quality construction, secure living and all essential amenities.',
-    h1: 'Flats for Sale and Rent in Gulberg Greens Islamabad',
-    canonical: 'https://gulberggreens.com.pk/properties/flat/',
+      'Find modern studio, 1 bedroom, 2 bedroom and 3 bedroom apartments for sale and rent in Gulberg Greens Islamabad. Quality construction, secure living and all essential amenities.',
+    h1: 'Apartments for Sale and Rent in Gulberg Greens Islamabad',
+    canonical: 'https://gulberggreens.com.pk/properties/apartments/',
   },
   'commercial-plots': {
     listingType: 'commercial_plots',
@@ -132,7 +135,7 @@ export const PROPERTY_LISTING_TYPE_SLUGS = Object.fromEntries(
 
 export const PROPERTY_TYPE_LABELS = {
   plots: 'Plots',
-  flat: 'Flats',
+  flat: 'Apartments',
   house: 'Houses',
   farmhouse: 'Farmhouses',
   commercial_plots: 'Commercial Plots',
@@ -142,7 +145,7 @@ export const PROPERTY_TYPE_LABELS = {
 
 export const PROPERTY_TYPE_DESCRIPTIONS = {
   plots: 'residential plots',
-  flat: 'modern flats and apartments',
+  flat: 'modern apartments',
   house: 'luxury houses',
   farmhouse: 'luxury farmhouses',
   commercial_plots: 'commercial plots',

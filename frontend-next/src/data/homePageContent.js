@@ -109,6 +109,23 @@ export const HOME_BLOCKS = {
       { label: 'Block D', to: '/properties/plots/block-d/' },
       { label: 'Block E', to: '/properties/plots/block-e/' },
       { label: 'Block F', to: '/properties/plots/block-f/' },
+      { label: 'Block G', to: '/properties/plots/block-g/' },
+      { label: 'Block H', to: '/properties/plots/block-h/' },
+      { label: 'Block I', to: '/properties/plots/block-i/' },
+      { label: 'Block J', to: '/properties/plots/block-j/' },
+      { label: 'Block K', to: '/properties/plots/block-k/' },
+      { label: 'Block L', to: '/properties/plots/block-l/' },
+      { label: 'Block M', to: '/properties/plots/block-m/' },
+      { label: 'Block N', to: '/properties/plots/block-n/' },
+      { label: 'Block O', to: '/properties/plots/block-o/' },
+      { label: 'Block P', to: '/properties/plots/block-p/' },
+      { label: 'Block Q', to: '/properties/plots/block-q/' },
+      { label: 'Block R', to: '/properties/plots/block-r/' },
+      { label: 'Block S', to: '/properties/plots/block-s/' },
+      { label: 'Block T', to: '/properties/plots/block-t/' },
+      { label: 'Block U', to: '/properties/plots/block-u/' },
+      { label: 'Block V', to: '/properties/plots/block-v/' },
+      { label: 'Executive Block', to: '/properties/plots/block-ext/' },
     ],
   },
   farmhouse: {
@@ -120,6 +137,7 @@ export const HOME_BLOCKS = {
       { label: 'Block C', to: '/properties/farm-house/block-c/' },
       { label: 'Block D', to: '/properties/farm-house/block-d/' },
       { label: 'Block E', to: '/properties/farm-house/block-e/' },
+      { label: 'Executive Block', to: '/properties/farm-house/block-ext/' },
     ],
   },
 }
@@ -130,6 +148,8 @@ export const HOME_INVESTMENT = {
   installment: {
     h3: 'New Installment Plans Available — 2026',
     body: 'IBECHS has announced new residential plots on installment in Block A Executive Premium — 5 Marla, 7 Marla, 10 Marla 1 Kanal and 2 Kanal — with 30% down payment and a 2-year simple installment plan. CDA layout plan approved. Both Pakistani residents and overseas Pakistanis are eligible to apply.',
+    /** Investment box ke chhote badges (homepage design). */
+    badges: ['30% down payment', '2-year plan', 'CDA layout approved', 'Overseas eligible'],
   },
   cta: { label: 'Contact Our Investment Team', to: '/contact/' },
   image: {
@@ -160,7 +180,7 @@ export const HOME_LOCATION = {
   visit: {
     h3: 'How to Visit Gulberg Greens Sales Office',
     lines: [
-      'Sales Office: HM Tower, 5th Floor, Office No. 402, Gulberg Greens Islamabad',
+      'Sales Office: Gulberg Expy, Gulberg Greens Gulberg Greens Block B Islamabad, 44000, Pakistan',
       'Mon–Sat: 9:00 AM – 6:00 PM  |  Sunday by appointment',
       'Phone: +92 331 000 0060',
       'Email: info@gulberggreens.com.pk',

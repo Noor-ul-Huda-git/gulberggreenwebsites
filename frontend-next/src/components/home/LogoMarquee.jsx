@@ -1,24 +1,36 @@
+'use client'
+
 import { useEffect, useRef, useState } from 'react'
 
-const LIST_CLASS =
-  'flex shrink-0 items-center gap-10 py-4 pl-4 pr-4 md:gap-14 md:pl-6 md:pr-6 lg:gap-16 lg:py-5'
+/* Har logo ek safed "tile" card mein — emerald homepage design */
+const LIST_CLASS = 'flex shrink-0 items-center gap-[18px] py-2 pr-[18px]'
 
 const FIGURE_CLASS =
-  'm-0 flex h-24 w-32 items-center justify-center sm:h-28 sm:w-36 md:h-32 md:w-44 lg:h-36 lg:w-48'
+  'm-0 flex h-20 w-[130px] items-center justify-center rounded-2xl border border-[#D3ECE0] bg-white p-3 md:h-[100px] md:w-[170px]'
 
 const IMG_CLASS =
   'max-h-full w-auto max-w-full object-contain opacity-90 transition duration-300 hover:opacity-100'
 
+/** Edges par logos dheere se gayab hon (kisi bhi background par chalta hai) */
+const EDGE_FADE =
+  'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)'
+
 /** px/s when not dragging */
 const SPEED_DEFAULT = -52
 
-function LogoMarquee({ logos }) {
+/**
+ * reverse = true → strip ulti direction mein chalti hai (approvals wali strip).
+ */
+function LogoMarquee({ logos, reverse = false, label }) {
   const trackRef = useRef(null)
   const offsetRef = useRef(0)
   const draggingRef = useRef(false)
+  const hoverRef = useRef(false)
   const lastPointerXRef = useRef(0)
   const rafRef = useRef(0)
   const [prefersReduced, setPrefersReduced] = useState(false)
+
+  const speed = reverse ? -SPEED_DEFAULT : SPEED_DEFAULT
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
@@ -45,8 +57,9 @@ function LogoMarquee({ logos }) {
         return
       }
 
-      if (!draggingRef.current) {
-        offsetRef.current += SPEED_DEFAULT * dt
+      // Mouse upar ho to strip ruk jati hai (design ke mutabiq)
+      if (!draggingRef.current && !hoverRef.current) {
+        offsetRef.current += speed * dt
         offsetRef.current = ((offsetRef.current % loopW) + loopW) % loopW
         track.style.transform = `translate3d(${-offsetRef.current}px,0,0)`
       }
@@ -56,7 +69,7 @@ function LogoMarquee({ logos }) {
 
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [prefersReduced])
+  }, [prefersReduced, speed])
 
   const applyOffsetDelta = (dx) => {
     const track = trackRef.current
@@ -96,15 +109,32 @@ function LogoMarquee({ logos }) {
     draggingRef.current = false
   }
 
+  const onPointerEnter = (e) => {
+    if (e.pointerType === 'mouse') hoverRef.current = true
+  }
+
+  const onPointerLeave = () => {
+    hoverRef.current = false
+  }
+
   return (
     <div
       className={
         prefersReduced
-          ? 'relative overflow-hidden'
-          : 'relative cursor-grab touch-none select-none overflow-hidden active:cursor-grabbing'
+          ? 'relative w-full min-w-0 overflow-hidden'
+          : 'relative w-full min-w-0 cursor-grab touch-pan-y select-none overflow-hidden active:cursor-grabbing'
+      }
+      style={
+        prefersReduced
+          ? undefined
+          : { WebkitMaskImage: EDGE_FADE, maskImage: EDGE_FADE }
       }
       role={!prefersReduced ? 'region' : undefined}
-      aria-label={!prefersReduced ? 'Logo strip. Click and drag to scroll horizontally.' : undefined}
+      aria-label={
+        !prefersReduced
+          ? label || 'Logo strip. Click and drag to scroll horizontally.'
+          : undefined
+      }
       {...(!prefersReduced
         ? {
             onPointerDown,
@@ -112,62 +142,60 @@ function LogoMarquee({ logos }) {
             onPointerUp: endDrag,
             onPointerCancel: endDrag,
             onLostPointerCapture,
+            onPointerEnter,
+            onPointerLeave,
           }
         : {})}
     >
-      <div
-        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-white to-transparent sm:w-16 md:w-24"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-white to-transparent sm:w-16 md:w-24"
-        aria-hidden
-      />
-
-      <div className="overflow-hidden py-2">
-        {prefersReduced ? (
-          <ul className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 py-4 md:gap-x-14 lg:gap-x-16">
-            {logos.map((logo) => (
-              <li key={logo.src} className="flex list-none">
-                <figure className={FIGURE_CLASS}>
-                  <img
-                    src={logo.src}
-                    alt={logo.alt}
-                    className={IMG_CLASS}
-                    draggable={false}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </figure>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div ref={trackRef} className="logo-marquee-track flex w-max will-change-transform">
-            {[0, 1].map((dup) => (
-              <ul key={dup} className={LIST_CLASS} aria-hidden={dup === 1}>
-               {logos.map((logo, index) => (
-  <li
-    key={`${dup}-${index}-${logo.src}`}
-    className="flex list-none shrink-0"
-  >
-                    <figure className={FIGURE_CLASS}>
-                      <img
-                        src={logo.src}
-                        alt={logo.alt}
-                        className={IMG_CLASS}
-                        draggable={false}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </figure>
-                  </li>
-                ))}
-              </ul>
-            ))}
-          </div>
-        )}
-      </div>
+      {prefersReduced ? (
+        <ul className="m-0 flex list-none flex-wrap items-center justify-center gap-[18px] p-0 py-2">
+          {logos.map((logo, index) => (
+            <li key={`${index}-${logo.src}`} className="flex list-none">
+              <figure className={FIGURE_CLASS}>
+                <img
+                  src={logo.src}
+                  alt={logo.alt}
+                  className={IMG_CLASS}
+                  draggable={false}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div
+          ref={trackRef}
+          className="logo-marquee-track flex w-max will-change-transform"
+        >
+          {[0, 1].map((dup) => (
+            <ul
+              key={dup}
+              className={`m-0 list-none p-0 ${LIST_CLASS}`}
+              aria-hidden={dup === 1}
+            >
+              {logos.map((logo, index) => (
+                <li
+                  key={`${dup}-${index}-${logo.src}`}
+                  className="flex shrink-0 list-none"
+                >
+                  <figure className={FIGURE_CLASS}>
+                    <img
+                      src={logo.src}
+                      alt={dup === 1 ? '' : logo.alt}
+                      className={IMG_CLASS}
+                      draggable={false}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </figure>
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
