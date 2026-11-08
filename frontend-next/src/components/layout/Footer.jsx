@@ -349,23 +349,112 @@ function Footer() {
           (logo aur contact column nahi — homepage design)
           ===================================================== */}
 
+            {/* MAIN FOOTER */}
       <div className="bg-[#064E3B] text-[#CDEBDD]">
-        <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-4 px-[18px] py-3 text-[13px] md:px-7">
-          <p className="m-0">
-            © {new Date().getFullYear()} Gulberg Greens Islamabad. All rights
-            reserved.
-          </p>
+        <div className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-6 md:py-12">
 
-          <a
-            href="https://gulberggreens.com.pk/"
-            className="font-bold !text-[#A7F3D0] transition-colors hover:!text-white"
-          >
-            gulberggreens.com.pk
-          </a>
+          <div className="grid grid-cols-1 gap-9 sm:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+
+            {/* About */}
+            <div>
+              <h3 className="text-lg font-semibold text-white">
+                Gulberg Greens Islamabad
+              </h3>
+
+              <p className="mt-3 max-w-sm text-sm leading-7 text-[#CDEBDD]/85">
+                {footerAbout}
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-white">
+                Quick Links
+              </h3>
+
+              <nav className="mt-4 flex flex-col items-start gap-3 text-sm">
+                <a
+                  href="/"
+                  className="transition-colors hover:text-white"
+                >
+                  Home
+                </a>
+
+                <a
+                  href="/latest-updates/"
+                  className="transition-colors hover:text-white"
+                >
+                  Latest Updates
+                </a>
+
+                <a
+                  href="/contact/"
+                  className="transition-colors hover:text-white"
+                >
+                  Contact Us
+                </a>
+
+                <a
+                  href="/properties/"
+                  className="transition-colors hover:text-white"
+                >
+                  Properties
+                </a>
+              </nav>
+            </div>
+
+            {/* Social Media */}
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-white">
+                Follow Us
+              </h3>
+
+              <p className="mt-3 text-sm text-[#CDEBDD]/85">
+                Connect with Gulberg Greens on our social platforms.
+              </p>
+
+              <ul
+                className="mt-5 flex flex-wrap gap-3"
+                aria-label="Social media links"
+              >
+                {socialLinks.map((item) => (
+                  <li key={item.id}>
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={item.label}
+                      title={item.label}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-all duration-200 hover:border-[#A7F3D0] hover:bg-[#10B981] hover:shadow-lg"
+                    >
+                      <SocialGlyph id={item.id} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/15 pt-6 text-center text-xs sm:flex-row sm:text-left md:text-[13px]">
+
+            <p className="m-0">
+              © {new Date().getFullYear()} Gulberg Greens Islamabad. All rights
+              reserved.
+            </p>
+
+            <a
+              href="https://gulberggreens.com.pk/"
+              className="font-bold !text-[#A7F3D0] transition-colors hover:!text-white"
+            >
+              gulberggreens.com.pk
+            </a>
+
+          </div>
         </div>
       </div>
-    </footer>
+       </footer>
   )
 }
-
 export default Footer

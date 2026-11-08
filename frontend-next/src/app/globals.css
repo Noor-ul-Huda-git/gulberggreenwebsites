@@ -634,6 +634,104 @@ iframe {
   .gg-fitem button { padding: 15px 0; }
   .gg-about h3 { font-size: 22px; }
 
-  .gg-wa-rail { display: none; }
-  .gg-dial { display: flex; }
+    .gg-wa-rail { display: none; }
+
+  /* Home mobile: fixed bottom Call + WhatsApp bar */
+  .gg-dial {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    padding: 9px 12px calc(9px + env(safe-area-inset-bottom));
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.10);
+    pointer-events: auto;
+  }
+
+  .gg-dial-acts {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .gg-dact {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 9px;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    padding: 7px 10px;
+    border-radius: 10px;
+    text-decoration: none;
+  }
+
+  .gg-dact-lbl {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .gg-dact-ico {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    box-shadow: none;
+  }
+
+  .gg-dact-ico svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .gg-dact-call {
+    background: var(--gg-forest);
+    color: #ffffff;
+  }
+
+  .gg-dact-call .gg-dact-ico {
+    background: transparent;
+    color: #ffffff;
+  }
+
+  .gg-dact-wa {
+    background: var(--gg-wa);
+    color: #063a1b;
+  }
+
+  .gg-dact-wa .gg-dact-ico {
+    background: transparent;
+    color: #063a1b;
+  }
+
+  .gg-dial-btn {
+    display: none;
+  }
+
+  .gg-home {
+    padding-bottom: 85px;
+  }
+}
+@media (max-width: 760px) {
+  footer > div:last-child > div {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  }
 }
