@@ -1005,21 +1005,11 @@ function Home({ initialFeaturedListings = [], initialNewsPosts = [] }) {
 
             <p>{HOME_HERO.body}</p>
 
-            <div className="gg-hero-cta">
+                        <div className="gg-hero-cta">
               <Link href={HOME_LISTINGS.cta.to} className="gg-btn gg-btn-emerald">
                 {HOME_LISTINGS.cta.label}
                 <Icon name="arrow" />
               </Link>
-              <a
-                href={whatsAppContactHref()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="gg-btn gg-btn-wa"
-                aria-label="Chat on WhatsApp about Gulberg Greens"
-              >
-                <WhatsAppIcon />
-                WhatsApp
-              </a>
             </div>
           </div>
         </section>
