@@ -257,12 +257,10 @@ function cardImageUrl(p) {
   return null
 }
 
-function primaryListingPhone(p) {
-  const a1 = p.agency_name?.trim() || ''
-  const a2 = p.agent_phone?.trim() || ''
-  if (hasPhoneDigits(a1)) return a1
-  if (hasPhoneDigits(a2)) return a2
-  return contactInfo.phone
+const LISTING_AGENT_PHONE = '03180541235'
+
+function primaryListingPhone() {
+  return LISTING_AGENT_PHONE
 }
 
 function SimilarListingsCarousel({ title, items }) {
@@ -676,18 +674,13 @@ const [similarByAgent, setSimilarByAgent] = useState(
 
   const activeUrl = images[activeIndex] ?? null
   const addressLine = property.location || (property.block ? `Block ${property.block} Â· Gulberg Greens, Islamabad` : 'Gulberg Greens, Islamabad')
-  const callContacts = [
-    {
-      key: 'agent-1',
-      label: property.agent_name?.trim() || 'Agent 1',
-      phone: property.agency_name?.trim() || '',
-    },
-    {
-      key: 'agent-2',
-      label: property.agent_mobile?.trim() || 'Agent 2',
-      phone: property.agent_phone?.trim() || '',
-    },
-  ].filter((item) => hasPhoneDigits(item.phone))
+ const callContacts = [
+  {
+    key: 'agent-1',
+    label: 'Muhammad Azan',
+    phone: '03180541235',
+  },
+]
   const effectiveCallContacts = callContacts.length
     ? callContacts
     : [{ key: 'office-contact', label: 'Office contact', phone: contactInfo.phone }]
@@ -1004,7 +997,7 @@ const [similarByAgent, setSimilarByAgent] = useState(
                   CALL
                 </button>
                 <a
-                  href={whatsappHref(property, primaryContactPhone)}
+                  href={whatsappHref(property)}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setActiveCta('whatsapp')}

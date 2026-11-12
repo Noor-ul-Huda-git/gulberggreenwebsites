@@ -54,6 +54,38 @@ import regAuthCopyUntitled2 from '../../assets/Authorities/Copy-of-Untitled-2-15
 
 const DEFAULT_WA_MESSAGE =
   'Assalam o Alaikum, I would like more information about Gulberg Greens Islamabad.'
+  function normalizeWhatsAppPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '')
+
+  if (!digits) return ''
+
+  if (digits.startsWith('92')) {
+    return digits
+  }
+
+  if (digits.startsWith('0')) {
+    return `92${digits.slice(1)}`
+  }
+
+  return digits
+}
+
+function getPropertyAgentPhone(property) {
+  const candidates = [
+    property?.agent_mobile,
+    property?.agent_phone,
+  ]
+
+  for (const candidate of candidates) {
+    const phone = String(candidate || '').trim()
+
+    if (phone && /\d{7,}/.test(phone.replace(/\D/g, ''))) {
+      return phone
+    }
+  }
+
+  return ''
+}
 
 function whatsAppContactHref(message = DEFAULT_WA_MESSAGE) {
   let d = String(contactInfo.phone || '').replace(/\D/g, '')
@@ -358,15 +390,39 @@ function homeListingArea(p) {
   return `${displayValue} ${unit}${suffix}`
 }
 
-function homeListingWhatsAppHref(property, propertyHref, imageUrl) {
+function homeListingWhatsAppHref(property, propertyHref) {
+  const agentPhone = normalizeWhatsAppPhone(
+    getPropertyAgentPhone(property)
+  )
+
+  if (!agentPhone) {
+    return whatsAppContactHref(
+      [
+        'Assalam o Alaikum, I am interested in this property:',
+        `Property: ${property.title || 'Gulberg Greens property'}`,
+        `Property link: https://gulberggreens.com.pk${propertyHref}`,
+      ].join('\n')
+    )
+  }
+
+  const absolutePropertyUrl = `https://gulberggreens.com.pk${
+    propertyHref.startsWith('/') ? propertyHref : `/${propertyHref}`
+  }`
+
   const message = [
     'Assalam o Alaikum, I am interested in this property:',
     `Property: ${property.title || 'Gulberg Greens property'}`,
-    `Property link: ${propertyHref}`,
-    ...(imageUrl ? [`Image link: ${imageUrl}`] : []),
-  ].join('\n')
+    `Price: ${formatCompactPkr(property.price)}`,
+    property.location ? `Location: ${property.location}` : null,
+    property.block ? `Block: ${property.block}` : null,
+    homeListingArea(property) ? `Area: ${homeListingArea(property)}` : null,
+    '',
+    `Property Link: ${absolutePropertyUrl}`,
+  ]
+    .filter((line) => line !== null)
+    .join('\n')
 
-  return whatsAppContactHref(message)
+  return `https://wa.me/${agentPhone}?text=${encodeURIComponent(message)}`
 }
 
 function formatPostDate(value) {
@@ -1126,7 +1182,7 @@ function Home({ initialFeaturedListings = [], initialNewsPosts = [] }) {
 
                         <div className="gg-acts">
                           <a
-                            href={homeListingWhatsAppHref(p, propertyHref, fullImg)}
+                           href={homeListingWhatsAppHref(p, propertyHref)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="gg-btn gg-btn-wa"
@@ -1136,10 +1192,12 @@ function Home({ initialFeaturedListings = [], initialNewsPosts = [] }) {
                             WhatsApp
                           </a>
                           <a
-                            href={TEL_HREF}
-                            className="gg-btn gg-btn-forest"
-                            aria-label={`Call about ${p.title}`}
-                          >
+  href={`tel:${String(
+    getPropertyAgentPhone(p) || contactInfo.phone
+  ).replace(/[^\d+]/g, '')}`}
+  className="gg-btn gg-btn-forest"
+  aria-label={`Call about ${p.title}`}
+>
                             <Icon name="phone" />
                             Call
                           </a>

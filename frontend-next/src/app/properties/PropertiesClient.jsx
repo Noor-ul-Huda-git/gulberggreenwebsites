@@ -729,52 +729,104 @@ function getSizeMeta(property) {
   return meta
 }
 
-function whatsappHref(property, propertyHref, imageUrl) {
-  const phone = contactInfo.phone.replace(/\D/g, '')
+function normalizeWhatsAppPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '')
 
-  const absolutePropertyUrl = propertyHref.startsWith('http')
-    ? propertyHref
-    : `https://gulberggreens.com.pk${
-        propertyHref.startsWith('/') ? '' : '/'
-      }${propertyHref}`
+  if (!digits) return ''
 
-  let absoluteImageUrl = imageUrl || ''
+  if (digits.startsWith('92')) {
+    return digits
+  }
 
-  if (absoluteImageUrl) {
-    if (
-      absoluteImageUrl.startsWith(
-        'http://127.0.0.1:8000',
-      )
-    ) {
-      absoluteImageUrl = absoluteImageUrl.replace(
-        'http://127.0.0.1:8000',
-        'https://gulberggreens.com.pk',
-      )
-    } else if (absoluteImageUrl.startsWith('/')) {
-      absoluteImageUrl = `https://gulberggreens.com.pk${absoluteImageUrl}`
-    } else if (!absoluteImageUrl.startsWith('http')) {
-      absoluteImageUrl = `https://gulberggreens.com.pk/${absoluteImageUrl.replace(
-        /^\/+/,
-        '',
-      )}`
+  if (digits.startsWith('0')) {
+    return `92${digits.slice(1)}`
+  }
+
+  return digits
+}
+
+function getPropertyAgentPhone(property) {
+  const candidates = [
+    property?.agent_mobile,
+    property?.agent_phone,
+  ]
+
+  for (const candidate of candidates) {
+    const phone = String(candidate || '').trim()
+    const digits = phone.replace(/\D/g, '')
+
+    if (digits.length >= 7) {
+      return phone
     }
   }
 
-  const text = encodeURIComponent(
-    [
-      `Assalam o Alaikum, I am interested in: ${
-        property?.title || ''
-      }`,
-      '',
-      `Property Link: ${absolutePropertyUrl}`,
-      `Property Image: ${
-        absoluteImageUrl ||
-        'Image available on the property page'
-      }`,
-    ].join('\n'),
+  return ''
+}
+
+function normalizeWhatsAppPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '')
+
+  if (digits.startsWith('92')) {
+    return digits
+  }
+
+  if (digits.startsWith('0')) {
+    return `92${digits.slice(1)}`
+  }
+
+  return digits
+}
+
+function whatsappHref(property, propertyHref) {
+  const agentPhone = normalizeWhatsAppPhone(
+    getPropertyAgentPhone(property),
   )
 
-  return `https://wa.me/${phone}?text=${text}`
+  const propertyUrl = `https://gulberggreens.com.pk${
+    propertyHref?.startsWith('/')
+      ? propertyHref
+      : `/${propertyHref || ''}`
+  }`
+
+  const message = [
+    'Assalam o Alaikum, I am interested in this property:',
+    `Property: ${property?.title || 'Gulberg Greens property'}`,
+    `Price: ${formatCompactPkr(property?.price)}`,
+    property?.location
+      ? `Location: ${property.location}`
+      : null,
+    property?.block
+      ? `Block: ${property.block}`
+      : null,
+    formatArea(property)
+      ? `Area: ${formatArea(property)}`
+      : null,
+    '',
+    `Property Link: ${propertyUrl}`,
+  ]
+    .filter((line) => line !== null)
+    .join('\n')
+
+  /*
+   * Agar property ka agent number available hai:
+   * WhatsApp directly agent ko jayega.
+   *
+   * Agar agent number nahi hai:
+   * official Gulberg Greens number use hoga.
+   */
+  if (agentPhone) {
+    return `https://wa.me/${agentPhone}?text=${encodeURIComponent(
+      message,
+    )}`
+  }
+
+  const officePhone = normalizeWhatsAppPhone(
+    contactInfo.phone,
+  )
+
+  return `https://wa.me/${officePhone}?text=${encodeURIComponent(
+    message,
+  )}`
 }
 
 /**
@@ -2025,12 +2077,11 @@ function Properties({ initialItems = [] }) {
                   p.images.length > 0
                     ? p.images.length
                     : 1
+                const agentPhone = getPropertyAgentPhone(p)
 
-                const telHref =
-                  `tel:${contactInfo.phone.replace(
-                    /[^\d+]/g,
-                    '',
-                  )}`
+const telHref = `tel:${
+  String(agentPhone || contactInfo.phone).replace(/[^\d+]/g, '')
+}`
 
                 return (
                   <Motion.article
