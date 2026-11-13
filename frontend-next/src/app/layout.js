@@ -1,4 +1,6 @@
+
 import "./globals.css";
+import Script from "next/script";
 import Header from "../components/layout/Header.jsx";
 import Footer from "../components/layout/Footer.jsx";
 
@@ -28,6 +30,20 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="overflow-x-clip antialiased">
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-E2NT2EKLON"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'G-E2NT2EKLON');
+          `}
+        </Script>
+
         <Header />
         {children}
         <Footer />
