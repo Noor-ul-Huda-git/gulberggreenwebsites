@@ -30,8 +30,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="overflow-x-clip antialiased">
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-E2NT2EKLON"
+               <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-E2HT2RKLDH"
           strategy="afterInteractive"
         />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -40,7 +40,7 @@ export default function RootLayout({ children }) {
             function gtag(){window.dataLayer.push(arguments);}
             window.gtag = gtag;
             gtag('js', new Date());
-            gtag('config', 'G-E2NT2EKLON');
+            gtag('config', 'G-E2HT2RKLDH');
           `}
         </Script>
 
